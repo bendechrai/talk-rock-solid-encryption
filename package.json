@@ -1,5 +1,5 @@
 {
-  "name": "presodemo",
+  "name": "talk-rock-solid-encryption",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,17 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@noble/curves": "^1.8.2",
+    "crypto-js": "^4.2.0",
+    "next": "15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.0"
+    "react-syntax-highlighter": "^15.6.1",
+    "reveal.js": "^5.2.1"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
-    "@eslint/eslintrc": "^3"
+    "typescript": "^5"
   }
 }

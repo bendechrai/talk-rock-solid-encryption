@@ -1,0 +1,110 @@
+.chat-app {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.demo-header {
+  margin-bottom: 20px;
+}
+
+.demo-description {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.conversation-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.conversation-selector select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+}
+
+/* Database viewer styles */
+.database-viewer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 1000px;
+  max-height: 80vh;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.database-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.database-viewer-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #343a40;
+}
+
+.database-viewer-header button {
+  padding: 6px 12px;
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.database-viewer-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.database-viewer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.database-viewer th,
+.database-viewer td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.database-viewer th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.database-viewer .content-cell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.database-viewer tr:hover {
+  background-color: #f8f9fa;
+}

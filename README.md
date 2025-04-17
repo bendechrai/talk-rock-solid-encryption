@@ -1,4 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Building Rock-Solid Encrypted Applications
+
+This project is a demonstration for a 60-minute technical talk on implementing secure encryption in web applications. It showcases the evolution of a chat application called 'Whisper' from completely insecure to properly encrypted.
+
+## Project Overview
+
+This presentation demonstrates the progressive implementation of encryption in a chat application using Next.js. The project contains:
+
+1. A slide presentation system
+2. Three interactive demos showing different encryption approaches
+3. Code examples that can be examined during the presentation
+
+## Presentation Structure
+
+### Introduction (5 minutes)
+- Why encryption matters: regulatory requirements, company reputation, user trust
+- The importance of proper implementation
+
+### Evolution of a Secure Chat Application (45 minutes)
+
+1. **The Vulnerability of Plain Text** (Demo 1)
+   - Basic chat application with plaintext messages
+   - Demonstration of database vulnerabilities
+   - Common security flaws in production applications
+
+2. **Basic Encryption: The False Sense of Security** (Demo 2)
+   - Server-side encryption with AES-256-GCM
+   - Single key implementation and its vulnerabilities
+   - Attack demonstration
+
+3. **The Public-Private Key Revolution** (Demo 3)
+   - End-to-end encryption with Diffie-Hellman key pairs
+   - Implementation using @noble/curves
+   - Demonstration of secure messaging
+
+4. **Perfect Forward Secrecy**
+   - Protecting past messages with ephemeral keys
+   - Key rotation implementation
+
+5. **The Multi-Device Challenge**
+   - Secure key transfer between devices
+   - QR code implementation for physical proximity verification
+
+6. **Group Chat Complexities**
+   - Challenges unique to group messaging
+   - Pairwise encryption approach
+
+7. **Metadata Protection**
+   - The importance of protecting metadata
+   - Implementation techniques
+
+### Conclusion and Q&A (10 minutes)
+- Recap of key principles
+- Resources for further learning
+- Q&A session
 
 ## Getting Started
 
@@ -6,31 +60,31 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the presentation.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The presentation will start with the first slide, and you can navigate through the slides using the arrow keys. When you reach a demo slide, the corresponding chat application demo will be displayed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technical Implementation
 
-## Learn More
+This project uses:
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js**: For the application framework
+- **React**: For the UI components
+- **crypto-js**: For basic encryption in Demo 2
+- **@noble/curves**: For advanced asymmetric encryption in Demo 3
+- **In-memory database**: For simplified data storage without external dependencies
+- **reveal.js**: For the slide presentation system
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Demo Applications
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Demo 1**: Basic chat with plaintext messages
+2. **Demo 2**: Chat with symmetric encryption (AES-256-GCM)
+3. **Demo 3**: Chat with asymmetric encryption (public/private key pairs)
 
-## Deploy on Vercel
+Each demo builds upon the previous one, showcasing the evolution of security in the application.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is MIT licensed.

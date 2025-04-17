@@ -1,0 +1,155 @@
+.chat-app {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.demo-header {
+  margin-bottom: 20px;
+}
+
+.demo-description {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* Key info styles */
+.key-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.key-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.active {
+  background-color: #28a745;
+}
+
+.status-dot.inactive {
+  background-color: #dc3545;
+}
+
+.regenerate-button {
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.regenerate-button:hover {
+  background-color: #e9ecef;
+}
+
+.user-id {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.key-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.public-key,
+.private-key {
+  padding: 12px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.key-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.key-badge {
+  font-size: 12px;
+  padding: 2px 6px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  color: #495057;
+}
+
+.key-badge.secure {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.toggle-key-button {
+  margin-left: auto;
+  padding: 2px 6px;
+  background-color: transparent;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.key-value {
+  font-size: 14px;
+  word-break: break-all;
+  background-color: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.network-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.pfs-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.info-tooltip {
+  font-size: 12px;
+  color: #6c757d;
+  margin-left: 8px;
+}

@@ -1,0 +1,81 @@
+.admin-panel {
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  width: 300px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: height 0.3s ease;
+}
+
+.admin-header {
+  padding: 8px 16px;
+  background-color: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #495057;
+}
+
+.admin-controls {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-switcher {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-panel button {
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.admin-panel button:hover:not(:disabled) {
+  background-color: #e9ecef;
+}
+
+.admin-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.danger-button {
+  background-color: #f8d7da !important;
+  border-color: #f5c2c7 !important;
+  color: #842029;
+}
+
+.danger-button:hover:not(:disabled) {
+  background-color: #f5c2c7 !important;
+}
