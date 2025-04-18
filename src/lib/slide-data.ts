@@ -43,16 +43,14 @@ export const slides: Slide[] = [
     contentType: "regular",
     htmlContent: `
       <div class="title-slide">
-        <h1>Building Rock-Solid Encrypted Applications</h1>
-        <p>A technical talk for software developers, architects, and decision makers</p>
+        <h1><span>Building <span class="nowrap">Rock-Solid</span> Encrypted Applications</span></h1>
+        <p class="byline">@bendechr.ai</p>
       </div>
     `,
     notes: 'Welcome everyone to "Building Rock-Solid Encrypted Applications". Phishing, data theft, and even authoritarianism are on the rise. We need to protect ourselves from adversaries, be they criminals, competitors, or countries.',
     attributes: {
       'data-background-image': "/backgrounds/hacker.png",
       'data-background-size': 'cover',
-      'data-background-transition': 'slide',
-      'data-transition': 'fade'
     }
   },
   {
