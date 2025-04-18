@@ -210,14 +210,6 @@ function ChatApp() {
   
   return (
     <div className="chat-app">
-      <div className="demo-header">
-        <h2>End-to-End Encrypted Chat Demo</h2>
-        <p className="demo-description">
-          This demo implements true end-to-end encryption using X25519 public/private key pairs.
-          Messages are encrypted with ephemeral keys for Perfect Forward Secrecy.
-        </p>
-      </div>
-      
       <KeyInfo 
         userId={userId}
         keyStatus={keyStatus}

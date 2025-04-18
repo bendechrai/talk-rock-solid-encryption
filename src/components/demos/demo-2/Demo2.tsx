@@ -152,21 +152,14 @@ function ChatApp() {
   
   return (
     <div className="chat-app">
-      <div className="demo-header">
-        <h2>Symmetric Encryption Chat Demo</h2>
-        <p className="demo-description">
-          Messages are encrypted with AES-256-GCM using a single server-side key.
-          While this protects against basic database leaks, it creates a false sense of security.
-        </p>
-        <div className="encryption-info">
-          <strong>Encryption:</strong> AES-256-GCM with server-side key
-          <button 
-            className="attack-button" 
-            onClick={() => setShowAttackDemo(true)}
-          >
-            Demonstrate Attack
-          </button>
-        </div>
+      <div className="encryption-info">
+        <strong>Encryption:</strong> AES-256-GCM with server-side key
+        <button 
+          className="attack-button" 
+          onClick={() => setShowAttackDemo(true)}
+        >
+          Demonstrate Attack
+        </button>
       </div>
       
       <MessageList messages={messages} />

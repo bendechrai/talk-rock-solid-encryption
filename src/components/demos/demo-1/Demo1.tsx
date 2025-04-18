@@ -103,25 +103,17 @@ function ChatApp() {
   
   return (
     <div className="chat-app">
-      <div className="demo-header">
-        <h2>Basic Chat Demo</h2>
-        <p className="demo-description">
-          This demo shows a basic chat application with plaintext messages stored in a database.
-          Notice how changing the conversation ID allows access to different conversations.
-        </p>
-        
-        <div className="conversation-selector">
-          <label htmlFor="conversation-id">Conversation ID:</label>
-          <select 
-            id="conversation-id" 
-            value={conversationId} 
-            onChange={handleConversationChange}
-          >
-            <option value="default">Default Conversation</option>
-            <option value="private">Private Conversation</option>
-            <option value="secret">Secret Conversation</option>
-          </select>
-        </div>
+      <div className="conversation-selector">
+        <label htmlFor="conversation-id">Conversation ID:</label>
+        <select 
+          id="conversation-id" 
+          value={conversationId} 
+          onChange={handleConversationChange}
+        >
+          <option value="default">Default Conversation</option>
+          <option value="private">Private Conversation</option>
+          <option value="secret">Secret Conversation</option>
+        </select>
       </div>
       
       <MessageList messages={messages} />
