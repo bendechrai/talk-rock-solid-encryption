@@ -1,0 +1,11 @@
+.admin-cog-btn {
+    background-color: transparent;
+    stroke: #ffffff44;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.admin-cog-btn:hover {
+  stroke: #ffffff;
+}

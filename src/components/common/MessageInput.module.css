@@ -17,11 +17,12 @@
 }
 
 .message-input:focus {
-  border-color: #0070f3;
+  border-color: #444444;
 }
 
 .send-button {
-  background-color: #0070f3;
+  position: relative;
+  background-color: #17833f88;
   color: white;
   border: none;
   border-radius: 20px;
@@ -31,8 +32,21 @@
   transition: background-color 0.2s;
 }
 
+.send-button::after{
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-top: 2px solid white;
+  border-right: 2px solid white;
+  transform: rotate(45deg) translate(-2px, 2px);
+  position: absolute;
+  left: 8px;
+  top: 12px;
+}
+
 .send-button:hover {
-  background-color: #0060df;
+  background-color: #17833f;
 }
 
 .send-button:disabled {

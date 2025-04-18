@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useRef, useEffect } from 'react';
 import { Message } from '@/types/common';
 import styles from './MessageList.module.css';
 
@@ -8,20 +9,34 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    // scrollToBottom();
+  }, [messages]);
+  
   return (
-    <div className="messages-container">
+    <div className={styles['messages-container']}>
       {messages.length === 0 ? (
-        <div className="empty-message">No messages yet. Start a conversation!</div>
+        <div className={styles['empty-message']}>No messages yet. Start a conversation!</div>
       ) : (
-        messages.map(message => (
-          <div key={message.id} className={`message ${message.sender === 'User' ? 'message-sent' : 'message-received'}`}>
-            <div className="message-sender">{message.sender}</div>
-            <div className="message-content">{message.content}</div>
-            <div className="message-time">
-              {new Date(message.timestamp).toLocaleTimeString()}
+        <>
+          {messages.map(message => (
+            <div key={message.id} className={`${styles.message} ${message.sender === 'User' ? styles['message-sent'] : styles['message-received']}`}>
+              <div className={styles['message-sender']}>{message.sender}</div>
+              <div className={styles['message-content']}>{message.content}</div>
+              <div className={styles['message-time']}>
+                {new Date(message.timestamp).toLocaleTimeString()}
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+          <div ref={messagesEndRef} />
+        </>
       )}
     </div>
   );

@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  height: 300px;
+  flex: 1;
   overflow-y: auto;
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -21,18 +21,29 @@
   border-radius: 8px;
   max-width: 80%;
   position: relative;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
 }
 
 .message-sent {
   align-self: flex-end;
-  background-color: #dcf8c6;
+  background-color: #17833f;
+  color: #fff;
   margin-left: auto;
+}
+
+.message-sent .message-content {
+  color: #fff;
 }
 
 .message-received {
   align-self: flex-start;
   background-color: white;
+  color: #222;
   margin-right: auto;
+}
+
+.message-received .message-content {
+  color: #222;
 }
 
 .message-sender {
@@ -50,4 +61,84 @@
   color: #777;
   text-align: right;
   margin-top: 4px;
+}
+
+.message-sent .message-time {
+  color: #fff;
+}
+
+.phone-chatapp {
+  position: relative;
+}
+
+.phone-chatapp::before {
+  content: '';
+  display: block;
+  height: 50px;
+  background-color: #075e54;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.phone-chatapp::after {
+  content: 'Secure Chat';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  color: white;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.phone-chatapp .message {
+  position: relative;
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 75%;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.phone-chatapp .message-sent {
+  background-color: #DCF8C6;
+  margin-left: auto;
+  border-radius: 8px 0 8px 8px;
+}
+
+.phone-chatapp .message-sent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: #DCF8C6;
+  border-right: 0;
+  border-top: 0;
+}
+
+.phone-chatapp .message-received {
+  background-color: white;
+  margin-right: auto;
+  border-radius: 0 8px 8px 8px;
+}
+
+.phone-chatapp .message-received::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -10px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: white;
+  border-left: 0;
+  border-top: 0;
 }

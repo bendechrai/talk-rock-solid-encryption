@@ -1,0 +1,59 @@
+.databaseViewer {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.databaseViewerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+}
+
+.databaseViewerHeader h3 {
+  margin: 0;
+  color: #00aaff;
+}
+
+.databaseViewerContent {
+  overflow-x: auto;
+  font-size: 14px;
+}
+
+.databaseViewerContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.databaseViewerContent th {
+  text-align: left;
+  padding: 8px;
+  background-color: #333;
+  color: #00aaff;
+  font-weight: 600;
+}
+
+.databaseViewerContent td {
+  padding: 8px;
+  border-bottom: 1px solid #444;
+  word-break: break-word;
+}
+
+.databaseViewerContent tr:hover {
+  background-color: #2a2a2a;
+}
+
+.contentCell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -18,11 +18,6 @@
   font-family: 'Fira Code', monospace;
   color: #00ff41;
   background-color: rgba(10, 14, 23, 0.9);
-  border-radius: 4px;
-  box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-  border: 1px solid #00ff41;
-  padding: 1em;
-  text-align: center;
 }
 
 /* Cursor animation */
@@ -39,14 +34,6 @@
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
-}
-
-/* Demo container - overrides from theme */
-.demo-container {
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 0 20px var(--shadow-glow-green-dark);
-  border: 1px solid var(--accent-neon-green);
 }
 
 /* Background image handling */

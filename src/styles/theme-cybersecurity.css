@@ -19,7 +19,6 @@
 
   /* Background and glow colors */
   --code-background: rgba(0, 20, 0, 0.3);
-  --demo-background: rgba(10, 14, 23, 0.85);
   --shadow-glow: 0 0 10px var(--accent-neon-green-dark);
   --shadow-glow-green: 0 0 10px var(--accent-neon-green-dark);
 
@@ -334,20 +333,6 @@
 .demo-slide {
   display: flex;
   flex-direction: column;
-}
-
-/* Demo slide header styling handled by combined selector above */
-
-.demo-container {
-  flex: 1;
-  margin: 0 auto;
-  padding: 1.5em;
-  background-color: var(--demo-background);
-  border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-  border: 1px solid var(--accent-neon-green);
-  width: 90%;
-  max-width: 90%;
 }
 
 /* Transitions */

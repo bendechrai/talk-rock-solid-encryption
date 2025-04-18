@@ -12,7 +12,10 @@ import {
   decryptWithPrivateKey 
 } from '@/lib/encryption/asymmetric';
 import { AdminPanel } from '@/components/common/AdminPanel';
+import { Phone } from '@/components/common/Phone';
+import { phoneStyles } from '@/components/common/phoneStyles';
 import styles from './Demo3.module.css';
+import { DatabaseViewer } from '@/components/common/DatabaseViewer';
 
 interface KeyInfoProps {
   userId: string;
@@ -175,15 +178,15 @@ function ChatApp() {
   }
   
   // Load all public keys from server
-  useEffect(() => {
-    async function loadPublicKeys() {
-      const response = await fetch('/api/keys');
-      if (response.ok) {
-        const data = await response.json();
-        setPublicKeys(data.keys);
-      }
+  const loadPublicKeys = async () => {
+    const response = await fetch('/api/keys');
+    if (response.ok) {
+      const data = await response.json();
+      setPublicKeys(data.keys);
     }
-    
+  };
+
+  useEffect(() => {
     if (userId) {
       loadPublicKeys();
       const interval = setInterval(loadPublicKeys, 5000);
@@ -191,21 +194,27 @@ function ChatApp() {
     }
   }, [userId]);
   
-  // Function to reset database
+  // Function to reset database without page reload
   const handleResetDatabase = async () => {
-    await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reset' })
-    });
-    
-    // Reload messages
-    window.location.reload();
+    try {
+      await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset' })
+      });
+      
+      // Refresh keys and messages without page reload
+      await generateNewKeys(userId);
+      await loadPublicKeys();
+    } catch (error) {
+      console.error('Error resetting database:', error);
+    }
   };
   
-  // Function to view database
+  // Function to view database - just returns a resolved promise
+  // The actual data fetching is handled by the DatabaseViewer component
   const handleViewDatabase = async () => {
-    setShowDbViewer(true);
+    return Promise.resolve();
   };
   
   return (
@@ -219,14 +228,19 @@ function ChatApp() {
         onRegenerateKeys={() => generateNewKeys(userId)}
       />
       
-      <MessageList messages={messages} />
-      <MessageInput onSendMessage={(content) => addMessage(content)} />
+      <Phone>
+        <div className={phoneStyles.phoneChatApp}>
+          <MessageList messages={messages} />
+          <MessageInput onSendMessage={(content) => addMessage(content)} />
+        </div>
+      </Phone>
       
       <AdminPanel 
         onResetDatabase={handleResetDatabase}
         onViewDatabase={handleViewDatabase}
         demoVersion={3}
       />
+
     </div>
   );
 }

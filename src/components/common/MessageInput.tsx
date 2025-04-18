@@ -19,15 +19,15 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
   };
   
   return (
-    <form onSubmit={handleSubmit} className="message-input-form">
+    <form onSubmit={handleSubmit} className={styles['message-input-form']}>
       <input
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type a message..."
-        className="message-input"
+        className={styles['message-input']}
       />
-      <button type="submit" className="send-button">Send</button>
+      <button type="submit" className={styles['send-button']} aria-label="Send message"></button>
     </form>
   );
 }

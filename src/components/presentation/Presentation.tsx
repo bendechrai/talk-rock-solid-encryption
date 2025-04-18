@@ -1,33 +1,51 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 
 // Import Reveal.js CSS
-import 'reveal.js/dist/reveal.css';
+import "reveal.js/dist/reveal.css";
 // Import our custom theme instead of the default
-import '@/styles/theme-cybersecurity.css';
-import '@/styles/reveal-override.css';
-import '@/styles/Presentation.css';
+import "@/styles/theme-cybersecurity.css";
+import "@/styles/reveal-override.css";
+import "@/styles/Presentation.css";
 
 // Import slide data
-import { slides, getSlideAttributes } from '@/lib/slide-data';
+import { slides, getSlideAttributes } from "@/lib/slide-data";
 
 // Import demo components with dynamic loading
-const Demo1 = dynamic(() => import('@/components/demos/demo-1/Demo1'), {
-  loading: () => <div className="loading-demo">Loading Demo 1...<span className="cursor"></span></div>
+const Demo1 = dynamic(() => import("@/components/demos/demo-1/Demo1"), {
+  loading: () => (
+    <div className="loading-demo">
+      Loading Demo 1...<span className="cursor"></span>
+    </div>
+  ),
 });
 
-const Demo2 = dynamic(() => import('@/components/demos/demo-2/Demo2'), {
-  loading: () => <div className="loading-demo">Loading Demo 2...<span className="cursor"></span></div>
+const Demo2 = dynamic(() => import("@/components/demos/demo-2/Demo2"), {
+  loading: () => (
+    <div className="loading-demo">
+      Loading Demo 2...<span className="cursor"></span>
+    </div>
+  ),
 });
 
-const Demo3 = dynamic(() => import('@/components/demos/demo-3/Demo3'), {
-  loading: () => <div className="loading-demo">Loading Demo 3...<span className="cursor"></span></div>
+const Demo3 = dynamic(() => import("@/components/demos/demo-3/Demo3"), {
+  loading: () => (
+    <div className="loading-demo">
+      Loading Demo 3...<span className="cursor"></span>
+    </div>
+  ),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const TitleSlide = ({ title, subtitle }: { title: string; subtitle?: string }) => (
+const TitleSlide = ({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) => (
   <div className="title-slide">
     <h1>{title}</h1>
     {subtitle && <p>{subtitle}</p>}
@@ -42,15 +60,33 @@ const SectionSlide = ({ title }: { title: string }) => (
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CodeSnippetSlide = ({ title, code, language = 'javascript' }: { title: string; code: string; language?: string }) => (
+const CodeSnippetSlide = ({
+  title,
+  code,
+  language = "javascript",
+}: {
+  title: string;
+  code: string;
+  language?: string;
+}) => (
   <div className="code-snippet-slide">
     <h2>{title}</h2>
-    <pre><code className={language}>{code}</code></pre>
+    <pre>
+      <code className={language}>{code}</code>
+    </pre>
   </div>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ImageLeftSlide = ({ title, image, children }: { title: string; image: string; children: React.ReactNode }) => (
+const ImageLeftSlide = ({
+  title,
+  image,
+  children,
+}: {
+  title: string;
+  image: string;
+  children: React.ReactNode;
+}) => (
   <div className="image-left-slide">
     <div className="image-container">
       <img src={image} alt={title} />
@@ -63,7 +99,15 @@ const ImageLeftSlide = ({ title, image, children }: { title: string; image: stri
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ImageRightSlide = ({ title, image, children }: { title: string; image: string; children: React.ReactNode }) => (
+const ImageRightSlide = ({
+  title,
+  image,
+  children,
+}: {
+  title: string;
+  image: string;
+  children: React.ReactNode;
+}) => (
   <div className="image-right-slide">
     <div className="image-container">
       <img src={image} alt={title} />
@@ -76,7 +120,15 @@ const ImageRightSlide = ({ title, image, children }: { title: string; image: str
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ImageLargeSlide = ({ title, image, caption }: { title: string; image: string; caption?: string }) => (
+const ImageLargeSlide = ({
+  title,
+  image,
+  caption,
+}: {
+  title: string;
+  image: string;
+  caption?: string;
+}) => (
   <div className="image-large-slide">
     <h2>{title}</h2>
     <div className="image-container">
@@ -89,21 +141,26 @@ const ImageLargeSlide = ({ title, image, caption }: { title: string; image: stri
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DemoSlide = ({ title, demoId }: { title: string; demoId: string }) => {
   let DemoComponent = null;
-  
+
   switch (demoId) {
-    case 'demo-1':
+    case "demo-1":
       DemoComponent = Demo1;
       break;
-    case 'demo-2':
+    case "demo-2":
       DemoComponent = Demo2;
       break;
-    case 'demo-3':
+    case "demo-3":
       DemoComponent = Demo3;
       break;
     default:
-      return <div className="demo-slide"><h2>{title}</h2><div>Demo not found</div></div>;
+      return (
+        <div className="demo-slide">
+          <h2>{title}</h2>
+          <div>Demo not found</div>
+        </div>
+      );
   }
-  
+
   return (
     <div className="demo-slide">
       <h2>{title}</h2>
@@ -114,35 +171,39 @@ const DemoSlide = ({ title, demoId }: { title: string; demoId: string }) => {
   );
 };
 
+import { useState } from "react";
+
 export default function Presentation() {
   const revealRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Only run in browser
-    if (typeof window === 'undefined' || !revealRef.current) return;
+    if (typeof window === "undefined" || !revealRef.current) return;
 
     const initReveal = async () => {
       try {
         // Dynamically import Reveal.js
-        const Reveal = (await import('reveal.js')).default;
-        
+        const Reveal = (await import("reveal.js")).default;
+
         // Import plugins if needed
-        await import('reveal.js/plugin/notes/notes');
+        await import("reveal.js/plugin/notes/notes");
 
         // Import highlight.js plugin for code syntax highlighting
-        const RevealHighlight = (await import('reveal.js/plugin/highlight/highlight')).default;
-        
+        const RevealHighlight = (
+          await import("reveal.js/plugin/highlight/highlight")
+        ).default;
+
         // Initialize Reveal.js with options
         const deck = new Reveal(revealRef.current, {
           hash: true,
           hashOneBasedIndex: false,
-          navigationMode: 'default',
+          navigationMode: "default",
           history: true,
           controls: false,
           progress: false,
           center: false,
-          transition: 'fade',
-          backgroundTransition: 'fade', 
+          transition: "fade",
+          backgroundTransition: "fade",
           width: 1920,
           height: 1080,
           margin: 0.1,
@@ -156,31 +217,35 @@ export default function Presentation() {
 
         // Initialize Reveal
         await deck.initialize();
-        
+
         // Customize the URL format to match the desired pattern
         // This overrides Reveal's default hash pattern
         const customizeURLFormat = () => {
           // Get the current slide index
           const indices = deck.getIndices();
           const slideIndex = indices.h;
-          
+
           // Update the URL to the desired format: /presentation/#1 instead of /presentation/#/1
           if (slideIndex === 0) {
-            window.history.replaceState(null, '', '/presentation/#');
+            window.history.replaceState(null, "", "/presentation/#");
           } else {
-            window.history.replaceState(null, '', `/presentation/#${slideIndex}`);
+            window.history.replaceState(
+              null,
+              "",
+              `/presentation/#${slideIndex}`
+            );
           }
         };
-        
+
         // Call initially to set the correct format
         customizeURLFormat();
-        
+
         // Add event listener to update URL on slide change
-        deck.on('slidechanged', () => {
+        deck.on("slidechanged", () => {
           customizeURLFormat();
         });
       } catch (error) {
-        console.error('Error initializing Reveal.js:', error);
+        console.error("Error initializing Reveal.js:", error);
       }
     };
 
@@ -188,35 +253,41 @@ export default function Presentation() {
   }, []);
 
   return (
-    <div className="reveal" ref={revealRef}>
-      <div className="slides">
-        {slides.map((slide) => {
-          // Create a section element with the appropriate attributes from our slide data
-          const sectionProps = {
-            ...getSlideAttributes(slide),
-            'data-notes': slide.notes,
-          };
-          
-          // Add content type as data attribute for CSS targeting
-          sectionProps['data-content-type'] = slide.contentType;
+    <>
+      <div className="reveal" ref={revealRef}>
+        <div className="slides">
+          {slides.map((slide) => {
+            // Create a section element with the appropriate attributes from our slide data
+            const sectionProps = {
+              ...getSlideAttributes(slide),
+              "data-notes": slide.notes,
+            };
 
-          // Render different content based on slide type
-          if (slide.contentType === 'demo') {
-            return (
-              <section key={slide.id} {...sectionProps}>
-                <DemoSlide title={slide.title} demoId={slide.demoId || ''} />
-              </section>
-            );
-          } else {
-            // Regular content slide - use the HTML content directly
-            return (
-              <section key={slide.id} {...sectionProps}>
-                <div dangerouslySetInnerHTML={{ __html: slide.htmlContent || '' }} />
-              </section>
-            );
-          }
-        })}
+            // Add content type as data attribute for CSS targeting
+            sectionProps["data-content-type"] = slide.contentType;
+
+            // Render different content based on slide type
+            if (slide.contentType === "demo") {
+              return (
+                <section key={slide.id} {...sectionProps}>
+                  <DemoSlide title={slide.title} demoId={slide.demoId || ""} />
+                </section>
+              );
+            } else {
+              // Regular content slide - use the HTML content directly
+              return (
+                <section key={slide.id} {...sectionProps}>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: slide.htmlContent || "",
+                    }}
+                  />
+                </section>
+              );
+            }
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

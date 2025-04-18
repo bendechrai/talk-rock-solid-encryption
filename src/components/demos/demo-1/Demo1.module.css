@@ -1,4 +1,4 @@
-.chat-app {
+.chatApp {
   display: flex;
   flex-direction: column;
   max-width: 800px;
@@ -16,7 +16,7 @@
   margin-bottom: 16px;
 }
 
-.conversation-selector {
+.conversationSelector {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -34,77 +34,61 @@
 }
 
 /* Database viewer styles */
-.database-viewer {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 1000px;
-  max-height: 80vh;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  overflow: hidden;
+.databaseViewer {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  color: #e0e0e0;
 }
 
-.database-viewer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+.databaseViewerHeader {
+  margin-bottom: 8px;
 }
 
-.database-viewer-header h3 {
+.databaseViewerHeader h3 {
   margin: 0;
-  font-size: 18px;
-  color: #343a40;
+  font-size: 1.1rem;
+  color: #ffffff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
 }
 
-.database-viewer-header button {
-  padding: 6px 12px;
-  background-color: #e9ecef;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.database-viewer-content {
-  padding: 20px;
+.databaseViewerContent {
   overflow-y: auto;
+  max-height: 350px;
 }
 
-.database-viewer table {
+.databaseViewer table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
+  font-size: 0.9rem;
 }
 
-.database-viewer th,
-.database-viewer td {
-  padding: 10px 12px;
+.databaseViewer th,
+.databaseViewer td {
+  padding: 8px 10px;
   text-align: left;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #444;
 }
 
-.database-viewer th {
-  background-color: #f8f9fa;
+.databaseViewer th {
+  background-color: #222;
   font-weight: 600;
+  color: #ffffff;
 }
 
-.database-viewer .content-cell {
-  max-width: 300px;
+.databaseViewer td {
+  color: #e0e0e0;
+}
+
+.contentCell {
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.database-viewer tr:hover {
-  background-color: #f8f9fa;
+.databaseViewer tr:hover {
+  background-color: #2a2a2a;
 }

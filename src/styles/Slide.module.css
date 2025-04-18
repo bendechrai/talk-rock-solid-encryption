@@ -34,16 +34,6 @@ section[data-background-image] .content-slide {
   color: white;
 }
 
-.demo-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-
 /* Content image styling */
 .imageContainer {
   margin: 1.5rem 0;
