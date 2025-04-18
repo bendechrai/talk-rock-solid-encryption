@@ -61,10 +61,9 @@ talk-rock-solid-encryption/
 │   │   │       ├── Demo3.tsx
 │   │   │       └── Demo3.module.css
 │   │   └── slides/           # Slide components
-│   │   │   ├── SlideShow.tsx  # Main slideshow component
-│   │   │   ├── SlideNavigation.tsx  # Navigation controls
+│   │   │   ├── RevealWrapper.tsx    # Main Reveal.js integration component
 │   │   │   ├── SlideContent.tsx     # Slide content renderer
-│   │   │   └── SlideProgress.tsx    # Progress indicator
+│   │   │   └── SlideComponents.tsx  # Individual slide type components
 │   │   ├── common/
 │   │   │   ├── ChatInterface.tsx    # Base chat UI
 │   │   │   ├── MessageList.tsx      # Messages display
@@ -103,19 +102,70 @@ The slide system is built around the `slide-data.ts` file which defines the stru
 // src/lib/slide-data.ts
 export type SlideType = 'content' | 'demo';
 
+export type SlideComponentType = 'title' | 'bullets' | 'image' | 'code' | 'custom';
+
+export interface SlideComponentData {
+  type: SlideComponentType;
+  props: Record<string, any>;
+}
+
 export interface Slide {
   id: string;
   title: string;
   type: SlideType;
-  content?: React.ReactNode;
+  content?: string | SlideComponentData;
   demoId?: string;
   notes?: string;
+  backgroundImage?: string;
+  backgroundColor?: string;
+  backgroundOpacity?: number;
+  subslides?: Slide[];
 }
 
 export const slides: Slide[] = [
   // Regular slides and demo slides defined here
 ];
 ```
+
+### Reveal.js Integration
+
+The presentation uses Reveal.js for slide navigation and transitions, integrated with Next.js routing:
+
+```typescript
+// src/components/slides/RevealWrapper.tsx
+export default function RevealWrapper({
+  slides,
+  currentSlideId,
+}: RevealWrapperProps) {
+  // Reveal.js initialization and slide management
+  // ...
+}
+```
+
+The `RevealWrapper` component handles:
+
+1. **Initialization**: Dynamically imports and initializes Reveal.js on the client side
+2. **Slide Navigation**: Synchronizes Reveal.js navigation with Next.js routing
+3. **Background Management**: Uses Reveal.js's native data attributes for background images and colors
+4. **Event Handling**: Manages keyboard events and slide transitions
+
+### Slide Content Rendering
+
+The `SlideContent` component renders the content of each slide based on its type:
+
+```typescript
+// src/components/slides/SlideContent.tsx
+export default function SlideContent({ slide }: SlideContentProps) {
+  // Render slide content based on type (content or demo)
+  // ...
+}
+```
+
+This component:
+
+1. **Content Rendering**: Renders different types of slide content (title, bullets, images, code)
+2. **Demo Integration**: Dynamically loads and renders demo components when needed
+3. **HTML Support**: Supports rendering raw HTML content for flexible slide layouts
 
 ### API Routes
 
@@ -1958,10 +2008,18 @@ interface SlideContentProps {
 }
 
 export default function SlideContent({ slide }: SlideContentProps) {
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
   // Use dynamic import for demo components
-  const DemoComponent = slide.type === 'demo' && slide.demoId
+  const Demo1 = dynamic(() => import('@/components/demos/demo-1/Demo1'), {
+    loading: () => <div style={{ padding: '20px', textAlign: 'center' }}>Loading Demo 1...</div>
+  });
+  
+  const Demo2 = dynamic(() => import('@/components/demos/demo-2/Demo2'), {
+    loading: () => <div style={{ padding: '20px', textAlign: 'center' }}>Loading Demo 2...</div>
+  });
+  
+  const Demo3 = dynamic(() => import('@/components/demos/demo-3/Demo3'), {
+    loading: () => <div style={{ padding: '20px', textAlign: 'center' }}>Loading Demo 3...</div>
+  });
     ? dynamic(() => import(`@/components/demos/${slide.demoId}/Demo${slide.demoId.split('-')[1]}`), {
         loading: () => <div className={styles.loading}>Loading demo...</div>,
         ssr: false
