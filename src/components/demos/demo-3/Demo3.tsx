@@ -292,8 +292,22 @@ export default function Demo3() {
       return Promise.all(
         messages.map(async (msg) => {
           try {
-            // Parse the encrypted content
-            const encryptedData = JSON.parse(msg.content);
+            // Check if the content is valid JSON before parsing
+            let encryptedData;
+            try {
+              encryptedData = JSON.parse(msg.content);
+            } catch (parseError) {
+              console.warn('Failed to parse message content as JSON:', parseError);
+              // Return the original message if it's not valid JSON
+              return msg;
+            }
+            
+            // Check if the parsed data has the expected structure
+            if (!encryptedData || !encryptedData.recipients) {
+              console.warn('Message does not have expected encrypted structure:', encryptedData);
+              return msg;
+            }
+            
             const { sender, recipients } = encryptedData;
             
             // Find our encrypted message

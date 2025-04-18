@@ -102,8 +102,24 @@ export async function encryptSymmetric(text: string, password: string): Promise<
  */
 export async function decryptSymmetric(encryptedText: string, password: string): Promise<string> {
   try {
-    // Parse the encrypted data
-    const { iv, ciphertext } = JSON.parse(encryptedText);
+    // Check if the input is valid JSON before attempting to parse
+    let parsedData;
+    try {
+      parsedData = JSON.parse(encryptedText);
+    } catch (parseError) {
+      console.warn('Failed to parse encrypted text as JSON:', parseError);
+      // If it's not valid JSON, it's likely not an encrypted message
+      // Return the original text instead of throwing an error
+      return encryptedText;
+    }
+    
+    // Verify the parsed data has the expected structure
+    if (!parsedData || !parsedData.iv || !parsedData.ciphertext) {
+      console.warn('Encrypted data does not have the expected structure:', parsedData);
+      return encryptedText;
+    }
+    
+    const { iv, ciphertext } = parsedData;
     
     // Convert base64 strings back to buffers
     const ivBuffer = base64ToBuffer(iv);
