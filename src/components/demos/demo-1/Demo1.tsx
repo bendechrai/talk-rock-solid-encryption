@@ -40,11 +40,16 @@ export default function Demo1() {
     <div className={styles.demoContainer}>
       <div className={styles.phonesContainer}>
         <div className={styles.phoneWrapper}>
-          <Phone userId="Alice" initialColor="rose" demoVersion={1} />
+          <Phone userId="1" initialColor="rose" demoVersion={1} />
         </div>
 
         <div className={styles.phoneWrapper}>
-          <Phone userId="Bob" initialColor="blue" demoVersion={1} isRight={true} />
+          <Phone
+            userId="2"
+            initialColor="blue"
+            demoVersion={1}
+            isRight={true}
+          />
         </div>
       </div>
 

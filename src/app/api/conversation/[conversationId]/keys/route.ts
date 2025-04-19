@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/database/in-memory-db';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { conversationId: string } }
-) {
-  const { conversationId } = params;
+// Helper function to extract conversationId from the URL
+function getConversationIdFromUrl(url: string): string {
+  const urlObj = new URL(url);
+  const pathParts = urlObj.pathname.split('/');
+  // Find the index of 'conversation' in the path
+  const conversationIndex = pathParts.findIndex(part => part === 'conversation');
+  if (conversationIndex !== -1 && conversationIndex + 1 < pathParts.length) {
+    return pathParts[conversationIndex + 1];
+  }
+  return '';
+}
+
+export async function GET(request: NextRequest) {
+  const conversationId = getConversationIdFromUrl(request.url);
   
   // Validate conversationId format (alphanumeric + hyphens only)
-  if (!/^[a-zA-Z0-9-]+$/.test(conversationId)) {
+  if (!conversationId || !/^[a-zA-Z0-9-]+$/.test(conversationId)) {
     return NextResponse.json(
       { error: 'Invalid conversation ID format' },
       { status: 400 }

@@ -164,11 +164,16 @@ export default function Demo2() {
 
       <div className={styles.phonesContainer}>
         <div className={styles.phoneWrapper}>
-          <Phone userId="Alice" initialColor="rose" demoVersion={2} />
+          <Phone userId="1" initialColor="rose" demoVersion={2} />
         </div>
 
         <div className={styles.phoneWrapper}>
-          <Phone userId="Bob" initialColor="blue" demoVersion={2} isRight={true} />
+          <Phone
+            userId="2"
+            initialColor="blue"
+            demoVersion={2}
+            isRight={true}
+          />
         </div>
       </div>
 

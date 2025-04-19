@@ -65,14 +65,14 @@ class InMemoryDatabase {
         publicKey: user.publicKey,
       }));
   }
-  
+
   // Set a user's public key
   async setPublicKey(userId: string, publicKey: string): Promise<boolean> {
     const userIndex = this.users.findIndex((u) => u.id === userId);
     if (userIndex === -1) {
       return false;
     }
-    
+
     // Update the user's public key
     this.users[userIndex].publicKey = publicKey;
     return true;
@@ -92,6 +92,12 @@ class InMemoryDatabase {
     conversationId: string
   ): Promise<Conversation | undefined> {
     return this.conversations.find((c) => c.id === conversationId);
+  }
+
+  async getConversationsForUser(userId: string): Promise<Conversation[]> {
+    return this.conversations.filter((conversation) =>
+      conversation.memberUserIds.includes(userId)
+    );
   }
 
   // Message operations
