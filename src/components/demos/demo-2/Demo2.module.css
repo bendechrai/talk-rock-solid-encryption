@@ -273,3 +273,27 @@
 .databaseView tr:hover {
   background-color: #2a2a2a;
 }
+
+.colorSelector {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.colorButton {
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.colorButton:hover {
+  background-color: #555;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}

@@ -5,9 +5,10 @@ import styles from './Phone.module.css';
 
 interface PhoneProps {
   children: ReactNode;
+  color?: 'default' | 'silver' | 'gold' | 'rose' | 'blue' | 'red' | 'titanium';
 }
 
-export function Phone({ children }: PhoneProps) {
+export function Phone({ children, color = 'default' }: PhoneProps) {
   const [currentTime, setCurrentTime] = useState('');
   
   useEffect(() => {
@@ -24,8 +25,18 @@ export function Phone({ children }: PhoneProps) {
     setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   }
   
+  // Determine the CSS class based on the color prop
+  // For CSS modules, we need to use a different approach for combining classes
+  const phoneClass = `${styles.phone} ${color !== 'default' ? styles[color] || '' : ''}`;
+
   return (
-    <div className={styles.phone}>
+    <div className={phoneClass}>
+      {/* Add 3D bevel effect elements */}
+      <div className={styles['phone-bevel-top']}></div>
+      <div className={styles['phone-bevel-bottom']}></div>
+      <div className={styles['phone-bevel-left']}></div>
+      <div className={styles['phone-bevel-right']}></div>
+
       <div className={styles['phone-inner']}>
         <div className={styles['phone-top-bar']}>
           <div className={styles['phone-time']}>{currentTime}</div>

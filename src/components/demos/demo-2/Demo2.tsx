@@ -36,7 +36,7 @@ function AttackDemo() {
         setIsLoading(false);
       });
   };
-  
+
   useEffect(() => {
     // Load data only once when component mounts
     fetchDatabaseContents();
@@ -114,7 +114,7 @@ function AttackDemo() {
             >
               Decrypt Selected Message
             </button>
-            
+
             {decryptedMessage && (
               <div className={styles.decryptionResult}>
                 <h4>Decrypted Message:</h4>
@@ -132,6 +132,9 @@ function AttackDemo() {
 
 function ChatApp() {
   const { messages, addMessage } = useChat();
+  const [phoneColor, setPhoneColor] = useState<
+    "default" | "silver" | "gold" | "rose" | "blue" | "red" | "titanium"
+  >("blue");
 
   // Function to reset database without page reload
   const handleResetDatabase = async () => {
@@ -155,13 +158,23 @@ function ChatApp() {
     return Promise.resolve();
   };
 
+  // Function to cycle through phone colors
+  const cyclePhoneColor = () => {
+    const colors: Array<
+      "default" | "silver" | "gold" | "rose" | "blue" | "red" | "titanium"
+    > = ["default", "silver", "gold", "rose", "blue", "red", "titanium"];
+    const currentIndex = colors.indexOf(phoneColor);
+    const nextIndex = (currentIndex + 1) % colors.length;
+    setPhoneColor(colors[nextIndex]);
+  };
+
   return (
     <div className="chat-app">
       <div className="encryption-info">
         <strong>Encryption:</strong> AES-256-GCM with server-side key
       </div>
 
-      <Phone>
+      <Phone color={phoneColor}>
         <div className={phoneStyles.phoneChatApp}>
           <MessageList messages={messages} />
           <MessageInput onSendMessage={(content) => addMessage(content)} />
@@ -174,6 +187,11 @@ function ChatApp() {
         demoVersion={2}
       >
         <AttackDemo />
+        <div className={styles.colorSelector}>
+          <button onClick={cyclePhoneColor} className={styles.colorButton}>
+            Change Phone Color ({phoneColor})
+          </button>
+        </div>
       </AdminPanel>
     </div>
   );
