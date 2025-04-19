@@ -11,13 +11,15 @@ interface PhoneProps {
   demoVersion: 1 | 2 | 3;
   initialColor?: PhoneColor;
   children?: ReactNode;
+  isRight?: boolean;
 }
 
 export function Phone({ 
   userId, 
   demoVersion, 
   initialColor = 'default',
-  children
+  children,
+  isRight = false
 }: PhoneProps) {
   const [color, setColor] = useState<PhoneColor>(initialColor);
   const [currentTime, setCurrentTime] = useState('');
@@ -36,9 +38,9 @@ export function Phone({
     setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   }
   
-  // Determine the CSS class based on the color prop
+  // Determine the CSS class based on the color prop and isRight
   // For CSS modules, we need to use a different approach for combining classes
-  const phoneClass = `${styles.phone} ${color !== 'default' ? styles[color] || '' : ''}`;
+  const phoneClass = `${styles.phone} ${color !== 'default' ? styles[color] || '' : ''} ${isRight ? styles.right : ''}`;
 
   return (
     <div className={phoneClass}>

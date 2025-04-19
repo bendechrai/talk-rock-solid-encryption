@@ -44,7 +44,7 @@ export default function Demo1() {
         </div>
 
         <div className={styles.phoneWrapper}>
-          <Phone userId="Bob" initialColor="blue" demoVersion={1} />
+          <Phone userId="Bob" initialColor="blue" demoVersion={1} isRight={true} />
         </div>
       </div>
 

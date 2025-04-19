@@ -168,7 +168,7 @@ export default function Demo2() {
         </div>
 
         <div className={styles.phoneWrapper}>
-          <Phone userId="Bob" initialColor="blue" demoVersion={2} />
+          <Phone userId="Bob" initialColor="blue" demoVersion={2} isRight={true} />
         </div>
       </div>
 
