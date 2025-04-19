@@ -14,9 +14,22 @@ export interface Message {
 }
 
 /**
- * Represents a user's public key
+ * Represents a user in the application
  */
-export interface PublicKey {
-  userId: string;
+export interface User {
+  id: string;
+  name: string;
+  phoneColor: string;
   publicKey: string;
+  privateKey: string;
 }
+
+/**
+ * Represents a conversation with members
+ */
+export interface Conversation {
+  id: string;
+  memberUserIds: string[];
+  name?: string;
+}
+
