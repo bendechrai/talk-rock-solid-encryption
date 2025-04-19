@@ -2,13 +2,24 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import styles from './Phone.module.css';
+import { ChatApp } from './ChatApp';
+
+type PhoneColor = 'default' | 'silver' | 'gold' | 'rose' | 'blue' | 'red' | 'titanium';
 
 interface PhoneProps {
-  children: ReactNode;
-  color?: 'default' | 'silver' | 'gold' | 'rose' | 'blue' | 'red' | 'titanium';
+  userId: string;
+  demoVersion: 1 | 2 | 3;
+  initialColor?: PhoneColor;
+  children?: ReactNode;
 }
 
-export function Phone({ children, color = 'default' }: PhoneProps) {
+export function Phone({ 
+  userId, 
+  demoVersion, 
+  initialColor = 'default',
+  children
+}: PhoneProps) {
+  const [color, setColor] = useState<PhoneColor>(initialColor);
   const [currentTime, setCurrentTime] = useState('');
   
   useEffect(() => {
@@ -48,7 +59,14 @@ export function Phone({ children, color = 'default' }: PhoneProps) {
           </div>
         </div>
         <div className={styles['phone-app-container']}>
-          {children}
+          {children || (
+            <ChatApp
+              userId={userId}
+              demoVersion={demoVersion}
+              onChangePhoneColor={setColor}
+              initialColor={initialColor}
+            />
+          )}
         </div>
         <div className={styles['phone-bottom-buttons']}>
           <div className={styles['phone-home-button']}></div>

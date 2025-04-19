@@ -6,9 +6,10 @@ import styles from './MessageList.module.css';
 
 interface MessageListProps {
   messages: Message[];
+  currentUser?: string;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, currentUser = 'User' }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const scrollToBottom = () => {
@@ -27,7 +28,7 @@ export function MessageList({ messages }: MessageListProps) {
       ) : (
         <>
           {messages.map(message => (
-            <div key={message.id} className={`${styles.message} ${message.sender === 'User' ? styles['message-sent'] : styles['message-received']}`}>
+            <div key={message.id} className={`${styles.message} ${message.sender === currentUser ? styles['message-sent'] : styles['message-received']}`}>
               <div className={styles['message-sender']}>{message.sender}</div>
               <div className={styles['message-content']}>{message.content}</div>
               <div className={styles['message-time']}>

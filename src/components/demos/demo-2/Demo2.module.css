@@ -1,10 +1,25 @@
-.chat-app {
+.demoContainer {
   display: flex;
   flex-direction: column;
-  max-width: 800px;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
   gap: 20px;
+}
+
+.phonesContainer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin: 20px 0;
+}
+
+.phoneWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .demo-header {
