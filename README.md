@@ -4,11 +4,12 @@ This project is a demonstration for a 60-minute technical talk on implementing s
 
 ## Project Overview
 
-This presentation demonstrates the progressive implementation of encryption in a chat application using Next.js. The project contains:
+This is a **demonstration project** designed to illustrate encryption concepts in an educational context, not a production-ready application. The project contains:
 
-1. A slide presentation system
-2. Three interactive demos showing different encryption approaches
+1. A slide presentation system built with Reveal.js and Next.js
+2. Interactive demos showing different encryption approaches (plaintext, symmetric, asymmetric, and more)
 3. Code examples that can be examined during the presentation
+4. An in-memory database for simplified demonstration without external dependencies
 
 ## Presentation Structure
 

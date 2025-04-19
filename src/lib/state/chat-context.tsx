@@ -33,7 +33,13 @@ export function ChatProvider({
   // Load messages from the API
   const loadMessages = async () => {
     try {
-      const response = await fetch(apiEndpoint);
+      // Extract conversationId from the apiEndpoint if it exists
+      const conversationId = extractConversationId(apiEndpoint);
+      
+      // Construct the proper API URL
+      const apiUrl = constructApiUrl(apiEndpoint, conversationId);
+      
+      const response = await fetch(apiUrl);
       if (response.ok) {
         const data = await response.json();
         const processedMessages = await messageProcessor.afterReceive(data.messages);
@@ -44,31 +50,79 @@ export function ChatProvider({
     }
   };
   
+  // Helper function to extract conversationId from apiEndpoint
+  const extractConversationId = (endpoint: string): string => {
+    let conversationId = 'default';
+    try {
+      // Check if endpoint contains a query parameter for conversationId (old format)
+      if (endpoint.includes('?')) {
+        const url = new URL(endpoint, window.location.origin);
+        const urlConversationId = url.searchParams.get('conversationId');
+        if (urlConversationId) {
+          conversationId = urlConversationId;
+        }
+      }
+      // Otherwise, check if it's using the new format with path parameter
+      else if (endpoint.includes('/conversation/')) {
+        const parts = endpoint.split('/');
+        const conversationIdIndex = parts.findIndex(part => part === 'conversation') + 1;
+        if (conversationIdIndex < parts.length) {
+          conversationId = parts[conversationIdIndex];
+        }
+      }
+    } catch (error) {
+      console.warn('Could not parse apiEndpoint for conversationId:', error);
+    }
+    return conversationId;
+  };
+  
+  // Helper function to construct the proper API URL
+  const constructApiUrl = (endpoint: string, conversationId: string): string => {
+    // Check if endpoint is using the old format with query parameters
+    if (endpoint.includes('?')) {
+      // Convert old format to new format
+      const baseEndpoint = endpoint.split('?')[0];
+      const type = baseEndpoint.split('/').pop() || 'messages';
+      
+      if (type === 'messages') {
+        return `/api/conversation/${conversationId}/message`;
+      } else if (type === 'keys') {
+        return `/api/conversation/${conversationId}/keys`;
+      } else if (type === 'messages-symmetric' || type === 'messages-asymmetric') {
+        return `/api/conversation/${conversationId}/message`;
+      }
+    }
+    
+    // If it's already using the new format or we can't determine the format, return as is
+    return endpoint;
+  };
+  
   // Add a new message
   const addMessage = async (content: string) => {
     try {
       const processedContent = await messageProcessor.beforeSend(content);
       
-      // Extract conversationId from the apiEndpoint if it exists in the query params
-      let conversationId = 'default';
-      try {
-        const url = new URL(apiEndpoint, window.location.origin);
-        const urlConversationId = url.searchParams.get('conversationId');
-        if (urlConversationId) {
-          conversationId = urlConversationId;
-        }
-      } catch (error) {
-        // If parsing fails, use default conversationId
-        console.warn('Could not parse apiEndpoint for conversationId:', error);
+      // Extract conversationId from the apiEndpoint
+      const conversationId = extractConversationId(apiEndpoint);
+      
+      // Determine encryption type based on apiEndpoint
+      let encryptionType = undefined;
+      if (apiEndpoint.includes('messages-symmetric')) {
+        encryptionType = 'symmetric';
+      } else if (apiEndpoint.includes('messages-asymmetric')) {
+        encryptionType = 'asymmetric';
       }
       
-      const response = await fetch(apiEndpoint, {
+      // Construct the proper API URL
+      const apiUrl = constructApiUrl(apiEndpoint, conversationId);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           content: processedContent, 
           sender: 'User',
-          conversationId
+          encryptionType
         })
       });
       

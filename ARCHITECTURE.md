@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-This document outlines the architecture for a Next.js application that combines a presentation slideshow with integrated, progressive demos on encryption techniques. The application:
+This document outlines the architecture for a Next.js application that combines a presentation slideshow with integrated, progressive demos on encryption techniques. This is a **demonstration project** designed specifically for educational purposes, not a production-ready application.
+
+The application:
 
 - Presents a slideshow accessible at localhost:3000
 - Allows seamless navigation between regular slides and interactive demos
@@ -10,7 +12,7 @@ This document outlines the architecture for a Next.js application that combines 
 - Supports multiple demos that build upon each other (basic chat → symmetric encryption → asymmetric encryption)
 - Includes an in-memory database for simplified demonstration without external dependencies
 - Provides admin panels for database inspection and management
-- Demonstrates security vulnerabilities and encryption techniques
+- Demonstrates security vulnerabilities and encryption techniques in a controlled environment
 
 ## Repository Structure
 
@@ -171,37 +173,32 @@ This component:
 
 The application includes several API routes to support the different demo implementations:
 
-#### Basic Messages API (Demo 1)
+#### RESTful API Structure
+
+The API follows RESTful principles with the following endpoints:
 
 ```typescript
-// src/app/api/messages/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/database/in-memory-db';
+// Conversation Messages
+// GET /api/conversation/[conversationId]/message - Get messages for a conversation
+// POST /api/conversation/[conversationId]/message - Send a message to a conversation
 
-export async function GET(request: NextRequest) {
-  // Get conversation ID from query params, default to 'default'
-  const url = new URL(request.url);
-  const conversationId = url.searchParams.get('conversationId') || 'default';
-  
-  const messages = await db.getMessages(conversationId);
-  
-  return NextResponse.json({ messages });
-}
+// Conversation Public Keys
+// GET /api/conversation/[conversationId]/keys - Get public keys for a conversation
 
-export async function POST(request: NextRequest) {
-  const { content, sender, conversationId = 'default' } = await request.json();
-  
-  if (!content) {
-    return NextResponse.json(
-      { error: 'Content is required' },
-      { status: 400 }
-    );
-  }
-  
-  const message = await db.addMessage(content, sender || 'User', conversationId);
-  
-  return NextResponse.json({ message });
-}
+// User Keys
+// GET /api/user/keys - Get all public keys or a specific user's public key
+// POST /api/user/keys - Set a user's public key
+
+// Admin Operations
+// GET /api/admin - Get database state for admin panel
+// POST /api/admin - Reset database or perform other admin operations
+```
+
+Each demo uses the same API endpoints but with different encryption approaches:
+
+1. **Demo 1**: Basic plaintext messages (no encryption)
+2. **Demo 2**: Symmetric encryption (AES-256-GCM)
+3. **Demo 3**: Asymmetric encryption (public/private key pairs)
 ```
 
 #### Symmetric Encryption API (Demo 2)

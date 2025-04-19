@@ -139,7 +139,7 @@ function ChatApp() {
       setPublicKey(storedPublicKey);
       
       // Send existing public key to server
-      await fetch('/api/keys', {
+      await fetch(`/api/user/keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: newUserId, publicKey: storedPublicKey })
@@ -164,7 +164,7 @@ function ChatApp() {
       setPublicKey(keys.publicKey);
       
       // Send public key to server
-      await fetch('/api/keys', {
+      await fetch(`/api/user/keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, publicKey: keys.publicKey })
@@ -179,7 +179,7 @@ function ChatApp() {
   
   // Load all public keys from server
   const loadPublicKeys = async () => {
-    const response = await fetch('/api/keys');
+    const response = await fetch('/api/user/keys');
     if (response.ok) {
       const data = await response.json();
       setPublicKeys(data.keys);
@@ -228,7 +228,7 @@ function ChatApp() {
         onRegenerateKeys={() => generateNewKeys(userId)}
       />
       
-      <Phone>
+      <Phone userId={userId} demoVersion={3}>
         <div className={phoneStyles.phoneChatApp}>
           <MessageList messages={messages} />
           <MessageInput onSendMessage={(content) => addMessage(content)} />
@@ -342,7 +342,7 @@ export default function Demo3() {
   
   return (
     <ChatProvider 
-      apiEndpoint="/api/messages-asymmetric" 
+      apiEndpoint="/api/conversation/default/message" 
       messageProcessor={messageProcessor}
     >
       <ChatApp />

@@ -31,13 +31,13 @@ export function ChatApp({
   const getApiEndpoint = () => {
     switch (demoVersion) {
       case 1:
-        return `/api/messages?conversationId=${conversationId}`;
+        return `/api/conversation/${conversationId}/message`;
       case 2:
-        return `/api/messages-symmetric?conversationId=${conversationId}`;
+        return `/api/conversation/${conversationId}/message`; // Will use encryptionType: 'symmetric'
       case 3:
-        return `/api/messages-asymmetric?conversationId=${conversationId}`;
+        return `/api/conversation/${conversationId}/message`; // Will use encryptionType: 'asymmetric'
       default:
-        return `/api/messages?conversationId=${conversationId}`;
+        return `/api/conversation/${conversationId}/message`;
     }
   };
   
@@ -74,6 +74,14 @@ export function ChatApp({
     try {
       setIsLoading(true);
       
+      // Determine encryption type based on demo version
+      let encryptionType;
+      if (demoVersion === 2) {
+        encryptionType = 'symmetric';
+      } else if (demoVersion === 3) {
+        encryptionType = 'asymmetric';
+      }
+      
       const response = await fetch(getApiEndpoint(), {
         method: 'POST',
         headers: { 
@@ -84,7 +92,7 @@ export function ChatApp({
         body: JSON.stringify({ 
           content, 
           sender: userId,
-          conversationId
+          encryptionType
         })
       });
       
