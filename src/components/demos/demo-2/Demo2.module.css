@@ -57,14 +57,6 @@
   background-color: #c82333;
 }
 
-/* Attack demo styles */
-.attackDemo {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  color: #e0e0e0;
-}
-
 .tabsContainer {
   display: flex;
   gap: 8px;

@@ -6,7 +6,6 @@
   margin-top: 16px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   max-width: 100%;
-  overflow-x: auto;
 }
 
 .databaseViewerHeader {
@@ -25,7 +24,7 @@
 
 .databaseViewerContent {
   overflow-x: auto;
-  font-size: 14px;
+  font-size: 20px;
 }
 
 .databaseViewerContent table {

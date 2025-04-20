@@ -4,7 +4,7 @@
  */
 
 // Server encryption key - in a real app, this would be in environment variables
-export const SERVER_KEY = 'super-secret-server-encryption-key-for-demo-2';
+export const SERVER_KEY = 'super-secret-encryption-key';
 
 /**
  * Convert ArrayBuffer to Base64 string

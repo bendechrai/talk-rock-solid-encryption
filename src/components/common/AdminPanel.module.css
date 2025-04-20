@@ -9,8 +9,7 @@
   position: absolute;
   top: 40px;
   right: 5px;
-  left: 60%;
-  display: none;
+  width: 800px;
   background-color: #343434;
   color: #e0e0e0;
   border-radius: 8px;
@@ -19,11 +18,11 @@
   max-height: calc(100vh - 80px); /* Limit height to prevent overflow */
   overflow-y: auto; /* Enable vertical scrolling */
   z-index: 999;
-  transition: all 0.3s ease;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  user-select: none; /* Prevent text selection during drag */
 }
 
-.admin-content.expanded {
+.admin-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -31,7 +30,7 @@
   overflow-y: auto;
 }
 
-.admin-content h3 {
+.admin-header {
   margin-top: 0;
   margin-bottom: 12px;
   color: #ffffff;
@@ -39,6 +38,16 @@
   font-weight: 500;
   border-bottom: 1px solid #555;
   padding-bottom: 8px;
+  cursor: grab;
+  touch-action: none; /* Prevent scrolling on touch devices */
+}
+
+.handle {
+  cursor: grab;
+}
+
+.handle:active {
+  cursor: grabbing;
 }
 
 .demo-switcher {

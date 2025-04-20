@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/database/in-memory-db';
 
 export async function GET() {
-  // Get all messages for admin view
+  // Get all data for admin view
   const messages = await db.getAllMessages();
   const publicKeys = await db.getPublicKeys();
+  const users = await db.getUsers();
+  const conversations = await db.getConversations();
   
-  return NextResponse.json({ messages, publicKeys });
+  return NextResponse.json({ messages, publicKeys, users, conversations });
 }
 
 export async function POST(request: NextRequest) {
