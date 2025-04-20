@@ -27,6 +27,8 @@ export const DatabaseViewer = forwardRef<
 >((props, ref) => {
   const [dbContents, setDbContents] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [editingConversation, setEditingConversation] = useState<string | null>(null);
+  const [editedMembers, setEditedMembers] = useState<string>("");
 
   // Function to fetch database contents
   const fetchDatabaseContents = useCallback(() => {
@@ -46,6 +48,50 @@ export const DatabaseViewer = forwardRef<
         setIsLoading(false);
       });
   }, []); // Empty dependency array to prevent infinite loops
+
+  // Function to start editing a conversation's members
+  const handleEditConversation = (conversationId: string, currentMembers: string[]) => {
+    setEditingConversation(conversationId);
+    setEditedMembers(currentMembers.join(", "));
+  };
+
+  // Function to save edited members
+  const handleSaveMembers = async () => {
+    if (!editingConversation) return;
+    
+    const memberIds = editedMembers.split(",").map(id => id.trim());
+    
+    try {
+      const response = await fetch("/api/admin/conversation", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          conversationId: editingConversation,
+          memberUserIds: memberIds
+        })
+      });
+      
+      if (response.ok) {
+        // Reset editing state
+        setEditingConversation(null);
+        setEditedMembers("");
+        // Refresh data
+        fetchDatabaseContents();
+      } else {
+        console.error("Failed to update conversation members");
+      }
+    } catch (error) {
+      console.error("Error updating conversation members:", error);
+    }
+  };
+
+  // Function to cancel editing
+  const handleCancelEdit = () => {
+    setEditingConversation(null);
+    setEditedMembers("");
+  };
 
   // Expose fetchDatabaseContents method to parent component
   useImperativeHandle(ref, () => ({
@@ -109,7 +155,32 @@ export const DatabaseViewer = forwardRef<
               <tr key={conv.id}>
                 <td>{conv.id}</td>
                 <td>{conv.name}</td>
-                <td>{conv.memberUserIds.join(", ")}</td>
+                <td>
+                  {editingConversation === conv.id ? (
+                    <div className={styles.editField}>
+                      <input 
+                        type="text" 
+                        value={editedMembers} 
+                        onChange={(e) => setEditedMembers(e.target.value)}
+                        placeholder="User IDs separated by commas"
+                      />
+                      <div className={styles.editButtons}>
+                        <button onClick={handleSaveMembers}>Save</button>
+                        <button onClick={handleCancelEdit}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.membersList}>
+                      <span>{conv.memberUserIds.join(", ")}</span>
+                      <button 
+                        className={styles.editButton}
+                        onClick={() => handleEditConversation(conv.id, conv.memberUserIds)}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </td>
               </tr>
             )) : <tr><td colSpan={3}>Loading...</td></tr>}
           </tbody>

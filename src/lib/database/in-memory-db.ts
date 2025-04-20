@@ -88,6 +88,14 @@ class InMemoryDatabase {
     return conversation;
   }
 
+  async updateConversation(conversation: Conversation): Promise<Conversation> {
+    const index = this.conversations.findIndex(c => c.id === conversation.id);
+    if (index !== -1) {
+      this.conversations[index] = conversation;
+    }
+    return conversation;
+  }
+
   async getConversationById(
     conversationId: string
   ): Promise<Conversation | undefined> {
