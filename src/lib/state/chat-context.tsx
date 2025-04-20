@@ -52,7 +52,7 @@ export function ChatProvider({
   
   // Helper function to extract conversationId from apiEndpoint
   const extractConversationId = (endpoint: string): string => {
-    let conversationId = 'default';
+    let conversationId = '1'; // Use a valid conversation ID instead of 'default'
     try {
       // Check if endpoint contains a query parameter for conversationId (old format)
       if (endpoint.includes('?')) {

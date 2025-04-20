@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ConversationList } from "./ConversationList";
+import { UserSelector } from "./UserSelector";
 import { Message } from "@/types/common";
 import styles from "./ChatApp.module.css";
 import { phoneStyles } from "./phoneStyles";
@@ -22,6 +23,7 @@ interface ChatAppProps {
   demoVersion: 1 | 2 | 3;
   onChangePhoneColor?: (color: PhoneColor) => void;
   initialColor?: PhoneColor;
+  onChangeUser?: (userId: string) => void;
 }
 
 export function ChatApp({
@@ -29,24 +31,29 @@ export function ChatApp({
   demoVersion,
   onChangePhoneColor,
   initialColor = "default",
+  onChangeUser,
 }: ChatAppProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneColor, setPhoneColor] = useState<PhoneColor>(initialColor);
+  const [currentUserId, setCurrentUserId] = useState<string>(userId);
 
   // Load messages
   const loadMessages = async () => {
     if (!conversationId) return false;
+    
+    // Make sure we're using a valid conversation ID (not 'default')
+    const validConversationId = conversationId === 'default' ? '1' : conversationId;
 
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/conversation/${conversationId}/message`,
+        `/api/conversation/${validConversationId}/message`,
         {
           headers: {
             "X-Demo-Version": demoVersion.toString(),
-            "X-User-Id": userId,
+            "X-User-Id": currentUserId,
           },
         }
       );
@@ -81,18 +88,21 @@ export function ChatApp({
         encryptionType = "asymmetric";
       }
 
+      // Make sure we're using a valid conversation ID (not 'default')
+      const validConversationId = conversationId === 'default' ? '1' : conversationId;
+      
       const response = await fetch(
-        `/api/conversation/${conversationId}/message`,
+        `/api/conversation/${validConversationId}/message`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-Demo-Version": demoVersion.toString(),
-            "X-User-Id": userId,
+            "X-User-Id": currentUserId,
           },
           body: JSON.stringify({
             content,
-            sender: userId,
+            sender: currentUserId,
             encryptionType,
           }),
         }
@@ -128,6 +138,29 @@ export function ChatApp({
       onChangePhoneColor(newColor);
     }
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      const dropdowns = document.querySelectorAll('.' + styles.dropdown);
+      if (dropdowns.length > 0) {
+        // There's an open dropdown, close it by triggering a click on the document
+        document.querySelectorAll('.' + styles.userSelector).forEach(selector => {
+          const selectorComponent = selector as HTMLElement;
+          if (selectorComponent.querySelector('.' + styles.dropdown)) {
+            // This is the open dropdown, find its trigger and click it
+            const trigger = selectorComponent.querySelector('.' + styles.currentUser) as HTMLElement;
+            if (trigger) trigger.click();
+          }
+        });
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   // Set up polling for new messages
   useEffect(() => {
@@ -238,6 +271,40 @@ export function ChatApp({
         return `User ${id}`;
     }
   };
+  
+  // Handle user change
+  const handleUserChange = (newUserId: string) => {
+    setCurrentUserId(newUserId);
+    
+    // Reset conversation when user changes
+    setConversationId(null);
+    setMessages([]);
+    
+    // Get the user's phone color and update it based on predefined values
+    let newPhoneColor: PhoneColor = 'default';
+    switch (newUserId) {
+      case '1': newPhoneColor = 'rose'; break;
+      case '2': newPhoneColor = 'blue'; break;
+      case '3': newPhoneColor = 'gold'; break;
+      case '4': newPhoneColor = 'titanium'; break;
+      default: newPhoneColor = 'default';
+    }
+    
+    setPhoneColor(newPhoneColor);
+    if (onChangePhoneColor) {
+      onChangePhoneColor(newPhoneColor);
+    }
+    
+    // Notify parent component if callback provided
+    if (onChangeUser) {
+      onChangeUser(newUserId);
+    }
+  };
+  
+  // Update currentUserId when userId prop changes
+  useEffect(() => {
+    setCurrentUserId(userId);
+  }, [userId]);
 
   const renderConversationScreen = () => (
     <>
@@ -249,10 +316,13 @@ export function ChatApp({
         >
           ←
         </button>
-        <span className={styles.userInfo}>{getUserName(userId)}</span>
+        <span className={styles.userInfo}>
+          <span>{getUserName(currentUserId)}</span>
+          <UserSelector currentUserId={currentUserId} onUserChange={handleUserChange} />
+        </span>
       </div>
 
-      <MessageList messages={messages} currentUser={userId} />
+      <MessageList messages={messages} currentUser={currentUserId} />
 
       <div className={styles.phoneFooter}>
         <MessageInput onSendMessage={sendMessage} isLoading={isLoading} />
@@ -263,11 +333,14 @@ export function ChatApp({
   const renderConversationListScreen = () => (
     <>
       <div className={styles.phoneHeader}>
-        <span className={styles.userInfo}>{getUserName(userId)}</span>
+        <span className={styles.userInfo}>
+          <span>{getUserName(currentUserId)}</span>
+          <UserSelector currentUserId={currentUserId} onUserChange={handleUserChange} />
+        </span>
       </div>
 
       <ConversationList
-        userId={userId}
+        userId={currentUserId}
         demoVersion={demoVersion}
         onSelectConversation={setConversationId}
       />

@@ -8,6 +8,10 @@ import styles from "./Demo1.module.css";
 // Export default component
 export default function Demo1() {
   const [conversationId, setConversationId] = useState("default");
+  const [currentUsers, setCurrentUsers] = useState({
+    user1: "1",
+    user2: "2"
+  });
 
   // Check for conversation ID in URL parameters
   useEffect(() => {
@@ -40,12 +44,12 @@ export default function Demo1() {
     <div className={styles.demoContainer}>
       <div className={styles.phonesContainer}>
         <div className={styles.phoneWrapper}>
-          <Phone userId="1" initialColor="rose" demoVersion={1} />
+          <Phone userId={currentUsers.user1} initialColor="rose" demoVersion={1} />
         </div>
 
         <div className={styles.phoneWrapper}>
           <Phone
-            userId="2"
+            userId={currentUsers.user2}
             initialColor="blue"
             demoVersion={1}
             isRight={true}

@@ -101,7 +101,7 @@ class InMemoryDatabase {
   }
 
   // Message operations
-  async getMessages(conversationId: string = "default"): Promise<Message[]> {
+  async getMessages(conversationId: string = "1"): Promise<Message[]> {
     return this.messages
       .filter((msg) => msg.conversationId === conversationId)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -114,7 +114,7 @@ class InMemoryDatabase {
   async addMessage(
     content: string,
     sender: string,
-    conversationId: string = "default"
+    conversationId: string = "1"
   ): Promise<Message> {
     const newMessage: Message = {
       id: String(++this.messageIdCounter),

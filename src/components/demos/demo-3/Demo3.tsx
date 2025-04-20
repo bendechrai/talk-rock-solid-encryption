@@ -230,7 +230,7 @@ function ChatApp() {
       
       <Phone userId={userId} demoVersion={3}>
         <div className={phoneStyles.phoneChatApp}>
-          <MessageList messages={messages} />
+          <MessageList messages={messages} currentUser={userId} />
           <MessageInput onSendMessage={(content) => addMessage(content)} />
         </div>
       </Phone>
@@ -246,6 +246,10 @@ function ChatApp() {
 }
 
 export default function Demo3() {
+  const [currentUsers, setCurrentUsers] = useState({
+    user1: '1',
+    user2: '2'
+  });
   const messageProcessor = {
     beforeSend: async (content: string) => {
       try {
@@ -342,7 +346,7 @@ export default function Demo3() {
   
   return (
     <ChatProvider 
-      apiEndpoint="/api/conversation/default/message" 
+      apiEndpoint="/api/conversation/1/message" 
       messageProcessor={messageProcessor}
     >
       <ChatApp />

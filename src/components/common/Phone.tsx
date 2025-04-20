@@ -23,6 +23,7 @@ export function Phone({
 }: PhoneProps) {
   const [color, setColor] = useState<PhoneColor>(initialColor);
   const [currentTime, setCurrentTime] = useState('');
+  const [currentUserId, setCurrentUserId] = useState(userId);
   
   useEffect(() => {
     // Update time initially
@@ -63,10 +64,11 @@ export function Phone({
         <div className={styles['phone-app-container']}>
           {children || (
             <ChatApp
-              userId={userId}
+              userId={currentUserId}
               demoVersion={demoVersion}
               onChangePhoneColor={setColor}
               initialColor={initialColor}
+              onChangeUser={setCurrentUserId}
             />
           )}
         </div>
