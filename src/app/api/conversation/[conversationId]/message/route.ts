@@ -34,7 +34,52 @@ export async function GET(request: NextRequest) {
   }
   
   // Get messages for the conversation
-  const messages = await db.getMessages(conversationId);
+  let messages = await db.getMessages(conversationId);
+  
+  // Check if we need to decrypt messages (for Demo 2)
+  const demoVersion = request.headers.get('X-Demo-Version');
+  
+  if (demoVersion === '2') {
+    // Import the symmetric decryption utility
+    const { decryptSymmetric } = await import('@/lib/encryption/symmetric');
+    
+    // Decrypt each message
+    try {
+      // Create a new array with decrypted messages
+      const decryptedMessages = await Promise.all(
+        messages.map(async (message) => {
+          // Only try to decrypt if the content looks like it might be encrypted JSON
+          if (message.content && message.content.startsWith('{') && message.content.endsWith('}')) {
+            try {
+              const decryptedContent = await decryptSymmetric(
+                message.content,
+                'super-secret-encryption-key'
+              );
+              
+              return {
+                ...message,
+                content: decryptedContent,
+                // Add a flag to indicate this was decrypted (useful for UI)
+                _decrypted: true
+              };
+            } catch (error) {
+              // If decryption fails, return the original message
+              console.error('Failed to decrypt message:', error);
+              return message;
+            }
+          }
+          
+          // If not encrypted, return as is
+          return message;
+        })
+      );
+      
+      messages = decryptedMessages;
+    } catch (error) {
+      console.error('Error during message decryption:', error);
+      // Continue with the original messages if there's an error
+    }
+  }
   
   return NextResponse.json({ messages });
 }
@@ -93,9 +138,29 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // The content is already encrypted by the client based on the encryptionType
-    // The server just stores it as-is
-    const message = await db.addMessage(content, sender, conversationId);
+    // Handle encryption based on the encryption type
+    let finalContent = content;
+    
+    // For symmetric encryption (Demo 2), encrypt the content on the server side
+    if (encryptionType === 'symmetric') {
+      // Import the symmetric encryption utility
+      const { encryptSymmetric } = await import('@/lib/encryption/symmetric');
+      
+      // Encrypt the content
+      try {
+        finalContent = await encryptSymmetric(content, 'super-secret-encryption-key');
+      } catch (error) {
+        console.error('Error encrypting message:', error);
+        return NextResponse.json(
+          { error: 'Encryption failed' },
+          { status: 500 }
+        );
+      }
+    }
+    
+    // For asymmetric encryption (Demo 3), the content should already be encrypted by the client
+    // Store the content (either plaintext for Demo 1, encrypted for Demo 2/3)
+    const message = await db.addMessage(finalContent, sender, conversationId);
     
     return NextResponse.json({ message });
   } catch (error) {
