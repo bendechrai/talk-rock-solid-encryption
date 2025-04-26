@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import styles from './Phone.module.css';
 import { ChatApp } from './ChatApp';
+import { Message } from '@/types/common';
 
 type PhoneColor = 'default' | 'silver' | 'gold' | 'rose' | 'blue' | 'red' | 'titanium';
 
@@ -12,6 +13,11 @@ interface PhoneProps {
   initialColor?: PhoneColor;
   children?: ReactNode;
   isRight?: boolean;
+  onChangeUser?: (userId: string) => void;
+  messageProcessor?: {
+    beforeSend?: (content: string) => Promise<string>;
+    afterReceive?: (messages: Message[]) => Promise<Message[]>;
+  };
 }
 
 export function Phone({ 
@@ -19,7 +25,9 @@ export function Phone({
   demoVersion, 
   initialColor = 'default',
   children,
-  isRight = false
+  isRight = false,
+  onChangeUser,
+  messageProcessor
 }: PhoneProps) {
   const [color, setColor] = useState<PhoneColor>(initialColor);
   const [currentTime, setCurrentTime] = useState('');
@@ -68,7 +76,13 @@ export function Phone({
               demoVersion={demoVersion}
               onChangePhoneColor={setColor}
               initialColor={initialColor}
-              onChangeUser={setCurrentUserId}
+              onChangeUser={(newUserId) => {
+                setCurrentUserId(newUserId);
+                if (onChangeUser) {
+                  onChangeUser(newUserId);
+                }
+              }}
+              messageProcessor={messageProcessor}
             />
           )}
         </div>

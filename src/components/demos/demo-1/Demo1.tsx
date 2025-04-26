@@ -20,6 +20,7 @@ export default function Demo1() {
             userId={currentUsers.user1}
             initialColor="rose"
             demoVersion={1}
+            onChangeUser={(userId) => setCurrentUsers(prev => ({ ...prev, user1: userId }))}
           />
         </div>
 
@@ -29,6 +30,7 @@ export default function Demo1() {
             initialColor="blue"
             demoVersion={1}
             isRight={true}
+            onChangeUser={(userId) => setCurrentUsers(prev => ({ ...prev, user2: userId }))}
           />
         </div>
       </div>

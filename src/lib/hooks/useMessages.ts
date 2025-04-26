@@ -1,10 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Message } from '@/types/common';
 
+// Define the message processor interface
+interface MessageProcessor {
+  beforeSend?: (content: string) => Promise<string>;
+  afterReceive?: (messages: Message[]) => Promise<Message[]>;
+}
+
 interface UseMessagesOptions {
   conversationId: string | null;
   userId: string;
   demoVersion: 1 | 2 | 3;
+  messageProcessor?: MessageProcessor;
   pollingInterval?: number;
 }
 
@@ -12,6 +19,7 @@ export function useMessages({
   conversationId,
   userId,
   demoVersion,
+  messageProcessor,
   pollingInterval = 5000
 }: UseMessagesOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -49,10 +57,22 @@ export function useMessages({
       }
 
       const data = await response.json();
+      
+      // Process messages if a processor is provided
+      let processedMessages = data.messages;
+      if (messageProcessor?.afterReceive) {
+        try {
+          processedMessages = await messageProcessor.afterReceive(data.messages);
+        } catch (processingError) {
+          console.error('Error processing received messages:', processingError);
+          throw processingError;
+        }
+      }
+      
       // Only update state if messages have actually changed
       // This reduces unnecessary re-renders
-      if (JSON.stringify(data.messages) !== JSON.stringify(messages)) {
-        setMessages(data.messages);
+      if (JSON.stringify(processedMessages) !== JSON.stringify(messages)) {
+        setMessages(processedMessages);
       }
       
       // Clear any previous errors
@@ -74,13 +94,24 @@ export function useMessages({
       }
       return false;
     }
-  }, [conversationId, demoVersion, isLoading, messages, userId]);
+  }, [conversationId, demoVersion, isLoading, messages, userId, messageProcessor]);
 
   // Send a message
   const sendMessage = useCallback(async (content: string) => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Process content before sending if a processor is provided
+      let processedContent = content;
+      if (messageProcessor?.beforeSend) {
+        try {
+          processedContent = await messageProcessor.beforeSend(content);
+        } catch (processingError) {
+          console.error('Error processing message before send:', processingError);
+          throw processingError;
+        }
+      }
 
       // Determine encryption type based on demo version
       let encryptionType;
@@ -103,7 +134,7 @@ export function useMessages({
             "X-User-Id": userId,
           },
           body: JSON.stringify({
-            content,
+            content: processedContent,
             sender: userId,
             encryptionType,
           }),
@@ -121,7 +152,7 @@ export function useMessages({
       setError(error instanceof Error ? error.message : 'Failed to send message');
       setIsLoading(false);
     }
-  }, [conversationId, demoVersion, loadMessages, userId]);
+  }, [conversationId, demoVersion, loadMessages, userId, messageProcessor]);
 
   // Set up polling for new messages
   useEffect(() => {

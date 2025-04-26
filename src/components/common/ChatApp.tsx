@@ -8,6 +8,7 @@ import { UserSelector } from "./UserSelector";
 import { Message } from "@/types/common";
 import styles from "./ChatApp.module.css";
 import { phoneStyles } from "./phoneStyles";
+import { useMessages } from "@/lib/hooks/useMessages";
 
 type PhoneColor =
   | "default"
@@ -24,6 +25,10 @@ interface ChatAppProps {
   onChangePhoneColor?: (color: PhoneColor) => void;
   initialColor?: PhoneColor;
   onChangeUser?: (userId: string) => void;
+  messageProcessor?: {
+    beforeSend?: (content: string) => Promise<string>;
+    afterReceive?: (messages: Message[]) => Promise<Message[]>;
+  };
 }
 
 export function ChatApp({
@@ -32,106 +37,27 @@ export function ChatApp({
   onChangePhoneColor,
   initialColor = "default",
   onChangeUser,
+  messageProcessor,
 }: ChatAppProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [phoneColor, setPhoneColor] = useState<PhoneColor>(initialColor);
   const [currentUserId, setCurrentUserId] = useState<string>(userId);
 
-  // Load messages without affecting the input field's state
-  const loadMessages = async () => {
-    if (!conversationId) return false;
-    
-    // Make sure we're using a valid conversation ID (not 'default')
-    const validConversationId = conversationId === 'default' ? '1' : conversationId;
-
-    try {
-      // Don't set loading state for background refreshes
-      const isBackgroundRefresh = !isLoading;
-      
-      // Only set loading state for user-initiated actions (like sending a message)
-      if (!isBackgroundRefresh) {
-        setIsLoading(true);
-      }
-      
-      const response = await fetch(
-        `/api/conversation/${validConversationId}/message`,
-        {
-          headers: {
-            "X-Demo-Version": demoVersion.toString(),
-            "X-User-Id": currentUserId,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        // Only update state if messages have actually changed
-        // This reduces unnecessary re-renders
-        if (JSON.stringify(data.messages) !== JSON.stringify(messages)) {
-          setMessages(data.messages);
-        }
-      }
-      
-      // Only update loading state if this was a user-initiated action
-      if (!isBackgroundRefresh) {
-        setIsLoading(false);
-      }
-      
-      return true; // Return a value to allow chaining with .then()
-    } catch (error) {
-      console.error("Error loading messages:", error);
-      // Only update loading state if we set it earlier
-      if (isLoading) {
-        setIsLoading(false);
-      }
-      return false;
-    }
-  };
-
-  // Send a message
-  const sendMessage = async (content: string) => {
-    try {
-      setIsLoading(true);
-
-      // Determine encryption type based on demo version
-      let encryptionType;
-      if (demoVersion === 2) {
-        encryptionType = "symmetric";
-      } else if (demoVersion === 3) {
-        encryptionType = "asymmetric";
-      }
-
-      // Make sure we're using a valid conversation ID (not 'default')
-      const validConversationId = conversationId === 'default' ? '1' : conversationId;
-      
-      const response = await fetch(
-        `/api/conversation/${validConversationId}/message`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Demo-Version": demoVersion.toString(),
-            "X-User-Id": currentUserId,
-          },
-          body: JSON.stringify({
-            content,
-            sender: currentUserId,
-            encryptionType,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        await loadMessages();
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setIsLoading(false);
-    }
-  };
+  // Use the messages hook to handle all message-related operations
+  const { 
+    messages, 
+    isLoading, 
+    error, 
+    sendMessage, 
+    loadMessages, 
+    clearMessages 
+  } = useMessages({
+    conversationId,
+    userId: currentUserId,
+    demoVersion,
+    messageProcessor,
+    pollingInterval: 5000
+  });
 
   // Function to cycle through phone colors
   const cyclePhoneColor = () => {
@@ -177,66 +103,12 @@ export function ChatApp({
     };
   }, []);
 
-  // Set up polling for new messages
-  useEffect(() => {
-    if (!conversationId) return;
-
-    // Initial load
-    loadMessages();
-
-    // Create a simplified message loading function that doesn't affect the input field
-    const refreshMessages = () => {
-      // Only poll if the component is still mounted and visible
-      if (document.visibilityState === "visible") {
-        // Always fetch messages in the background without affecting input field
-        // Make a direct API call without changing loading state
-        const validConversationId = conversationId === 'default' ? '1' : conversationId;
-        
-        fetch(`/api/conversation/${validConversationId}/message`, {
-          headers: {
-            "X-Demo-Version": demoVersion.toString(),
-            "X-User-Id": currentUserId,
-          },
-        })
-          .then(response => response.ok ? response.json() : null)
-          .then(data => {
-            if (data && data.messages) {
-              // Only update if messages have changed to minimize re-renders
-              if (JSON.stringify(data.messages) !== JSON.stringify(messages)) {
-                setMessages(data.messages);
-              }
-            }
-          })
-          .catch(error => {
-            console.error("Background refresh error:", error);
-          });
-      }
-    };
-
-    // Handle visibility changes (refresh when tab becomes visible again)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        refreshMessages();
-      }
-    };
-
-    // Set up polling interval (increased to 5 seconds to reduce API calls)
-    const intervalId = setInterval(refreshMessages, 5000);
-
-    // Add visibility change listener
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Clean up on unmount
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [conversationId, loadMessages]);
+  // The polling logic is now handled by the useMessages hook
 
   // Handle back button click to return to conversation list
   const handleBackToList = () => {
     setConversationId(null);
-    setMessages([]);
+    clearMessages();
   };
 
   // Render the appropriate screen based on whether a conversation is selected
@@ -262,7 +134,7 @@ export function ChatApp({
     
     // Reset conversation when user changes
     setConversationId(null);
-    setMessages([]);
+    clearMessages();
     
     // Get the user's phone color and update it based on predefined values
     let newPhoneColor: PhoneColor = 'default';

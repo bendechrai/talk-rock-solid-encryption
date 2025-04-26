@@ -1,9 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageList } from '@/components/common/MessageList';
-import { MessageInput } from '@/components/common/MessageInput';
-import { ChatProvider, useChat } from '@/lib/state/chat-context';
 import { Message } from '@/types/common';
 import { 
   generateKeys, 
@@ -16,6 +13,7 @@ import { Phone } from '@/components/common/Phone';
 import { phoneStyles } from '@/components/common/phoneStyles';
 import styles from './Demo3.module.css';
 import { DatabaseViewer } from '@/components/common/DatabaseViewer';
+import { ChatApp } from '@/components/common/ChatApp';
 
 interface KeyInfoProps {
   userId: string;
@@ -227,6 +225,8 @@ export default function Demo3() {
     user1: '1',
     user2: '2'
   });
+
+
   const messageProcessor = {
     beforeSend: async (content: string) => {
       try {
@@ -321,12 +321,23 @@ export default function Demo3() {
     }
   };
   
+
+
   return (
-    <ChatProvider 
-      apiEndpoint="/api/conversation/1/message" 
-      messageProcessor={messageProcessor}
-    >
-      <ChatApp />
-    </ChatProvider>
+    <div className={styles.demoContainer}>
+      <div className={styles.phonesContainer}>
+        <Phone
+          initialColor="rose"
+          userId={currentUsers.user1}
+          demoVersion={3}
+          onChangeUser={(userId) => setCurrentUsers(prev => ({ ...prev, user1: userId }))}
+          messageProcessor={messageProcessor}
+        />
+      </div>
+      
+      <div className={styles.adminPanel}>
+        <AdminPanel demoVersion={3} />
+      </div>
+    </div>
   );
 }
