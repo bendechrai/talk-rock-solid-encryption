@@ -139,7 +139,7 @@ export function ChatProvider({
     loadMessages();
     
     // Set up polling for new messages
-    const interval = setInterval(loadMessages, 3000);
+    const interval = setInterval(loadMessages, 1000);
     return () => clearInterval(interval);
   }, [apiEndpoint]);
   

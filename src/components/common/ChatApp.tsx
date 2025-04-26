@@ -39,7 +39,7 @@ export function ChatApp({
   const [phoneColor, setPhoneColor] = useState<PhoneColor>(initialColor);
   const [currentUserId, setCurrentUserId] = useState<string>(userId);
 
-  // Load messages
+  // Load messages without affecting the input field's state
   const loadMessages = async () => {
     if (!conversationId) return false;
     
@@ -47,7 +47,14 @@ export function ChatApp({
     const validConversationId = conversationId === 'default' ? '1' : conversationId;
 
     try {
-      setIsLoading(true);
+      // Don't set loading state for background refreshes
+      const isBackgroundRefresh = !isLoading;
+      
+      // Only set loading state for user-initiated actions (like sending a message)
+      if (!isBackgroundRefresh) {
+        setIsLoading(true);
+      }
+      
       const response = await fetch(
         `/api/conversation/${validConversationId}/message`,
         {
@@ -66,11 +73,19 @@ export function ChatApp({
           setMessages(data.messages);
         }
       }
-      setIsLoading(false);
+      
+      // Only update loading state if this was a user-initiated action
+      if (!isBackgroundRefresh) {
+        setIsLoading(false);
+      }
+      
       return true; // Return a value to allow chaining with .then()
     } catch (error) {
       console.error("Error loading messages:", error);
-      setIsLoading(false);
+      // Only update loading state if we set it earlier
+      if (isLoading) {
+        setIsLoading(false);
+      }
       return false;
     }
   };
@@ -169,85 +184,54 @@ export function ChatApp({
     // Initial load
     loadMessages();
 
-    // Create a modified loadMessages function that preserves the active element's focus
-    const loadMessagesPreserveFocus = () => {
+    // Create a simplified message loading function that doesn't affect the input field
+    const refreshMessages = () => {
       // Only poll if the component is still mounted and visible
       if (document.visibilityState === "visible") {
-        // Store the currently focused element
-        const activeElement = document.activeElement;
-        const activeElementId = activeElement ? activeElement.id : null;
-        const activeElementTagName = activeElement
-          ? activeElement.tagName
-          : null;
-        const selectionStart =
-          activeElement && "selectionStart" in activeElement
-            ? (activeElement as HTMLInputElement).selectionStart
-            : null;
-        const selectionEnd =
-          activeElement && "selectionEnd" in activeElement
-            ? (activeElement as HTMLInputElement).selectionEnd
-            : null;
-
-        // Load messages
-        loadMessages().then(() => {
-          // After loading, restore focus if the active element was an input or textarea
-          if (
-            activeElementTagName &&
-            (activeElementTagName === "INPUT" ||
-              activeElementTagName === "TEXTAREA")
-          ) {
-            // Find the element again (in case the DOM has changed)
-            let elementToFocus: HTMLElement | null = null;
-
-            if (activeElementId) {
-              elementToFocus = document.getElementById(
-                activeElementId
-              ) as HTMLElement;
-            } else if (activeElement) {
-              // Try to find by matching the element itself
-              elementToFocus = activeElement as HTMLElement;
-            }
-
-            // Restore focus and selection if possible
-            if (elementToFocus) {
-              elementToFocus.focus();
-
-              // Restore cursor position if applicable
-              if (
-                "selectionStart" in elementToFocus &&
-                selectionStart !== null &&
-                selectionEnd !== null
-              ) {
-                (elementToFocus as HTMLInputElement).selectionStart =
-                  selectionStart;
-                (elementToFocus as HTMLInputElement).selectionEnd =
-                  selectionEnd;
+        // Always fetch messages in the background without affecting input field
+        // Make a direct API call without changing loading state
+        const validConversationId = conversationId === 'default' ? '1' : conversationId;
+        
+        fetch(`/api/conversation/${validConversationId}/message`, {
+          headers: {
+            "X-Demo-Version": demoVersion.toString(),
+            "X-User-Id": currentUserId,
+          },
+        })
+          .then(response => response.ok ? response.json() : null)
+          .then(data => {
+            if (data && data.messages) {
+              // Only update if messages have changed to minimize re-renders
+              if (JSON.stringify(data.messages) !== JSON.stringify(messages)) {
+                setMessages(data.messages);
               }
             }
-          }
-        });
+          })
+          .catch(error => {
+            console.error("Background refresh error:", error);
+          });
       }
     };
 
-    // Set up polling interval
-    const interval = setInterval(loadMessagesPreserveFocus, 3000);
-
-    // Add visibility change listener to pause polling when tab is not visible
+    // Handle visibility changes (refresh when tab becomes visible again)
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Immediately load messages when tab becomes visible again
-        loadMessagesPreserveFocus();
+        refreshMessages();
       }
     };
 
+    // Set up polling interval (increased to 5 seconds to reduce API calls)
+    const intervalId = setInterval(refreshMessages, 5000);
+
+    // Add visibility change listener
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Clean up
+    // Clean up on unmount
     return () => {
-      clearInterval(interval);
+      clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [conversationId, demoVersion]);
+  }, [conversationId, loadMessages]);
 
   // Handle back button click to return to conversation list
   const handleBackToList = () => {

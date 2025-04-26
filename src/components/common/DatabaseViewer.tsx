@@ -98,21 +98,24 @@ export const DatabaseViewer = forwardRef<
     fetchDatabaseContents,
   }));
 
-  // Fetch data when component mounts and set up auto-refresh every second
+  // Fetch data when component mounts and set up auto-refresh
   useEffect(() => {
     // Initial fetch
     fetchDatabaseContents();
 
-    // Set up interval to refresh every second
+    // Set up interval to refresh every 3 seconds, but only if we're not editing
     const intervalId = setInterval(() => {
-      fetchDatabaseContents();
+      // Only refresh if we're not currently editing a conversation
+      if (!editingConversation) {
+        fetchDatabaseContents();
+      }
     }, 1000);
-
+    
     // Clean up interval on unmount
     return () => {
       clearInterval(intervalId);
     };
-  }, [fetchDatabaseContents]); // Include fetchDatabaseContents in dependencies
+  }, [fetchDatabaseContents, editingConversation]); // Include dependencies
 
   return (
     <div className={styles.databaseViewer}>

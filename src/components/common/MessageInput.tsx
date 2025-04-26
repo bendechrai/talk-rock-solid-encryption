@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent } from "react";
+import React, { useState, useRef, useEffect, FormEvent } from "react";
 import styles from "./MessageInput.module.css";
 
 interface MessageInputProps {
@@ -8,7 +8,8 @@ interface MessageInputProps {
   isLoading?: boolean;
 }
 
-export function MessageInput({
+// Use React.memo to prevent unnecessary re-renders when parent components update
+export const MessageInput = React.memo(function MessageInput({
   onSendMessage,
   isLoading = false,
 }: MessageInputProps) {
@@ -16,11 +17,24 @@ export function MessageInput({
   const inputId = useRef("message-input");
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Focus the input field when the component mounts
+  
+  // Use a ref to track the loading state to avoid unnecessary re-renders
+  const isLoadingRef = useRef(isLoading);
+  
+  // Only update the loading ref when it actually changes
   useEffect(() => {
-    if (inputRef.current) {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
+
+  // Focus the input field only when the component first mounts
+  // We use a ref to track if we've already focused to prevent refocusing
+  const hasInitialFocusRef = useRef(false);
+  
+  useEffect(() => {
+    // Only focus if this is the first time mounting and hasn't been focused yet
+    if (inputRef.current && !hasInitialFocusRef.current) {
       inputRef.current.focus();
+      hasInitialFocusRef.current = true;
     }
   }, []);
 
@@ -39,6 +53,7 @@ export function MessageInput({
     }
   };
 
+  // Use React.memo to prevent unnecessary re-renders
   return (
     <form onSubmit={handleSubmit} className={styles["message-input-form"]}>
       <input
@@ -49,29 +64,20 @@ export function MessageInput({
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type a message..."
         className={styles["message-input"]}
-        disabled={isLoading}
-        // Add onBlur handler to help maintain focus
-        onBlur={(e) => {
-          // If the blur event was not caused by switching to another input element
-          // or intentional user action outside the chat, refocus
-          if (!isLoading && document.activeElement?.tagName !== "INPUT") {
-            // Short delay to avoid fighting with other focus events
-            setTimeout(() => {
-              if (inputRef.current) {
-                inputRef.current.focus();
-              }
-            }, 100);
-          }
-        }}
+        // Use the ref for disabled state to prevent flickering
+        disabled={isLoadingRef.current}
+        // We no longer try to aggressively regain focus on blur
+        // This prevents the two phone inputs from fighting for focus
       />
       <button
         type="submit"
         className={`${styles["send-button"]} ${
-          isLoading ? styles["loading"] : ""
+          isLoadingRef.current ? styles["loading"] : ""
         }`}
         aria-label="Send message"
-        disabled={isLoading}
+        disabled={isLoadingRef.current}
       ></button>
     </form>
   );
-}
+});
+

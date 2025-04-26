@@ -5,6 +5,8 @@
   background-color: white;
   border-top: 1px solid #eaeaea;
   border-radius: 0 0 8px 8px;
+  width: 100%; /* Make the form take full width */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .message-input {
