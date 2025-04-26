@@ -61,8 +61,6 @@ export function AdminPanel({
               Admin (Demo {demoVersion})
             </h3>
 
-            {children && children}
-
             <DatabaseViewer
               ref={databaseViewerRef}
               onClose={() => setIsDatabaseVisible(false)}
@@ -77,6 +75,8 @@ export function AdminPanel({
                 {isLoading ? "Processing..." : "Reset Database"}
               </button>
             </div>
+
+            {children && children}
           </div>
         </Draggable>
       )}

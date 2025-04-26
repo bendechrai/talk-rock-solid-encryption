@@ -6,6 +6,7 @@ import {
   useCallback,
   forwardRef,
   useImperativeHandle,
+  useRef
 } from "react";
 import styles from "./DatabaseViewer.module.css";
 
@@ -29,6 +30,9 @@ export const DatabaseViewer = forwardRef<
   const [isLoading, setIsLoading] = useState(false);
   const [editingConversation, setEditingConversation] = useState<string | null>(null);
   const [editedMembers, setEditedMembers] = useState<string>("");
+  // Track copied cell by a unique identifier (table-row-column) instead of content
+  const [copiedCellId, setCopiedCellId] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to fetch database contents
   const fetchDatabaseContents = useCallback(() => {
@@ -93,6 +97,29 @@ export const DatabaseViewer = forwardRef<
     setEditedMembers("");
   };
 
+  // Function to copy cell content to clipboard
+  const handleCopyToClipboard = (content: string, cellId: string) => {
+    // Copy to clipboard
+    navigator.clipboard.writeText(content)
+      .then(() => {
+        // Set the copied cell ID to show feedback
+        setCopiedCellId(cellId);
+        
+        // Clear any existing timeout
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+        
+        // Clear the copied state after 2 seconds
+        copyTimeoutRef.current = setTimeout(() => {
+          setCopiedCellId(null);
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+  };
+
   // Expose fetchDatabaseContents method to parent component
   useImperativeHandle(ref, () => ({
     fetchDatabaseContents,
@@ -111,9 +138,12 @@ export const DatabaseViewer = forwardRef<
       }
     }, 1000);
     
-    // Clean up interval on unmount
+    // Clean up interval and timeout on unmount
     return () => {
       clearInterval(intervalId);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
     };
   }, [fetchDatabaseContents, editingConversation]); // Include dependencies
 
@@ -134,11 +164,11 @@ export const DatabaseViewer = forwardRef<
           <tbody>
             {dbContents && dbContents.users ? dbContents.users.map((user: any) => (
               <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.phoneColor}</td>
-                <td className={styles.contentCell}>{user.publicKey}</td>
-                <td className={styles.contentCell}>{user.privateKey}</td>
+                <td onClick={() => handleCopyToClipboard(user.id, `users-${user.id}-id`)} className={`${styles.clickableCell} ${copiedCellId === `users-${user.id}-id` ? styles.copiedCell : ''}`}>{user.id}</td>
+                <td onClick={() => handleCopyToClipboard(user.name, `users-${user.id}-name`)} className={`${styles.clickableCell} ${copiedCellId === `users-${user.id}-name` ? styles.copiedCell : ''}`}>{user.name}</td>
+                <td onClick={() => handleCopyToClipboard(user.phoneColor, `users-${user.id}-phoneColor`)} className={`${styles.clickableCell} ${copiedCellId === `users-${user.id}-phoneColor` ? styles.copiedCell : ''}`}>{user.phoneColor}</td>
+                <td onClick={() => handleCopyToClipboard(user.publicKey, `users-${user.id}-publicKey`)} className={`${styles.contentCell} ${styles.clickableCell} ${copiedCellId === `users-${user.id}-publicKey` ? styles.copiedCell : ''}`}>{user.publicKey}</td>
+                <td onClick={() => handleCopyToClipboard(user.privateKey, `users-${user.id}-privateKey`)} className={`${styles.contentCell} ${styles.clickableCell} ${copiedCellId === `users-${user.id}-privateKey` ? styles.copiedCell : ''}`}>{user.privateKey}</td>
               </tr>
             )) : <tr><td colSpan={5}>Loading...</td></tr>}
           </tbody>
@@ -156,8 +186,8 @@ export const DatabaseViewer = forwardRef<
           <tbody>
             {dbContents && dbContents.conversations ? dbContents.conversations.map((conv: any) => (
               <tr key={conv.id}>
-                <td>{conv.id}</td>
-                <td>{conv.name}</td>
+                <td onClick={() => handleCopyToClipboard(conv.id, `conversations-${conv.id}-id`)} className={`${styles.clickableCell} ${copiedCellId === `conversations-${conv.id}-id` ? styles.copiedCell : ''}`}>{conv.id}</td>
+                <td onClick={() => handleCopyToClipboard(conv.name, `conversations-${conv.id}-name`)} className={`${styles.clickableCell} ${copiedCellId === `conversations-${conv.id}-name` ? styles.copiedCell : ''}`}>{conv.name}</td>
                 <td>
                   {editingConversation === conv.id ? (
                     <div className={styles.editField}>
@@ -174,7 +204,12 @@ export const DatabaseViewer = forwardRef<
                     </div>
                   ) : (
                     <div className={styles.membersList}>
-                      <span>{conv.memberUserIds.join(", ")}</span>
+                      <span 
+                        onClick={() => handleCopyToClipboard(conv.memberUserIds.join(", "), `conversations-${conv.id}-members`)}
+                        className={`${styles.clickableCell} ${copiedCellId === `conversations-${conv.id}-members` ? styles.copiedCell : ''}`}
+                      >
+                        {conv.memberUserIds.join(", ")}
+                      </span>
                       <button 
                         className={styles.editButton}
                         onClick={() => handleEditConversation(conv.id, conv.memberUserIds)}
@@ -202,10 +237,10 @@ export const DatabaseViewer = forwardRef<
           <tbody>
             {dbContents && dbContents.messages ? dbContents.messages.map((msg: any) => (
               <tr key={msg.id}>
-                <td>{msg.id}</td>
-                <td>{msg.conversationId}</td>
-                <td>{msg.sender}</td>
-                <td className={styles.contentCell}>{msg.content}</td>
+                <td onClick={() => handleCopyToClipboard(msg.id, `messages-${msg.id}-id`)} className={`${styles.clickableCell} ${copiedCellId === `messages-${msg.id}-id` ? styles.copiedCell : ''}`}>{msg.id}</td>
+                <td onClick={() => handleCopyToClipboard(msg.conversationId, `messages-${msg.id}-conversationId`)} className={`${styles.clickableCell} ${copiedCellId === `messages-${msg.id}-conversationId` ? styles.copiedCell : ''}`}>{msg.conversationId}</td>
+                <td onClick={() => handleCopyToClipboard(msg.sender, `messages-${msg.id}-sender`)} className={`${styles.clickableCell} ${copiedCellId === `messages-${msg.id}-sender` ? styles.copiedCell : ''}`}>{msg.sender}</td>
+                <td onClick={() => handleCopyToClipboard(msg.content, `messages-${msg.id}-content`)} className={`${styles.contentCell} ${styles.clickableCell} ${copiedCellId === `messages-${msg.id}-content` ? styles.copiedCell : ''}`}>{msg.content}</td>
               </tr>
             )) : <tr><td colSpan={4}>Loading...</td></tr>}
           </tbody>

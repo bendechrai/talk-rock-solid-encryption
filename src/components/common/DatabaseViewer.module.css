@@ -58,6 +58,56 @@
   white-space: nowrap;
 }
 
+.clickableCell {
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.clickableCell:hover {
+  background-color: rgba(0, 170, 255, 0.1);
+}
+
+.clickableCell:hover::after {
+  content: 'Click to copy';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.copiedCell {
+  background-color: rgba(40, 167, 69, 0.2) !important;
+  animation: fadeOut 2s ease;
+}
+
+.copiedCell::after {
+  content: 'Copied!' !important;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #28a745;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+@keyframes fadeOut {
+  from { background-color: rgba(40, 167, 69, 0.2); }
+  to { background-color: transparent; }
+}
+
 .membersList {
   display: flex;
   align-items: center;

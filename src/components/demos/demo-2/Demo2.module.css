@@ -85,20 +85,114 @@
   border-bottom: 2px solid rgba(220, 53, 69, 0.7);
 }
 
-.attackExplanation {
-  background-color: rgba(220, 53, 69, 0.15);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 8px;
+.attackDemo {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #e0e0e0;
 }
 
-.serverKey {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background-color: #222;
+.attackDemo h3 {
+  margin-top: 0;
+  color: #00aaff;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+}
+
+.attackDemo p {
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.attackForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #00aaff;
+}
+
+.keyInput {
+  padding: 10px;
   border-radius: 4px;
-  border: 1px solid rgba(220, 53, 69, 0.5);
+  border: 1px solid #444;
+  background-color: #2a2a2a;
   font-family: monospace;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  width: 100%;
+}
+
+.encryptedInput {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  width: 100%;
+  resize: vertical;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.loading {
+  color: #00aaff;
+  font-style: italic;
+  margin: 10px 0;
+}
+
+.error {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.2);
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border-left: 4px solid #dc3545;
+}
+
+.decryptedResult {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 10px;
+  border-left: 4px solid #28a745;
+}
+
+.decryptedResult h4 {
+  margin-top: 0;
+  color: #28a745;
+  margin-bottom: 10px;
+}
+
+.decryptedContent {
+  padding: 10px;
+  background-color: #333;
+  border-radius: 4px;
+  border: 1px solid #444;
+  font-family: monospace;
+  color: #e0e0e0;
   overflow-x: auto;
 }
 
