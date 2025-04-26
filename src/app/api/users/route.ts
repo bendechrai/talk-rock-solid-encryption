@@ -8,13 +8,20 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const users = await db.getUsers();
+    const publicKeys = await db.getPublicKeys();
     
-    // Return the users without their private keys for security
+    // Map public keys to users
+    const publicKeyMap = publicKeys.reduce((map, entry) => {
+      map[entry.userId] = entry.publicKey;
+      return map;
+    }, {} as Record<string, string>);
+    
+    // Return the users with their public keys (if available)
     const sanitizedUsers = users.map(user => ({
       id: user.id,
       name: user.name,
       phoneColor: user.phoneColor,
-      publicKey: user.publicKey,
+      publicKey: publicKeyMap[user.id] || null,
     }));
     
     return NextResponse.json({ users: sanitizedUsers });

@@ -20,8 +20,8 @@ export interface User {
   id: string;
   name: string;
   phoneColor: string;
-  publicKey: string;
-  privateKey: string;
+  publicKey?: string; // Now optional since we store public keys in a separate table
+  privateKey?: string; // Optional, as private keys should never be stored server-side in a real app
 }
 
 /**

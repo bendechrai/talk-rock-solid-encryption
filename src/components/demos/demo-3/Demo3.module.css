@@ -246,3 +246,52 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* Phone with Key Generation Screen */
+.phoneWithKeyGen {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* Key Status Banner Styles */
+.keyStatusBanner {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  color: #e0e0e0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.keyStatusBanner h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #00aaff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+}
+
+.keyStatusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.keyStatusItem {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 4px solid;
+  transition: all 0.3s ease;
+}
+
+.keyStatusUser {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.keyStatusText {
+  font-size: 0.9rem;
+}

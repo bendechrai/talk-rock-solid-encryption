@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Message } from '@/types/common';
-import { 
-  generateKeys, 
+import { useState, useEffect } from "react";
+import { Message } from "@/types/common";
+import {
+  generateKeys,
   generateEphemeralKeys,
-  encryptWithPublicKey, 
-  decryptWithPrivateKey 
-} from '@/lib/encryption/asymmetric';
-import { AdminPanel } from '@/components/common/AdminPanel';
-import { Phone } from '@/components/common/Phone';
-import { phoneStyles } from '@/components/common/phoneStyles';
-import styles from './Demo3.module.css';
-import { DatabaseViewer } from '@/components/common/DatabaseViewer';
-import { ChatApp } from '@/components/common/ChatApp';
+  encryptWithPublicKey,
+  decryptWithPrivateKey,
+} from "@/lib/encryption/asymmetric";
+import { AdminPanel } from "@/components/common/AdminPanel";
+import { Phone } from "@/components/common/Phone";
+import styles from "./Demo3.module.css";
+import { KeyManagement } from "./KeyManagement";
+import { KeyGenerationScreen } from "./KeyGenerationScreen";
 
 interface KeyInfoProps {
   userId: string;
@@ -24,67 +23,76 @@ interface KeyInfoProps {
   onRegenerateKeys: () => Promise<void>;
 }
 
-function KeyInfo({ 
-  userId, 
-  keyStatus, 
-  publicKey, 
-  privateKey, 
+function KeyInfo({
+  userId,
+  keyStatus,
+  publicKey,
+  privateKey,
   publicKeysCount,
-  onRegenerateKeys
+  onRegenerateKeys,
 }: KeyInfoProps) {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
-  
+
   return (
     <div className="key-info">
       <div className="key-status">
         <div className="status-indicator">
-          <span className={`status-dot ${keyStatus === 'loaded' || keyStatus === 'generated' ? 'active' : 'inactive'}`}></span>
+          <span
+            className={`status-dot ${
+              keyStatus === "loaded" || keyStatus === "generated"
+                ? "active"
+                : "inactive"
+            }`}
+          ></span>
           <span>Key Status: {keyStatus}</span>
         </div>
-        <button 
-          className="regenerate-button" 
-          onClick={onRegenerateKeys}
-        >
+        <button className="regenerate-button" onClick={onRegenerateKeys}>
           Regenerate Keys
         </button>
       </div>
-      
+
       <div className="user-id">
         <strong>Your ID:</strong> {userId}
       </div>
-      
+
       <div className="key-details">
         <div className="public-key">
           <div className="key-header">
-            <strong>Your Public Key</strong> 
+            <strong>Your Public Key</strong>
             <span className="key-badge">Shared with others</span>
           </div>
           <div className="key-value">
-            <code>{publicKey.substring(0, 32)}...{publicKey.substring(publicKey.length - 8)}</code>
+            <code>
+              {publicKey.substring(0, 32)}...
+              {publicKey.substring(publicKey.length - 8)}
+            </code>
           </div>
         </div>
-        
+
         <div className="private-key">
           <div className="key-header">
-            <strong>Your Private Key</strong> 
+            <strong>Your Private Key</strong>
             <span className="key-badge secure">Kept secret</span>
-            <button 
-              className="toggle-key-button" 
+            <button
+              className="toggle-key-button"
               onClick={() => setShowPrivateKey(!showPrivateKey)}
             >
-              {showPrivateKey ? 'Hide' : 'Show'}
+              {showPrivateKey ? "Hide" : "Show"}
             </button>
           </div>
           <div className="key-value">
             {showPrivateKey ? (
-              <code>{privateKey.substring(0, 32)}...{privateKey.substring(privateKey.length - 8)}</code>
+              <code>
+                {privateKey.substring(0, 32)}...
+                {privateKey.substring(privateKey.length - 8)}
+              </code>
             ) : (
               <code>••••••••••••••••••••••••••••••••</code>
             )}
           </div>
         </div>
       </div>
-      
+
       <div className="network-info">
         <div className="public-keys-count">
           <strong>Public Keys Available:</strong> {publicKeysCount}
@@ -100,182 +108,75 @@ function KeyInfo({
   );
 }
 
-function ChatApp() {
-  const { messages, addMessage } = useChat();
-  const [publicKeys, setPublicKeys] = useState<Record<string, string>>({});
-  const [keyStatus, setKeyStatus] = useState('initializing');
-  const [userId, setUserId] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
-  const [publicKey, setPublicKey] = useState('');
-  const [showDbViewer, setShowDbViewer] = useState(false);
-  
-  // Load or generate keys on component mount
-  useEffect(() => {
-    setupKeys();
-  }, []);
-  
-  async function setupKeys() {
-    // Generate a unique user ID if we don't have one
-    const existingUserId = localStorage.getItem('chatUserId');
-    const newUserId = existingUserId || Math.random().toString(36).substring(2, 15);
-    
-    if (!existingUserId) {
-      localStorage.setItem('chatUserId', newUserId);
-    }
-    
-    setUserId(newUserId);
-    
-    // Check if we already have keys in localStorage
-    const storedPrivateKey = localStorage.getItem('chatPrivateKey');
-    const storedPublicKey = localStorage.getItem('chatPublicKey');
-    
-    if (!storedPrivateKey || !storedPublicKey) {
-      await generateNewKeys(newUserId);
-    } else {
-      // Use existing keys
-      setPrivateKey(storedPrivateKey);
-      setPublicKey(storedPublicKey);
-      
-      // Send existing public key to server
-      await fetch(`/api/user/keys`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: newUserId, publicKey: storedPublicKey })
-      });
-      
-      setKeyStatus('loaded');
-    }
-  }
-  
-  async function generateNewKeys(userId: string) {
-    setKeyStatus('generating');
-    
-    try {
-      // Generate new key pair
-      const keys = await generateKeys();
-      
-      // Store keys
-      localStorage.setItem('chatPrivateKey', keys.privateKey);
-      localStorage.setItem('chatPublicKey', keys.publicKey);
-      
-      setPrivateKey(keys.privateKey);
-      setPublicKey(keys.publicKey);
-      
-      // Send public key to server
-      await fetch(`/api/user/keys`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, publicKey: keys.publicKey })
-      });
-      
-      setKeyStatus('generated');
-    } catch (error) {
-      console.error('Error generating keys:', error);
-      setKeyStatus('error');
-    }
-  }
-  
-  // Load all public keys from server
-  const loadPublicKeys = async () => {
-    const response = await fetch('/api/user/keys');
-    if (response.ok) {
-      const data = await response.json();
-      setPublicKeys(data.keys);
-    }
-  };
-
-  useEffect(() => {
-    if (userId) {
-      loadPublicKeys();
-      const interval = setInterval(loadPublicKeys, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [userId]);
-  
-
-  
-  return (
-    <div className="chat-app">
-      <KeyInfo 
-        userId={userId}
-        keyStatus={keyStatus}
-        publicKey={publicKey}
-        privateKey={privateKey}
-        publicKeysCount={Object.keys(publicKeys).length}
-        onRegenerateKeys={() => generateNewKeys(userId)}
-      />
-      
-      <Phone userId={userId} demoVersion={3}>
-        <div className={phoneStyles.phoneChatApp}>
-          <MessageList messages={messages} currentUser={userId} />
-          <MessageInput onSendMessage={(content) => addMessage(content)} />
-        </div>
-      </Phone>
-      
-      <AdminPanel 
-        demoVersion={3}
-      />
-
-    </div>
-  );
-}
-
 export default function Demo3() {
   const [currentUsers, setCurrentUsers] = useState({
-    user1: '1',
-    user2: '2'
+    user1: "1",
+    user2: "2",
   });
 
-
+  // Message processor for end-to-end encryption
   const messageProcessor = {
     beforeSend: async (content: string) => {
       try {
-        // Get our user ID
-        const myUserId = localStorage.getItem('chatUserId');
-        if (!myUserId) throw new Error('User ID not found');
-        
+        // Get our user ID - this is the current user in the phone
+        const myUserId = currentUsers.user1;
+        if (!myUserId) throw new Error("User ID not found");
+
+        // Get our private key from localStorage with user-specific key
+        const privateKey = localStorage.getItem(`chatPrivateKey_${myUserId}`);
+        if (!privateKey) throw new Error("Private key not found");
+
         // Fetch all public keys
-        const response = await fetch('/api/keys');
+        const response = await fetch("/api/keys");
         const data = await response.json();
         const publicKeys = data.keys;
-        
+
         if (Object.keys(publicKeys).length === 0) {
-          throw new Error('No recipients available');
+          throw new Error("No recipients available");
         }
-        
+
         // Generate ephemeral keys for perfect forward secrecy
         const ephemeralKeys = await generateEphemeralKeys();
-        
+
         // Encrypt the message with each recipient's public key
         const encryptedForRecipients = await Promise.all(
           Object.entries(publicKeys).map(async ([userId, publicKey]) => {
             // For each recipient, encrypt the message using their public key and our ephemeral private key
             const encrypted = await encryptWithPublicKey(
-              content, 
-              publicKey as string, 
+              content,
+              publicKey as string,
               ephemeralKeys.privateKey
             );
             return { userId, encrypted };
           })
         );
-        
+
         // Return the encrypted data for all recipients
+        // Return the encrypted data with metadata
         return JSON.stringify({
           sender: myUserId,
           recipients: encryptedForRecipients,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          // Include ephemeral public key for potential future verification
+          ephemeralPublicKey: ephemeralKeys.publicKey,
         });
       } catch (error) {
-        console.error('Encryption error:', error);
+        console.error("Encryption error:", error);
         throw error;
       }
     },
     afterReceive: async (messages: Message[]) => {
-      const myUserId = localStorage.getItem('chatUserId');
-      const privateKey = localStorage.getItem('chatPrivateKey');
-      
-      if (!myUserId || !privateKey) return messages;
-      
+      // Get the current user ID from the phone
+      const myUserId = currentUsers.user1;
+
+      // Get the private key for this specific user
+      const privateKey = localStorage.getItem(`chatPrivateKey_${myUserId}`);
+
+      if (!myUserId || !privateKey) {
+        console.warn("Cannot decrypt: missing user ID or private key");
+        return messages;
+      }
+
       return Promise.all(
         messages.map(async (msg) => {
           try {
@@ -284,59 +185,191 @@ export default function Demo3() {
             try {
               encryptedData = JSON.parse(msg.content);
             } catch (parseError) {
-              console.warn('Failed to parse message content as JSON:', parseError);
+              console.warn(
+                "Failed to parse message content as JSON:",
+                parseError
+              );
               // Return the original message if it's not valid JSON
               return msg;
             }
-            
+
             // Check if the parsed data has the expected structure
             if (!encryptedData || !encryptedData.recipients) {
-              console.warn('Message does not have expected encrypted structure:', encryptedData);
+              console.warn(
+                "Message does not have expected encrypted structure:",
+                encryptedData
+              );
               return msg;
             }
-            
+
             const { sender, recipients } = encryptedData;
-            
+
             // Find our encrypted message
-            const myMessage = recipients.find((r: any) => r.userId === myUserId);
-            
+            const myMessage = recipients.find(
+              (r: any) => r.userId === myUserId
+            );
+
             if (myMessage) {
               // Decrypt with our private key
-              const decrypted = await decryptWithPrivateKey(myMessage.encrypted, privateKey);
-              return { 
-                ...msg, 
+              const decrypted = await decryptWithPrivateKey(
+                myMessage.encrypted,
+                privateKey
+              );
+              return {
+                ...msg,
                 content: decrypted,
-                sender: sender || msg.sender // Use the sender from the encrypted data if available
+                sender: sender || msg.sender, // Use the sender from the encrypted data if available
               };
             }
-            
-            return { ...msg, content: '(Message not intended for you)' };
+
+            return { ...msg, content: "(Message not intended for you)" };
           } catch (e) {
-            console.error('Decryption error:', e);
+            console.error("Decryption error:", e);
             // If the message isn't in the expected format, return it as is
-            return { ...msg, content: '(Unable to decrypt message)' };
+            return { ...msg, content: "(Unable to decrypt message)" };
           }
         })
       );
+    },
+  };
+
+  // State to track which users have keys
+  const [userKeysStatus, setUserKeysStatus] = useState<Record<string, boolean>>({});
+  
+  // Check which users have keys on component mount
+  useEffect(() => {
+    const checkUserKeys = () => {
+      const status: Record<string, boolean> = {};
+      // Check all possible users
+      ['1', '2', '3', '4'].forEach(userId => {
+        const privateKey = localStorage.getItem(`chatPrivateKey_${userId}`);
+        status[userId] = !!privateKey;
+      });
+      setUserKeysStatus(status);
+    };
+    
+    // Initial check
+    checkUserKeys();
+    
+    // Set up interval to periodically check for key changes
+    const interval = setInterval(checkUserKeys, 2000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Handle key generation for a specific user
+  const handleKeysGenerated = async (userId: string, publicKey: string, privateKey: string) => {
+    try {
+      // Store private key in localStorage with user-specific key
+      localStorage.setItem(`chatPrivateKey_${userId}`, privateKey);
+
+      // Send public key to server
+      await fetch("/api/user/keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, publicKey }),
+      });
+
+      // Update user keys status
+      setUserKeysStatus(prev => ({
+        ...prev,
+        [userId]: true
+      }));
+
+      console.log(`Keys generated successfully for user ${userId}`);
+    } catch (error) {
+      console.error(`Error saving generated keys for user ${userId}:`, error);
+      throw error; // Re-throw to be handled by the KeyGenerationScreen
     }
   };
-  
 
+  // Helper function to get user name from ID
+  const getUserName = (userId: string) => {
+    switch (userId) {
+      case '1': return 'Alice';
+      case '2': return 'Bob';
+      case '3': return 'Charlie';
+      case '4': return 'Diana';
+      default: return `User ${userId}`;
+    }
+  };
 
   return (
     <div className={styles.demoContainer}>
+
       <div className={styles.phonesContainer}>
-        <Phone
-          initialColor="rose"
-          userId={currentUsers.user1}
-          demoVersion={3}
-          onChangeUser={(userId) => setCurrentUsers(prev => ({ ...prev, user1: userId }))}
-          messageProcessor={messageProcessor}
-        />
+        <div className={styles.phoneWrapper}>
+          {userKeysStatus[currentUsers.user1] ? (
+            <Phone
+              initialColor="rose"
+              userId={currentUsers.user1}
+              demoVersion={3}
+              onChangeUser={(userId) =>
+                setCurrentUsers((prev) => ({ ...prev, user1: userId }))
+              }
+              messageProcessor={messageProcessor}
+            />
+          ) : (
+            <div className={styles.phoneWithKeyGen}>
+              <Phone
+                initialColor="rose"
+                userId={currentUsers.user1}
+                demoVersion={3}
+                onChangeUser={(userId) =>
+                  setCurrentUsers((prev) => ({ ...prev, user1: userId }))
+                }
+              >
+                <KeyGenerationScreen
+                  userId={currentUsers.user1}
+                  userName={getUserName(currentUsers.user1)}
+                  onKeysGenerated={(publicKey, privateKey) => 
+                    handleKeysGenerated(currentUsers.user1, publicKey, privateKey)
+                  }
+                />
+              </Phone>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.phoneWrapper}>
+          {userKeysStatus[currentUsers.user2] ? (
+            <Phone
+              initialColor="blue"
+              userId={currentUsers.user2}
+              demoVersion={3}
+              isRight={true}
+              onChangeUser={(userId) =>
+                setCurrentUsers((prev) => ({ ...prev, user2: userId }))
+              }
+              messageProcessor={messageProcessor}
+            />
+          ) : (
+            <div className={styles.phoneWithKeyGen}>
+              <Phone
+                initialColor="blue"
+                userId={currentUsers.user2}
+                demoVersion={3}
+                isRight={true}
+                onChangeUser={(userId) =>
+                  setCurrentUsers((prev) => ({ ...prev, user2: userId }))
+                }
+              >
+                <KeyGenerationScreen
+                  userId={currentUsers.user2}
+                  userName={getUserName(currentUsers.user2)}
+                  onKeysGenerated={(publicKey, privateKey) => 
+                    handleKeysGenerated(currentUsers.user2, publicKey, privateKey)
+                  }
+                />
+              </Phone>
+            </div>
+          )}
+        </div>
       </div>
-      
+
       <div className={styles.adminPanel}>
-        <AdminPanel demoVersion={3} />
+        <AdminPanel demoVersion={3}>
+          <KeyManagement demoVersion={3} />
+        </AdminPanel>
       </div>
     </div>
   );

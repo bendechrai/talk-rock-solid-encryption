@@ -203,8 +203,6 @@ export const DatabaseViewer = forwardRef<
               <th>ID</th>
               <th>Name</th>
               <th>Phone Color</th>
-              <th>Public Key</th>
-              <th>Private Key</th>
             </tr>
           </thead>
           <tbody>
@@ -238,7 +236,7 @@ export const DatabaseViewer = forwardRef<
                   <td
                     onClick={() =>
                       handleCopyToClipboard(
-                        user.phoneColor,
+                        user.phoneColor || 'default',
                         `users-${user.id}-phoneColor`
                       )
                     }
@@ -248,43 +246,74 @@ export const DatabaseViewer = forwardRef<
                         : ""
                     }`}
                   >
-                    {user.phoneColor}
-                  </td>
-                  <td
-                    onClick={() =>
-                      handleCopyToClipboard(
-                        user.publicKey,
-                        `users-${user.id}-publicKey`
-                      )
-                    }
-                    className={`${styles.contentCell} ${styles.clickableCell} ${
-                      copiedCellId === `users-${user.id}-publicKey`
-                        ? styles.copiedCell
-                        : ""
-                    }`}
-                  >
-                    {user.publicKey}
-                  </td>
-                  <td
-                    onClick={() =>
-                      handleCopyToClipboard(
-                        user.privateKey,
-                        `users-${user.id}-privateKey`
-                      )
-                    }
-                    className={`${styles.contentCell} ${styles.clickableCell} ${
-                      copiedCellId === `users-${user.id}-privateKey`
-                        ? styles.copiedCell
-                        : ""
-                    }`}
-                  >
-                    {user.privateKey}
+                    {user.phoneColor || 'default'}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5}>Loading...</td>
+                <td colSpan={3}>Loading...</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        <h4>Public Keys Table</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>User Name</th>
+              <th>Public Key</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dbContents && dbContents.publicKeys ? (
+              dbContents.publicKeys.map((keyEntry: any) => {
+                // Find the user name for this key
+                const user = dbContents.users?.find((u: any) => u.id === keyEntry.userId);
+                const userName = user ? user.name : 'Unknown User';
+                
+                return (
+                  <tr key={`pubkey-${keyEntry.userId}`}>
+                    <td
+                      onClick={() =>
+                        handleCopyToClipboard(keyEntry.userId, `pubkey-${keyEntry.userId}-id`)
+                      }
+                      className={`${styles.clickableCell} ${
+                        copiedCellId === `pubkey-${keyEntry.userId}-id`
+                          ? styles.copiedCell
+                          : ""
+                      }`}
+                    >
+                      {keyEntry.userId}
+                    </td>
+                    <td>{userName}</td>
+                    <td
+                      onClick={() =>
+                        handleCopyToClipboard(
+                          keyEntry.publicKey,
+                          `pubkey-${keyEntry.userId}-key`
+                        )
+                      }
+                      className={`${styles.contentCell} ${styles.clickableCell} ${
+                        copiedCellId === `pubkey-${keyEntry.userId}-key`
+                          ? styles.copiedCell
+                          : ""
+                      }`}
+                    >
+                      {keyEntry.publicKey}
+                    </td>
+                    <td>
+                      {new Date(keyEntry.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={4}>Loading...</td>
               </tr>
             )}
           </tbody>

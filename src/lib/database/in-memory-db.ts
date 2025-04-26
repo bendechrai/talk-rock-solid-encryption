@@ -11,10 +11,18 @@ import path from 'path';
 // Define the path to the persistence file
 const DB_FILE_PATH = path.join(process.cwd(), 'db-data.json');
 
+// Define the structure for a public key entry
+interface PublicKeyEntry {
+  userId: string;
+  publicKey: string;
+  createdAt: Date;
+}
+
 interface DatabaseState {
   messages: Message[];
   users: User[];
   conversations: Conversation[];
+  publicKeys: PublicKeyEntry[];
   messageIdCounter: number;
 }
 
@@ -22,6 +30,7 @@ class InMemoryDatabase {
   private messages: Message[] = [];
   private users: User[] = [];
   private conversations: Conversation[] = [];
+  private publicKeys: PublicKeyEntry[] = [];
   private messageIdCounter = 0;
 
   constructor() {
@@ -48,19 +57,59 @@ class InMemoryDatabase {
         
         this.users = dbState.users;
         this.conversations = dbState.conversations;
+        
+        // Handle public keys, converting string dates to Date objects
+        this.publicKeys = dbState.publicKeys ? dbState.publicKeys.map(key => ({
+          ...key,
+          createdAt: new Date(key.createdAt)
+        })) : [];
+        
         this.messageIdCounter = dbState.messageIdCounter;
         
         console.log('Database loaded from file');
       } else {
         // File doesn't exist, initialize with default data
-        this.resetDatabase();
+        this.initializeDefaultData();
         console.log('Database initialized with default data');
       }
     } catch (error) {
       console.error('Error loading database from file:', error);
       // Fall back to default data if there's an error
-      this.resetDatabase();
+      this.initializeDefaultData();
     }
+  }
+  
+  /**
+   * Initialize database with default data
+   */
+  private initializeDefaultData() {
+    // Add default users
+    this.users = [
+      { id: '1', name: 'Alice', phoneColor: '#ff9999' },
+      { id: '2', name: 'Bob', phoneColor: '#99ccff' },
+      { id: '3', name: 'Charlie', phoneColor: '#99ff99' },
+      { id: '4', name: 'Diana', phoneColor: '#ffcc99' }
+    ];
+    
+    // Add default conversations
+    this.conversations = [
+      { id: '1', memberUserIds: ['1', '2'], name: 'Alice & Bob' },
+      { id: '2', memberUserIds: ['1', '3'], name: 'Alice & Charlie' },
+      { id: '3', memberUserIds: ['2', '3'], name: 'Bob & Charlie' },
+      { id: '4', memberUserIds: ['1', '2', '3'], name: 'Group Chat' },
+    ];
+    
+    // Initialize public keys
+    this.publicKeys = [];
+    
+    // Initialize messages
+    this.messages = [];
+    
+    // Initialize message ID counter
+    this.messageIdCounter = 0;
+    
+    // Save the default data to file
+    this.saveToFile();
   }
   
   /**
@@ -72,6 +121,7 @@ class InMemoryDatabase {
         messages: this.messages,
         users: this.users,
         conversations: this.conversations,
+        publicKeys: this.publicKeys,
         messageIdCounter: this.messageIdCounter
       };
       
@@ -102,46 +152,68 @@ class InMemoryDatabase {
   ): Promise<{ userId: string; publicKey: string }[]> {
     // If no conversationId is provided, return all public keys (for admin purposes)
     if (!conversationId) {
-      return this.users
-        .filter((user) => user.publicKey)
-        .map((user) => ({
-          userId: user.id,
-          publicKey: user.publicKey,
-        }));
+      return this.publicKeys.map((entry) => ({
+        userId: entry.userId,
+        publicKey: entry.publicKey,
+      }));
     }
 
-    // Find the conversation
-    const conversation = this.conversations.find(
-      (c) => c.id === conversationId
-    );
-    if (!conversation) {
-      return [];
-    }
+    // Otherwise, return public keys for users in the specified conversation
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) return [];
 
-    // Get public keys only for users in this conversation
-    return this.users
-      .filter(
-        (user) =>
-          user.publicKey && // User has a public key
-          conversation.memberUserIds.includes(user.id) // User is a member of the conversation
-      )
-      .map((user) => ({
-        userId: user.id,
-        publicKey: user.publicKey,
+    return this.publicKeys
+      .filter((entry) => conversation.memberUserIds.includes(entry.userId))
+      .map((entry) => ({
+        userId: entry.userId,
+        publicKey: entry.publicKey,
       }));
   }
 
-  // Set a user's public key
   async setPublicKey(userId: string, publicKey: string): Promise<boolean> {
-    const userIndex = this.users.findIndex((u) => u.id === userId);
-    if (userIndex === -1) {
-      return false;
-    }
+    const user = await this.getUserById(userId);
+    if (!user) return false;
 
-    // Update the user's public key
-    this.users[userIndex].publicKey = publicKey;
-    this.saveToFile(); // Save changes to file
+    // Check if there's an existing entry for this user
+    const existingIndex = this.publicKeys.findIndex(entry => entry.userId === userId);
+    
+    if (existingIndex >= 0) {
+      // Update existing entry
+      this.publicKeys[existingIndex] = {
+        userId,
+        publicKey,
+        createdAt: new Date()
+      };
+    } else {
+      // Add new entry
+      this.publicKeys.push({
+        userId,
+        publicKey,
+        createdAt: new Date()
+      });
+    }
+    
+    this.saveToFile();
     return true;
+  }
+
+  async getPublicKeyForUser(userId: string): Promise<string | null> {
+    const entry = this.publicKeys.find(entry => entry.userId === userId);
+    return entry ? entry.publicKey : null;
+  }
+
+  async deletePublicKey(userId: string): Promise<boolean> {
+    const initialLength = this.publicKeys.length;
+    this.publicKeys = this.publicKeys.filter(key => key.userId !== userId);
+    
+    // If the length changed, we removed a key
+    const success = initialLength !== this.publicKeys.length;
+    
+    if (success) {
+      this.saveToFile();
+    }
+    
+    return success;
   }
 
   // Conversation operations

@@ -56,14 +56,16 @@ export async function GET(request: NextRequest) {
   if (userId) {
     // Get public key for a specific user
     const user = await db.getUserById(userId);
-    if (!user || !user.publicKey) {
-      return NextResponse.json(
-        { error: 'User or public key not found' },
-        { status: 404 }
-      );
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
-    return NextResponse.json({ publicKey: user.publicKey });
+
+    const publicKey = await db.getPublicKeyForUser(userId);
+    if (!publicKey) {
+      return NextResponse.json({ error: 'No public key available for this user' }, { status: 404 });
+    }
+
+    return NextResponse.json({ publicKey });
   } else {
     // Get all public keys
     const publicKeysList = await db.getPublicKeys();
@@ -75,5 +77,28 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json({ keys });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
+  try {
+    // Delete the public key for the specified user
+    const success = await db.deletePublicKey(userId);
+    
+    if (!success) {
+      return NextResponse.json({ error: 'Public key not found for user' }, { status: 404 });
+    }
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting public key:', error);
+    return NextResponse.json({ error: 'Failed to delete public key' }, { status: 500 });
   }
 }
