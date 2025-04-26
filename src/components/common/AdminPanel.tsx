@@ -27,14 +27,6 @@ export function AdminPanel({
   const databaseViewerRef = useRef<DatabaseViewerRef>(null);
   const nodeRef = useRef(null);
 
-  const handleReset = async () => {
-    if (confirm("Are you sure you want to reset the database?")) {
-      setIsLoading(true);
-      await onResetDatabase();
-      setIsLoading(false);
-    }
-  };
-
   const handleViewDatabase = async () => {
     setIsLoading(true);
     await onViewDatabase();
@@ -64,17 +56,8 @@ export function AdminPanel({
             <DatabaseViewer
               ref={databaseViewerRef}
               onClose={() => setIsDatabaseVisible(false)}
+              onResetDatabase={onResetDatabase}
             />
-            <div className={styles["admin-actions"]}>
-              <button
-                onClick={handleReset}
-                disabled={isLoading}
-                className={styles["danger-button"]}
-                aria-label="Reset Database"
-              >
-                {isLoading ? "Processing..." : "Reset Database"}
-              </button>
-            </div>
 
             {children && children}
           </div>

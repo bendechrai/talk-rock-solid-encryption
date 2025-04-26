@@ -97,7 +97,7 @@ function AttackDemo() {
 
   return (
     <div className={styles.attackDemo}>
-      <h3>Server-Side Encryption Attack Demo</h3>
+      <h3>Symmetric Encryption</h3>
 
       <form className={styles.attackForm} onSubmit={(e) => e.preventDefault()}>
         <div className={styles.formGroup}>
