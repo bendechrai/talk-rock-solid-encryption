@@ -16,66 +16,76 @@ import styles from "./Demo2.module.css";
 function AttackDemo() {
   // State for the form inputs and decryption result
   const [serverKey, setServerKey] = useState(SERVER_KEY);
-  const [encryptedText, setEncryptedText] = useState('');
-  const [decryptedText, setDecryptedText] = useState('');
+  const [encryptedText, setEncryptedText] = useState("");
+  const [decryptedText, setDecryptedText] = useState("");
   const [isDecrypting, setIsDecrypting] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   // Debounce timer reference
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Function to handle decryption with the local serverKey value
-  const handleDecrypt = useCallback(async (textToDecrypt: string, key: string) => {
-    // Clear any previous errors
-    setError('');
-    
-    if (!textToDecrypt) {
-      setDecryptedText('');
-      return;
-    }
-    
-    setIsDecrypting(true);
-    
-    try {
-      // Try to decrypt the text using the provided key instead of the constant SERVER_KEY
-      const decrypted = await decryptSymmetric(textToDecrypt, key);
-      setDecryptedText(decrypted);
-    } catch (error) {
-      console.error("Decryption failed:", error);
-      setError("Decryption failed. Make sure the input is a valid encrypted message and the key is correct.");
-      setDecryptedText('');
-    } finally {
-      setIsDecrypting(false);
-    }
-  }, []);
-  
+  const handleDecrypt = useCallback(
+    async (textToDecrypt: string, key: string) => {
+      // Clear any previous errors
+      setError("");
+
+      if (!textToDecrypt) {
+        setDecryptedText("");
+        return;
+      }
+
+      setIsDecrypting(true);
+
+      try {
+        // Try to decrypt the text using the provided key instead of the constant SERVER_KEY
+        const decrypted = await decryptSymmetric(textToDecrypt, key);
+        setDecryptedText(decrypted);
+      } catch (error) {
+        console.error("Decryption failed:", error);
+        setError(
+          "Decryption failed. Make sure the input is a valid encrypted message and the key is correct."
+        );
+        setDecryptedText("");
+      } finally {
+        setIsDecrypting(false);
+      }
+    },
+    []
+  );
+
   // Function to trigger decryption with debouncing
-  const triggerDecryption = useCallback((text: string, key: string) => {
-    // Clear any existing timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    
-    // Set a new timer to trigger decryption after 500ms of inactivity
-    debounceTimerRef.current = setTimeout(() => {
-      handleDecrypt(text, key);
-    }, 500);
-  }, [handleDecrypt]);
-  
+  const triggerDecryption = useCallback(
+    (text: string, key: string) => {
+      // Clear any existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set a new timer to trigger decryption after 500ms of inactivity
+      debounceTimerRef.current = setTimeout(() => {
+        handleDecrypt(text, key);
+      }, 500);
+    },
+    [handleDecrypt]
+  );
+
   // Handle encrypted text input change
-  const handleEncryptedTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleEncryptedTextChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     const newValue = e.target.value;
     setEncryptedText(newValue);
     triggerDecryption(newValue, serverKey);
   };
-  
+
   // Handle server key input change
   const handleServerKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newKey = e.target.value;
     setServerKey(newKey);
     triggerDecryption(encryptedText, newKey);
   };
-  
+
   // Clean up the timer on unmount
   useEffect(() => {
     return () => {
@@ -88,7 +98,7 @@ function AttackDemo() {
   return (
     <div className={styles.attackDemo}>
       <h3>Server-Side Encryption Attack Demo</h3>
-            
+
       <form className={styles.attackForm} onSubmit={(e) => e.preventDefault()}>
         <div className={styles.formGroup}>
           <label htmlFor="server-key">Server Encryption Key:</label>
@@ -100,7 +110,7 @@ function AttackDemo() {
             className={styles.keyInput}
           />
         </div>
-        
+
         <div className={styles.formGroup}>
           <label htmlFor="encrypted-text">Paste Encrypted Message:</label>
           <textarea
@@ -112,14 +122,14 @@ function AttackDemo() {
             rows={4}
           />
         </div>
-        
+
         {isDecrypting && <div className={styles.loading}>Decrypting...</div>}
-        
+
         {error && <div className={styles.error}>{error}</div>}
-        
-          <div className={styles.decryptedResult}>
-            <div className={styles.decryptedContent}>{decryptedText}</div>
-          </div>
+
+        <div className={styles.decryptedResult}>
+          <div className={styles.decryptedContent}>{decryptedText}</div>
+        </div>
       </form>
     </div>
   );
@@ -161,10 +171,6 @@ export default function Demo2() {
 
   return (
     <div className={styles.demoContainer}>
-      <div className={styles.encryptionInfo}>
-        <strong>Encryption:</strong> AES-256-GCM with server-side key
-      </div>
-
       <div className={styles.phonesContainer}>
         <div className={styles.phoneWrapper}>
           <Phone
