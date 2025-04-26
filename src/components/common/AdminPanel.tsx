@@ -7,38 +7,17 @@ import { DatabaseViewer, DatabaseViewerRef } from "./DatabaseViewer";
 import Draggable from "react-draggable";
 
 interface AdminPanelProps {
-  onResetDatabase: () => Promise<void>;
-  onViewDatabase: () => Promise<void>;
   demoVersion: number;
-  onSwitchDemo?: (demoNumber: number) => void;
   children?: React.ReactNode;
 }
 
 export function AdminPanel({
-  onResetDatabase,
-  onViewDatabase,
   demoVersion,
-  onSwitchDemo,
   children,
 }: AdminPanelProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [isDatabaseVisible, setIsDatabaseVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const databaseViewerRef = useRef<DatabaseViewerRef>(null);
   const nodeRef = useRef(null);
-
-  const handleViewDatabase = async () => {
-    setIsLoading(true);
-    await onViewDatabase();
-    setIsLoading(false);
-    // Toggle the visibility of database viewer when View Database is clicked
-    setIsDatabaseVisible((prev) => !prev);
-
-    // Refresh database contents if becoming visible
-    if (!isDatabaseVisible && databaseViewerRef.current) {
-      databaseViewerRef.current.fetchDatabaseContents();
-    }
-  };
 
   return (
     <div className={styles["admin-panel"]}>
@@ -55,8 +34,6 @@ export function AdminPanel({
 
             <DatabaseViewer
               ref={databaseViewerRef}
-              onClose={() => setIsDatabaseVisible(false)}
-              onResetDatabase={onResetDatabase}
             />
 
             {children && children}

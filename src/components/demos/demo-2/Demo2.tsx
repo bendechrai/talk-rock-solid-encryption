@@ -1,13 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Message } from "@/types/common";
-import {
-  encryptSymmetric,
-  decryptSymmetric,
-  decryptWithServerKey,
-  SERVER_KEY,
-} from "@/lib/encryption/symmetric";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { decryptSymmetric, SERVER_KEY } from "@/lib/encryption/symmetric";
 import { AdminPanel } from "@/components/common/AdminPanel";
 import { Phone } from "@/components/common/Phone";
 import styles from "./Demo2.module.css";
@@ -136,38 +130,10 @@ function AttackDemo() {
 }
 
 export default function Demo2() {
-  const [conversationId, setConversationId] = useState("default");
   const [currentUsers, setCurrentUsers] = useState({
     user1: "1",
     user2: "2",
   });
-
-  // Check for conversation ID in URL parameters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const convId = urlParams.get("conversationId");
-    if (convId) {
-      setConversationId(convId);
-    }
-  }, []);
-
-  // Function to reset database without page reload
-  const handleResetDatabase = async () => {
-    try {
-      await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reset" }),
-      });
-    } catch (error) {
-      console.error("Error resetting database:", error);
-    }
-  };
-
-  // Function to view database - just returns a resolved promise
-  const handleViewDatabase = async () => {
-    return Promise.resolve();
-  };
 
   return (
     <div className={styles.demoContainer}>
@@ -190,11 +156,7 @@ export default function Demo2() {
         </div>
       </div>
 
-      <AdminPanel
-        onResetDatabase={handleResetDatabase}
-        onViewDatabase={handleViewDatabase}
-        demoVersion={2}
-      >
+      <AdminPanel demoVersion={2}>
         <AttackDemo />
       </AdminPanel>
     </div>

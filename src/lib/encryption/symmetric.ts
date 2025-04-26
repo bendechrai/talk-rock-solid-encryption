@@ -143,11 +143,3 @@ export async function decryptSymmetric(encryptedText: string, password: string):
     return '(Decryption failed)';
   }
 }
-
-/**
- * Demo attack tool - decrypts a message using the server key
- * This demonstrates the vulnerability of server-side encryption
- */
-export async function decryptWithServerKey(encryptedText: string): Promise<string> {
-  return await decryptSymmetric(encryptedText, SERVER_KEY);
-}

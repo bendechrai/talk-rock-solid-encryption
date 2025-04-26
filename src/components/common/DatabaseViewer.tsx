@@ -9,13 +9,10 @@ import {
   useRef,
 } from "react";
 import styles from "./DatabaseViewer.module.css";
+import { useToast } from "./Toast";
 
 // Define interface for the database viewer component
-export interface DatabaseViewerProps {
-  onClose?: () => void;
-  onRefresh?: () => void;
-  onResetDatabase?: () => Promise<void>;
-}
+export interface DatabaseViewerProps {}
 
 // Define interface for database viewer ref
 export interface DatabaseViewerRef {
@@ -38,24 +35,31 @@ export const DatabaseViewer = forwardRef<
   const [isResetting, setIsResetting] = useState(false);
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Get toast function for notifications
+  const { showToast } = useToast();
+
   // Function to fetch database contents
   const fetchDatabaseContents = useCallback(() => {
     setIsLoading(true);
+    
     fetch("/api/admin")
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         setDbContents(data);
         setIsLoading(false);
-        // Call onRefresh callback if provided, but don't include it in dependencies
-        if (props.onRefresh) {
-          props.onRefresh();
-        }
       })
       .catch((error) => {
         console.error("Error fetching database:", error);
+        const errorMessage = `Failed to load database: ${error.message}`;
+        showToast(errorMessage, 'error');
         setIsLoading(false);
       });
-  }, []); // Empty dependency array to prevent infinite loops
+  }, [showToast]); // Include showToast in dependencies
 
   // Function to start editing a conversation's members
   const handleEditConversation = (
@@ -128,20 +132,32 @@ export const DatabaseViewer = forwardRef<
       });
   };
 
-  // Function to handle database reset
+  // Function to handle database reset directly
   const handleReset = async () => {
     if (confirm("Are you sure you want to reset the database?")) {
       setIsResetting(true);
-      if (props.onResetDatabase) {
-        try {
-          await props.onResetDatabase();
-          // Refresh the database contents after reset
-          fetchDatabaseContents();
-        } catch (error) {
-          console.error("Error resetting database:", error);
-        } finally {
-          setIsResetting(false);
+      try {
+        // Make the API call directly
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "reset" }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
         }
+        
+        // Show success message
+        showToast('Database reset successfully', 'success');
+        
+        // Refresh the database contents after reset
+        fetchDatabaseContents();
+      } catch (error) {
+        console.error("Error resetting database:", error);
+        showToast(`Failed to reset database: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      } finally {
+        setIsResetting(false);
       }
     }
   };
@@ -177,6 +193,8 @@ export const DatabaseViewer = forwardRef<
     <div className={styles.databaseViewer}>
       <div className={styles.databaseViewerContent}>
         <h3>Database Viewer</h3>
+        
+
 
         <h4>Users Table</h4>
         <table>
@@ -449,18 +467,15 @@ export const DatabaseViewer = forwardRef<
         </table>
       </div>
 
-      {props.onResetDatabase && (
-        <div className={styles.databaseActions}>
-          <button
-            onClick={handleReset}
-            disabled={isResetting || isLoading}
-            className={styles.resetButton}
-            aria-label="Reset Database"
-          >
-            {isResetting ? "Resetting..." : "Reset Database"}
-          </button>
-        </div>
-      )}
+      <div className={styles.databaseActions}>
+        <button
+          onClick={handleReset}
+          className={styles.resetButton}
+          disabled={isResetting}
+        >
+          {isResetting ? "Resetting..." : "Reset Database"}
+        </button>
+      </div>
     </div>
   );
 });

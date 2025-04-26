@@ -194,28 +194,7 @@ function ChatApp() {
     }
   }, [userId]);
   
-  // Function to reset database without page reload
-  const handleResetDatabase = async () => {
-    try {
-      await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reset' })
-      });
-      
-      // Refresh keys and messages without page reload
-      await generateNewKeys(userId);
-      await loadPublicKeys();
-    } catch (error) {
-      console.error('Error resetting database:', error);
-    }
-  };
-  
-  // Function to view database - just returns a resolved promise
-  // The actual data fetching is handled by the DatabaseViewer component
-  const handleViewDatabase = async () => {
-    return Promise.resolve();
-  };
+
   
   return (
     <div className="chat-app">
@@ -236,8 +215,6 @@ function ChatApp() {
       </Phone>
       
       <AdminPanel 
-        onResetDatabase={handleResetDatabase}
-        onViewDatabase={handleViewDatabase}
         demoVersion={3}
       />
 
