@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { Message } from "@/types/common";
 import {
-  generateKeys,
-  generateEphemeralKeys,
   encryptWithPublicKey,
   decryptWithPrivateKey,
 } from "@/lib/encryption/asymmetric";
@@ -114,51 +112,82 @@ export default function Demo3() {
     user2: "2",
   });
 
-  // Message processor for end-to-end encryption
-  const messageProcessor = {
-    beforeSend: async (content: string) => {
+  // Create a message processor factory function that takes a user ID
+  const createMessageProcessor = (userId: string) => ({
+    beforeSend: async (content: string, conversationId?: string) => {
       try {
-        // Get our user ID - this is the current user in the phone
-        const myUserId = currentUsers.user1;
-        if (!myUserId) throw new Error("User ID not found");
-
         // Get our private key from localStorage with user-specific key
-        const privateKey = localStorage.getItem(`chatPrivateKey_${myUserId}`);
+        const privateKey = localStorage.getItem(`chatPrivateKey_${userId}`);
         if (!privateKey) throw new Error("Private key not found");
 
-        // Fetch all public keys
-        const response = await fetch("/api/keys");
-        const data = await response.json();
-        const publicKeys = data.keys;
+        // Fetch public keys for the conversation members
+        let publicKeys: Record<string, string> = {};
 
-        if (Object.keys(publicKeys).length === 0) {
-          throw new Error("No recipients available");
+        if (!conversationId) {
+          throw new Error("Conversation ID is required for encryption");
         }
 
-        // Generate ephemeral keys for perfect forward secrecy
-        const ephemeralKeys = await generateEphemeralKeys();
+        // Use the conversation-specific endpoint to get public keys for members
+        const response = await fetch(
+          `/api/conversation/${conversationId}/keys`
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch public keys for conversation: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        publicKeys = data.keys || {};
+
+        if (Object.keys(publicKeys).length === 0) {
+          throw new Error("No recipients with public keys available");
+        }
 
         // Encrypt the message with each recipient's public key
         const encryptedForRecipients = await Promise.all(
-          Object.entries(publicKeys).map(async ([userId, publicKey]) => {
-            // For each recipient, encrypt the message using their public key and our ephemeral private key
-            const encrypted = await encryptWithPublicKey(
-              content,
-              publicKey as string,
-              ephemeralKeys.privateKey
-            );
-            return { userId, encrypted };
+          Object.entries(publicKeys).map(async ([recipientId, publicKey]) => {
+            try {
+              // Validate the public key before attempting encryption
+              if (
+                !publicKey ||
+                typeof publicKey !== "string" ||
+                publicKey.length < 32
+              ) {
+                console.warn(
+                  `Skipping encryption for user ${recipientId}: Invalid public key`
+                );
+                return null;
+              }
+
+              // For each recipient, encrypt the message using their public key
+              const encrypted = await encryptWithPublicKey(content, publicKey);
+              return { userId: recipientId, encrypted };
+            } catch (encryptError) {
+              console.error(
+                `Encryption failed for user ${recipientId}:`,
+                encryptError
+              );
+              return null;
+            }
           })
         );
 
-        // Return the encrypted data for all recipients
+        // Filter out any failed encryptions
+        const validEncryptions = encryptedForRecipients.filter(
+          (item) => item !== null
+        );
+
+        if (validEncryptions.length === 0) {
+          throw new Error("Failed to encrypt message for any recipients");
+        }
+
         // Return the encrypted data with metadata
         return JSON.stringify({
-          sender: myUserId,
-          recipients: encryptedForRecipients,
+          sender: userId,
+          recipients: validEncryptions,
           timestamp: new Date().toISOString(),
-          // Include ephemeral public key for potential future verification
-          ephemeralPublicKey: ephemeralKeys.publicKey,
         });
       } catch (error) {
         console.error("Encryption error:", error);
@@ -166,14 +195,11 @@ export default function Demo3() {
       }
     },
     afterReceive: async (messages: Message[]) => {
-      // Get the current user ID from the phone
-      const myUserId = currentUsers.user1;
-
       // Get the private key for this specific user
-      const privateKey = localStorage.getItem(`chatPrivateKey_${myUserId}`);
+      const privateKey = localStorage.getItem(`chatPrivateKey_${userId}`);
 
-      if (!myUserId || !privateKey) {
-        console.warn("Cannot decrypt: missing user ID or private key");
+      if (!privateKey) {
+        console.warn(`Cannot decrypt: missing private key for user ${userId}`);
         return messages;
       }
 
@@ -205,9 +231,7 @@ export default function Demo3() {
             const { sender, recipients } = encryptedData;
 
             // Find our encrypted message
-            const myMessage = recipients.find(
-              (r: any) => r.userId === myUserId
-            );
+            const myMessage = recipients.find((r: any) => r.userId === userId);
 
             if (myMessage) {
               // Decrypt with our private key
@@ -231,33 +255,39 @@ export default function Demo3() {
         })
       );
     },
-  };
+  });
 
   // State to track which users have keys
-  const [userKeysStatus, setUserKeysStatus] = useState<Record<string, boolean>>({});
-  
+  const [userKeysStatus, setUserKeysStatus] = useState<Record<string, boolean>>(
+    {}
+  );
+
   // Check which users have keys on component mount
   useEffect(() => {
     const checkUserKeys = () => {
       const status: Record<string, boolean> = {};
       // Check all possible users
-      ['1', '2', '3', '4'].forEach(userId => {
+      ["1", "2", "3", "4"].forEach((userId) => {
         const privateKey = localStorage.getItem(`chatPrivateKey_${userId}`);
         status[userId] = !!privateKey;
       });
       setUserKeysStatus(status);
     };
-    
+
     // Initial check
     checkUserKeys();
-    
+
     // Set up interval to periodically check for key changes
     const interval = setInterval(checkUserKeys, 2000);
     return () => clearInterval(interval);
   }, []);
-  
+
   // Handle key generation for a specific user
-  const handleKeysGenerated = async (userId: string, publicKey: string, privateKey: string) => {
+  const handleKeysGenerated = async (
+    userId: string,
+    publicKey: string,
+    privateKey: string
+  ) => {
     try {
       // Store private key in localStorage with user-specific key
       localStorage.setItem(`chatPrivateKey_${userId}`, privateKey);
@@ -270,9 +300,9 @@ export default function Demo3() {
       });
 
       // Update user keys status
-      setUserKeysStatus(prev => ({
+      setUserKeysStatus((prev) => ({
         ...prev,
-        [userId]: true
+        [userId]: true,
       }));
 
       console.log(`Keys generated successfully for user ${userId}`);
@@ -285,17 +315,21 @@ export default function Demo3() {
   // Helper function to get user name from ID
   const getUserName = (userId: string) => {
     switch (userId) {
-      case '1': return 'Alice';
-      case '2': return 'Bob';
-      case '3': return 'Charlie';
-      case '4': return 'Diana';
-      default: return `User ${userId}`;
+      case "1":
+        return "Alice";
+      case "2":
+        return "Bob";
+      case "3":
+        return "Charlie";
+      case "4":
+        return "Diana";
+      default:
+        return `User ${userId}`;
     }
   };
 
   return (
     <div className={styles.demoContainer}>
-
       <div className={styles.phonesContainer}>
         <div className={styles.phoneWrapper}>
           {userKeysStatus[currentUsers.user1] ? (
@@ -306,7 +340,7 @@ export default function Demo3() {
               onChangeUser={(userId) =>
                 setCurrentUsers((prev) => ({ ...prev, user1: userId }))
               }
-              messageProcessor={messageProcessor}
+              messageProcessor={createMessageProcessor(currentUsers.user1)}
             />
           ) : (
             <div className={styles.phoneWithKeyGen}>
@@ -321,8 +355,12 @@ export default function Demo3() {
                 <KeyGenerationScreen
                   userId={currentUsers.user1}
                   userName={getUserName(currentUsers.user1)}
-                  onKeysGenerated={(publicKey, privateKey) => 
-                    handleKeysGenerated(currentUsers.user1, publicKey, privateKey)
+                  onKeysGenerated={(publicKey, privateKey) =>
+                    handleKeysGenerated(
+                      currentUsers.user1,
+                      publicKey,
+                      privateKey
+                    )
                   }
                   onChangeUser={(userId) =>
                     setCurrentUsers((prev) => ({ ...prev, user1: userId }))
@@ -344,7 +382,7 @@ export default function Demo3() {
               onChangeUser={(userId) =>
                 setCurrentUsers((prev) => ({ ...prev, user2: userId }))
               }
-              messageProcessor={messageProcessor}
+              messageProcessor={createMessageProcessor(currentUsers.user2)}
             />
           ) : (
             <div className={styles.phoneWithKeyGen}>
@@ -360,8 +398,12 @@ export default function Demo3() {
                 <KeyGenerationScreen
                   userId={currentUsers.user2}
                   userName={getUserName(currentUsers.user2)}
-                  onKeysGenerated={(publicKey, privateKey) => 
-                    handleKeysGenerated(currentUsers.user2, publicKey, privateKey)
+                  onKeysGenerated={(publicKey, privateKey) =>
+                    handleKeysGenerated(
+                      currentUsers.user2,
+                      publicKey,
+                      privateKey
+                    )
                   }
                   onChangeUser={(userId) =>
                     setCurrentUsers((prev) => ({ ...prev, user2: userId }))

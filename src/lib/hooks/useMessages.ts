@@ -3,7 +3,7 @@ import { Message } from '@/types/common';
 
 // Define the message processor interface
 interface MessageProcessor {
-  beforeSend?: (content: string) => Promise<string>;
+  beforeSend?: (content: string, conversationId?: string) => Promise<string>;
   afterReceive?: (messages: Message[]) => Promise<Message[]>;
 }
 
@@ -106,7 +106,9 @@ export function useMessages({
       let processedContent = content;
       if (messageProcessor?.beforeSend) {
         try {
-          processedContent = await messageProcessor.beforeSend(content);
+          // Make sure we're using a valid conversation ID (not 'default')
+          const validConversationId = conversationId === 'default' ? '1' : conversationId;
+          processedContent = await messageProcessor.beforeSend(content, validConversationId);
         } catch (processingError) {
           console.error('Error processing message before send:', processingError);
           throw processingError;

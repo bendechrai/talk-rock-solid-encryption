@@ -39,13 +39,7 @@ export async function generateKeys() {
   };
 }
 
-/**
- * Generates an ephemeral key pair for perfect forward secrecy
- * @returns Object containing ephemeral public and private keys
- */
-export async function generateEphemeralKeys() {
-  return generateKeys();
-}
+
 
 /**
  * Derives a shared secret using X25519 Diffie-Hellman key exchange
@@ -54,75 +48,99 @@ export async function generateEphemeralKeys() {
  * @returns Shared secret as ArrayBuffer
  */
 export async function deriveSharedSecret(privateKey: string, publicKey: string): Promise<ArrayBuffer> {
-  const privateKeyBytes = hexToBytes(privateKey);
-  const publicKeyBytes = hexToBytes(publicKey);
-  
-  // Perform Diffie-Hellman key exchange
-  const sharedSecretBytes = x25519.getSharedSecret(privateKeyBytes, publicKeyBytes);
-  // Convert to proper ArrayBuffer
-  const sharedSecret = new Uint8Array(sharedSecretBytes).buffer;
-  
-  return sharedSecret;
+  try {
+    // Validate inputs
+    if (!privateKey || privateKey.length < 32) {
+      throw new Error(`Invalid private key length: ${privateKey ? privateKey.length : 0}`);
+    }
+    
+    if (!publicKey || publicKey.length < 32) {
+      throw new Error(`Invalid public key length: ${publicKey ? publicKey.length : 0}`);
+    }
+    
+    const privateKeyBytes = hexToBytes(privateKey);
+    const publicKeyBytes = hexToBytes(publicKey);
+    
+    // Perform Diffie-Hellman key exchange
+    const sharedSecretBytes = x25519.getSharedSecret(privateKeyBytes, publicKeyBytes);
+    // Convert to proper ArrayBuffer
+    const sharedSecret = new Uint8Array(sharedSecretBytes).buffer;
+    
+    return sharedSecret;
+  } catch (error) {
+    console.error('Failed to derive shared secret:', error);
+    throw error; // Re-throw to be handled by the caller
+  }
 }
 
 /**
  * Encrypts a message with a recipient's public key using X25519
  * @param text The plain text to encrypt
  * @param recipientPublicKey The recipient's public key (hex string)
- * @param senderPrivateKey The sender's private key (hex string)
- * @returns Encrypted message with ephemeral public key
+ * @returns Encrypted message
  */
-export async function encryptWithPublicKey(text: string, recipientPublicKey: string, senderPrivateKey?: string) {
+export async function encryptWithPublicKey(text: string, recipientPublicKey: string) {
   try {
-    // Generate ephemeral keys for perfect forward secrecy
-    const ephemeralKeys = await generateEphemeralKeys();
+    // Validate the public key before proceeding
+    if (!recipientPublicKey || typeof recipientPublicKey !== 'string') {
+      throw new Error('Invalid recipient public key: key is empty or not a string');
+    }
     
-    // Use the provided sender private key or the ephemeral one
-    const privateKey = senderPrivateKey || ephemeralKeys.privateKey;
+    if (recipientPublicKey.length < 32) {
+      throw new Error(`Invalid recipient public key length: ${recipientPublicKey.length} (expected at least 32)`);
+    }
     
-    // Derive shared secret using DH
-    const sharedSecret = await deriveSharedSecret(privateKey, recipientPublicKey);
+    // Generate a private key for this encryption
+    const { privateKey } = await generateKeys();
     
-    // Use the shared secret to derive an AES key
-    const encoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      sharedSecret,
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
-    );
-    
-    const aesKey = await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: encoder.encode('X25519-Salt'),
-        iterations: 100000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt']
-    );
-    
-    // Encrypt the message with the derived key
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: iv.buffer },
-      aesKey,
-      encoder.encode(text)
-    );
-    
-    // Return the encrypted data along with the ephemeral public key and IV
-    return JSON.stringify({
-      ephemeralPublicKey: ephemeralKeys.publicKey,
-      iv: bufferToBase64(iv.buffer),
-      ciphertext: bufferToBase64(encryptedData)
-    });
+    try {
+      // Derive shared secret using DH
+      const sharedSecret = await deriveSharedSecret(privateKey, recipientPublicKey);
+      
+      // Use the shared secret to derive an AES key
+      const encoder = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        sharedSecret,
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+      
+      const aesKey = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: encoder.encode('X25519-Salt'),
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt']
+      );
+      
+      // Encrypt the message with the derived key
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encryptedData = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv.buffer },
+        aesKey,
+        encoder.encode(text)
+      );
+      
+      // Return the encrypted data
+      return JSON.stringify({
+        publicKey: privateKey,  // We send our public key so recipient can derive the same shared secret
+        iv: bufferToBase64(iv.buffer),
+        ciphertext: bufferToBase64(encryptedData)
+      });
+    } catch (dhError) {
+      console.error('Diffie-Hellman key exchange failed:', dhError);
+      throw new Error(`Key exchange failed: ${dhError.message}`);
+    }
   } catch (error) {
     console.error('Encryption failed:', error);
-    throw new Error('Encryption failed');
+    throw new Error(`Encryption failed: ${error.message}`);
   }
 }
 
@@ -135,10 +153,10 @@ export async function encryptWithPublicKey(text: string, recipientPublicKey: str
 export async function decryptWithPrivateKey(encryptedMessage: string, privateKey: string) {
   try {
     // Parse the encrypted message
-    const { ephemeralPublicKey, iv, ciphertext } = JSON.parse(encryptedMessage);
+    const { publicKey, iv, ciphertext } = JSON.parse(encryptedMessage);
     
     // Derive shared secret using DH
-    const sharedSecret = await deriveSharedSecret(privateKey, ephemeralPublicKey);
+    const sharedSecret = await deriveSharedSecret(privateKey, publicKey);
     
     // Use the shared secret to derive an AES key
     const encoder = new TextEncoder();
