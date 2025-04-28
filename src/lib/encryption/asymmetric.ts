@@ -224,7 +224,14 @@ export async function decryptWithPrivateKey(encryptedMessage: string, privateKey
     const result = decoder.decode(decryptedBuffer);
     return result;
   } catch (error) {
-    console.error('[Asymmetric] Decryption failed:', error);
+    // Only log detailed errors for unexpected failures
+    // For expected failures (like wrong key), just log a debug message
+    if (error instanceof Error && error.message && !error.message.includes('decrypt')) {
+      console.error('[Asymmetric] Decryption failed with unexpected error:', error);
+    } else {
+      // This is likely an expected failure when trying multiple keys
+      console.debug('[Asymmetric] Decryption attempt failed - possibly wrong key');
+    }
     return '(Unable to decrypt message)';
   }
 }

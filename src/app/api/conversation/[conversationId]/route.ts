@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/database/in-memory-db';
 
 /**
- * GET /api/conversations/:id
+ * GET /api/conversation/:conversationId
  * Returns a specific conversation by ID
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { conversationId: string } }
 ) {
   try {
-    const conversationId = params.id;
+    const conversationId = params.conversationId;
     
     if (!conversationId) {
       return NextResponse.json(

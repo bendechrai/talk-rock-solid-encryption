@@ -10,7 +10,7 @@ interface MessageProcessor {
 interface UseMessagesOptions {
   conversationId: string | null;
   userId: string;
-  demoVersion: 1 | 2 | 3;
+  demoVersion: 1 | 2 | 3 | 4;
   messageProcessor?: MessageProcessor;
   pollingInterval?: number;
 }

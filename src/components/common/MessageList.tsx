@@ -80,7 +80,13 @@ export function MessageList({
               <div className={styles["message-sender"]}>
                 {getUserName(message.sender)}
               </div>
-              <div className={styles["message-content"]}>{message.content}</div>
+              <div className={styles["message-content"]}>
+                {message._isHtml ? (
+                  <span dangerouslySetInnerHTML={{ __html: message.content }} />
+                ) : (
+                  message.content
+                )}
+              </div>
               <div className={styles["message-time"]}>
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>

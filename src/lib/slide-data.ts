@@ -142,7 +142,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "7a",
+    id: "8",
     title: "Public-Private Key Encryption",
     contentType: "regular",
     htmlContent: `
@@ -156,7 +156,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "8",
+    id: "9",
     title: "End-to-End Encryption Demo",
     contentType: "demo",
     demoId: "demo-3",
@@ -166,7 +166,7 @@ export const slides: Slide[] = [
     }
   },
   {
-    id: "9",
+    id: "10",
     title: "Perfect Forward Secrecy: Protecting the Timeline",
     contentType: "regular",
     htmlContent: `
@@ -182,7 +182,61 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "10",
+    id: "11",
+    title: "Ephemeral Key Management Challenges",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Ephemeral Key Management Challenges</h2>
+      <ul>
+        <li>Ephemeral keys are temporary by design</li>
+        <li>Key expiration creates practical challenges:</li>
+        <ul>
+          <li>What if a recipient hasn't been online recently?</li>
+          <li>How long should keys remain valid?</li>
+          <li>What happens when keys expire during a conversation?</li>
+        </ul>
+        <li>Security vs. usability trade-offs</li>
+      </ul>
+    `,
+    notes: "Ephemeral keys create a fundamental challenge: if keys expire quickly (good for security), users who haven't been online won't have valid keys. If Alice wants to message Bob, but Bob hasn't logged in for days, his ephemeral keys will have expired. This creates a tension between security (short-lived keys) and usability (ensuring messages can be delivered).",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "12",
+    title: "Real-World Ephemeral Key Solutions",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Real-World Ephemeral Key Solutions</h2>
+      <ul>
+        <li>Signal Protocol's approach:</li>
+        <ul>
+          <li>Pre-key bundles uploaded when online</li>
+          <li>One-time use keys for new conversations</li>
+          <li>Double Ratchet Algorithm for key evolution</li>
+        </ul>
+        <li>Message queuing for offline recipients</li>
+        <li>Tiered key approach: identity, signed pre-keys, and one-time keys</li>
+      </ul>
+    `,
+    notes: "Real-world applications solve this with sophisticated key management. Signal uses a 'pre-key bundle' system where users upload multiple ephemeral keys when online. Messages to offline users can be queued until they return. The Double Ratchet Algorithm evolves keys with each message, maintaining forward secrecy while ensuring delivery. This creates a balance between security and practical usability.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "13",
+    title: "Perfect Forward Secrecy Demo",
+    contentType: "demo",
+    demoId: "demo-4",
+    notes: "Demonstrate how key rotation protects past messages. Show how ephemeral keys are generated for each conversation and how they prevent decryption of past messages even if the long-term private key is compromised. Use the Decryption Panel to demonstrate a key compromise scenario. Note that for this demo, ephemeral keys last longer than they would in production to make the demo practical.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "14",
     title: "The Multi-Device Challenge",
     contentType: "regular",
     htmlContent: `
@@ -199,7 +253,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "11",
+    id: "15",
     title: "Group Chat Complexities",
     contentType: "regular",
     htmlContent: `
@@ -215,7 +269,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "12",
+    id: "16",
     title: "Metadata Protection",
     contentType: "regular",
     htmlContent: `
@@ -231,7 +285,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "13",
+    id: "17",
     title: "Conclusion",
     contentType: "regular",
     htmlContent: `

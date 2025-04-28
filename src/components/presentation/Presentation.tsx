@@ -38,6 +38,14 @@ const Demo3 = dynamic(() => import("@/components/demos/demo-3/Demo3"), {
   ),
 });
 
+const Demo4 = dynamic(() => import("@/components/demos/demo-4/Demo4"), {
+  loading: () => (
+    <div className="loading-demo">
+      Loading Demo 4...<span className="cursor"></span>
+    </div>
+  ),
+});
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TitleSlide = ({
   title,
@@ -151,6 +159,9 @@ const DemoSlide = ({ title, demoId }: { title: string; demoId: string }) => {
       break;
     case "demo-3":
       DemoComponent = Demo3;
+      break;
+    case "demo-4":
+      DemoComponent = Demo4;
       break;
     default:
       return (

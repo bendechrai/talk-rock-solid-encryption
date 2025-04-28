@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import styles from "./ChatApp.module.css";
 import phoneStyles from "./Phone.module.css";
 import { Message, User, Conversation } from "@/types/common";
@@ -29,7 +29,7 @@ type PhoneColor =
 
 interface ChatAppProps {
   userId: string;
-  demoVersion: 1 | 2 | 3;
+  demoVersion: 1 | 2 | 3 | 4;
   onChangePhoneColor?: (color: PhoneColor) => void;
   initialColor?: PhoneColor;
   onChangeUser?: (userId: string) => void;
@@ -37,6 +37,7 @@ interface ChatAppProps {
     beforeSend?: (content: string) => Promise<string>;
     afterReceive?: (messages: Message[]) => Promise<Message[]>;
   };
+  ephemeralKeyGenerator?: (userId: string, conversationId: string) => ReactNode;
 }
 
 export function ChatApp({
@@ -46,6 +47,7 @@ export function ChatApp({
   initialColor = "default",
   onChangeUser,
   messageProcessor,
+  ephemeralKeyGenerator,
 }: ChatAppProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [phoneColor, setPhoneColor] = useState<PhoneColor>(initialColor);
@@ -132,6 +134,29 @@ export function ChatApp({
     Record<string, Conversation>
   >({});
 
+  // Fetch users and conversations when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const usersResponse = await fetch('/api/users');
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          const usersRecord: Record<string, User> = {};
+          
+          usersData.users.forEach((user: User) => {
+            usersRecord[user.id] = user;
+          });
+          
+          setUserData(usersRecord);
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
+
   // Function to get user name from ID using database data
   const getUserName = (id: string) => {
     // If we have the user data in our state, use it
@@ -139,20 +164,8 @@ export function ChatApp({
       return userData[id].name;
     }
 
-    // Fallback to hardcoded names for demo purposes
-    // This ensures we don't get stuck in a loading state
-    switch (id) {
-      case "1":
-        return "Alice";
-      case "2":
-        return "Bob";
-      case "3":
-        return "Charlie";
-      case "4":
-        return "Diana";
-      default:
-        return `User ${id}`;
-    }
+    // Generic fallback if user data isn't loaded yet
+    return `User ${id}`;
   };
 
   // Function to get conversation name from ID using database data
@@ -300,7 +313,18 @@ export function ChatApp({
       </div>
 
       <div className={styles.messageContainer}>
-        <MessageList messages={messages} currentUser={currentUserId} />
+        {/* If we have an ephemeral key generator function and a conversation ID, check if we need to show it */}
+        {ephemeralKeyGenerator && conversationId ? (
+          // Render either the ephemeral key generator or the messages
+          <>
+            {ephemeralKeyGenerator(currentUserId, conversationId) || (
+              <MessageList messages={messages} currentUser={currentUserId} />
+            )}
+          </>
+        ) : (
+          // Regular message list if no ephemeral key generator
+          <MessageList messages={messages} currentUser={currentUserId} />
+        )}
       </div>
 
       <div className={styles.phoneFooter}>

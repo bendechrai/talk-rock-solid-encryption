@@ -47,6 +47,17 @@ a {
   text-decoration: none;
 }
 
+/* Styles for expired keys */
+.key-icon.expired-key {
+  filter: grayscale(100%);
+  opacity: 0.7;
+}
+
+.key-icon {
+  display: inline-block;
+  margin-right: 4px;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

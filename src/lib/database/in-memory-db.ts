@@ -18,17 +18,28 @@ interface PublicKeyEntry {
   createdAt: Date;
 }
 
+interface EphemeralKeyEntry {
+  id: string;
+  userId: string;
+  conversationId: string;
+  publicKey: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
 interface DatabaseState {
   messages: Message[];
   users: User[];
   conversations: Conversation[];
   publicKeys: PublicKeyEntry[];
+  ephemeralKeys: EphemeralKeyEntry[];
   messageIdCounter: number;
 }
 
 class InMemoryDatabase {
   private messages: Message[] = [];
   private users: User[] = [];
+  private ephemeralKeys: EphemeralKeyEntry[] = [];
   private conversations: Conversation[] = [];
   private publicKeys: PublicKeyEntry[] = [];
   private messageIdCounter = 0;
@@ -64,13 +75,17 @@ class InMemoryDatabase {
           createdAt: new Date(key.createdAt)
         })) : [];
         
-        this.messageIdCounter = dbState.messageIdCounter;
+        // Handle ephemeral keys, converting string dates to Date objects
+        this.ephemeralKeys = dbState.ephemeralKeys ? dbState.ephemeralKeys.map(key => ({
+          ...key,
+          createdAt: new Date(key.createdAt),
+          expiresAt: new Date(key.expiresAt)
+        })) : [];
         
-        console.log('Database loaded from file');
+        this.messageIdCounter = dbState.messageIdCounter;
       } else {
         // File doesn't exist, initialize with default data
         this.initializeDefaultData();
-        console.log('Database initialized with default data');
       }
     } catch (error) {
       console.error('Error loading database from file:', error);
@@ -88,7 +103,7 @@ class InMemoryDatabase {
       { id: '1', name: 'Alice', phoneColor: '#ff9999' },
       { id: '2', name: 'Bob', phoneColor: '#99ccff' },
       { id: '3', name: 'Charlie', phoneColor: '#99ff99' },
-      { id: '4', name: 'Diana', phoneColor: '#ffcc99' }
+      { id: '4', name: 'Eve', phoneColor: '#ffcc99' }
     ];
     
     // Add default conversations
@@ -122,6 +137,7 @@ class InMemoryDatabase {
         users: this.users,
         conversations: this.conversations,
         publicKeys: this.publicKeys,
+        ephemeralKeys: this.ephemeralKeys,
         messageIdCounter: this.messageIdCounter
       };
       
@@ -316,10 +332,64 @@ class InMemoryDatabase {
       { id: "4", memberUserIds: ["1", "2", "3"], name: "Group Chat" },
     ];
     this.messages = [];
+    this.publicKeys = [];
+    this.ephemeralKeys = [];
     this.messageIdCounter = 0;
     
     // Save the reset state to file
     this.saveToFile();
+  }
+
+  // Ephemeral keys operations
+  async addEphemeralKey(userId: string, conversationId: string, publicKey: string, expiresAt?: Date): Promise<string> {
+    const id = crypto.randomUUID();
+    const now = new Date();
+    const expiration = expiresAt || new Date(now.getTime() + 1000 * 60 * 5); // Default 5 minutes expiry
+    
+    this.ephemeralKeys.push({
+      id,
+      userId,
+      conversationId,
+      publicKey,
+      createdAt: now,
+      expiresAt: expiration
+    });
+    
+    this.saveToFile();
+    return id;
+  }
+  
+  async getEphemeralKeysForConversation(conversationId: string): Promise<EphemeralKeyEntry[]> {
+    const result = this.ephemeralKeys.filter(key => key.conversationId === conversationId);
+    return result;
+  }
+  
+  async getEphemeralKeysForConversationAndUser(conversationId: string, userId: string): Promise<EphemeralKeyEntry[]> {
+    return this.ephemeralKeys.filter(key => key.conversationId === conversationId && key.userId === userId);
+  }
+  
+  async getEphemeralKeysForUser(userId: string): Promise<EphemeralKeyEntry[]> {
+    return this.ephemeralKeys.filter(key => key.userId === userId);
+  }
+  
+  async deleteEphemeralKey(id: string): Promise<boolean> {
+    const initialLength = this.ephemeralKeys.length;
+    this.ephemeralKeys = this.ephemeralKeys.filter(key => key.id !== id);
+    
+    // If the length changed, we removed a key
+    const success = initialLength !== this.ephemeralKeys.length;
+    
+    if (success) {
+      this.saveToFile();
+    }
+    
+    return success;
+  }
+
+  // Helper method to get all members of a conversation
+  async getConversationMembers(conversationId: string): Promise<string[]> {
+    const conversation = await this.getConversationById(conversationId);
+    return conversation ? conversation.memberUserIds : [];
   }
 }
 

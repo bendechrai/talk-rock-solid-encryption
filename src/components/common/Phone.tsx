@@ -9,7 +9,7 @@ type PhoneColor = 'default' | 'silver' | 'gold' | 'rose' | 'blue' | 'red' | 'tit
 
 interface PhoneProps {
   userId: string;
-  demoVersion: 1 | 2 | 3;
+  demoVersion: 1 | 2 | 3 | 4;
   initialColor?: PhoneColor;
   children?: ReactNode;
   isRight?: boolean;
@@ -18,6 +18,7 @@ interface PhoneProps {
     beforeSend?: (content: string) => Promise<string>;
     afterReceive?: (messages: Message[]) => Promise<Message[]>;
   };
+  ephemeralKeyGenerator?: (userId: string, conversationId: string) => ReactNode;
 }
 
 export function Phone({ 
@@ -27,7 +28,8 @@ export function Phone({
   children,
   isRight = false,
   onChangeUser,
-  messageProcessor
+  messageProcessor,
+  ephemeralKeyGenerator
 }: PhoneProps) {
   const [color, setColor] = useState<PhoneColor>(initialColor);
   const [currentTime, setCurrentTime] = useState('');
@@ -75,7 +77,7 @@ export function Phone({
               userId={currentUserId}
               demoVersion={demoVersion}
               onChangePhoneColor={setColor}
-              initialColor={initialColor}
+              initialColor={color}
               onChangeUser={(newUserId) => {
                 setCurrentUserId(newUserId);
                 if (onChangeUser) {
@@ -83,6 +85,7 @@ export function Phone({
                 }
               }}
               messageProcessor={messageProcessor}
+              ephemeralKeyGenerator={ephemeralKeyGenerator}
             />
           )}
         </div>

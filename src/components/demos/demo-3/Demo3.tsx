@@ -162,10 +162,14 @@ export default function Demo3() {
                     decrypted &&
                     decrypted !== "(Unable to decrypt message)"
                   ) {
+                    // Add key icon and info to the decrypted message
+                    const keyInfo = "User Key (" + privateKey.slice(-6) + ")";
+                    const displayContent = `<span title="${keyInfo}">🔑</span> ${decrypted}`;
                     return {
                       ...msg,
-                      content: decrypted,
+                      content: displayContent,
                       sender: sender || msg.sender, // Use the sender from the encrypted data if available
+                      _isHtml: true,
                     };
                   } else {
                     return { ...msg, content: "(Could not decrypt message)" };
@@ -193,9 +197,13 @@ export default function Demo3() {
 
                 if (decrypted && decrypted !== "(Unable to decrypt message)") {
                 
+                  // Add key icon and info to the decrypted message
+                  const keyInfo = "User Key (" + privateKey.slice(-6) + ")";
+                  const displayContent = `<span title="${keyInfo}">🔑</span> ${decrypted}`;
                   return {
                     ...msg,
-                    content: decrypted,
+                    content: displayContent,
+                    _isHtml: true,
                   };
                 } else {
                   return { ...msg, content: "(Could not decrypt message)" };
@@ -263,7 +271,6 @@ export default function Demo3() {
         [userId]: true,
       }));
 
-      console.log(`Keys generated successfully for user ${userId}`);
     } catch (error) {
       console.error(`Error saving generated keys for user ${userId}:`, error);
       throw error; // Re-throw to be handled by the KeyGenerationScreen
@@ -280,7 +287,7 @@ export default function Demo3() {
       case "3":
         return "Charlie";
       case "4":
-        return "Diana";
+        return "Eve";
       default:
         return `User ${userId}`;
     }

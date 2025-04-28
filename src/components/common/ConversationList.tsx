@@ -6,7 +6,7 @@ import styles from "./ConversationList.module.css";
 
 interface ConversationListProps {
   userId: string;
-  demoVersion: 1 | 2 | 3;
+  demoVersion: 1 | 2 | 3 | 4;
   onSelectConversation: (conversationId: string) => void;
 }
 

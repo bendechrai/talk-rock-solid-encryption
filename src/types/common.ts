@@ -11,6 +11,9 @@ export interface Message {
   sender: string;
   timestamp: Date;
   conversationId: string;
+  _decryptedWith?: string;  // Type of key used for decryption (ephemeral or standard)
+  _keyInfo?: string;       // Information about the key used (e.g., last 6 digits)
+  _isHtml?: boolean;      // Whether the content contains HTML that should be rendered
 }
 
 /**
