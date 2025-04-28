@@ -157,7 +157,6 @@ export function ChatApp({
 
   // Function to get conversation name from ID using database data
   const getConversationName = (id: string | null) => {
-    console.log("id", id);
     if (!id) return "";
 
     // If we have the conversation data in our state, use it

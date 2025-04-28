@@ -142,9 +142,6 @@ export default function Demo3() {
               encryptedData.recipients &&
               Array.isArray(encryptedData.recipients)
             ) {
-              console.log(
-                `[Demo3] Message has proper E2E structure with recipients`
-              );
               const { sender, recipients } = encryptedData;
 
               // Find our encrypted message

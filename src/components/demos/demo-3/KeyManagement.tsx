@@ -207,7 +207,7 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
             {selectedUser ? (
               <>
                 <div className={styles.userHeader}>
-                  <h4>{selectedUser.name}'s' Keys</h4>
+                  <h4>{selectedUser.name}'s Keys</h4>
                   <div className={styles.buttonGroup}>
                     <button 
                       className={styles.regenerateButton}
