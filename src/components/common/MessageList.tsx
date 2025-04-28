@@ -33,19 +33,32 @@ export function MessageList({
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      // Use the parent container's scrollTop property instead of scrollIntoView
-      const container = messagesEndRef.current.parentElement;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
+      // Use scrollIntoView with a block: 'end' setting for more reliable scrolling
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
   };
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    // Add a small delay to ensure DOM is updated
-    setTimeout(scrollToBottom, 100);
+    // First immediate scroll attempt
+    scrollToBottom();
+    
+    // Second attempt with a small delay to ensure DOM is fully updated
+    const timer = setTimeout(scrollToBottom, 100);
+    
+    // Third attempt with a longer delay for any slow rendering
+    const timer2 = setTimeout(scrollToBottom, 300);
+    
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
   }, [messages]);
+  
+  // Also scroll to bottom on component mount
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
 
   return (
     <div className={styles["messages-container"]}>
