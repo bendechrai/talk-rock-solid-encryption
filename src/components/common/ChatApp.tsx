@@ -11,7 +11,8 @@ import { useMessages } from "@/lib/hooks/useMessages";
 import {
   fetchUserData,
   fetchConversationData,
-} from "@/lib/helpers/dataHelpers";
+  fetchUserConversations
+} from '@/lib/helpers/dataHelpers';
 import { Layout } from "./Layout";
 import { Header } from "./Header";
 import { Content } from "./Content";
@@ -196,6 +197,30 @@ export function ChatApp({
     loadUserData();
   }, [currentUserId, demoVersion, userData]);
 
+  // Preload all conversations for the current user
+  useEffect(() => {
+    const preloadConversations = async () => {
+      try {
+        const conversations = await fetchUserConversations(currentUserId, demoVersion);
+        if (conversations && conversations.length > 0) {
+          const conversationsMap = conversations.reduce((acc, conversation) => {
+            acc[conversation.id] = conversation;
+            return acc;
+          }, {} as Record<string, Conversation>);
+          
+          setConversationData(prev => ({
+            ...prev,
+            ...conversationsMap
+          }));
+        }
+      } catch (error) {
+        console.error('Error preloading conversations:', error);
+      }
+    };
+    
+    preloadConversations();
+  }, [currentUserId, demoVersion]);
+  
   // Fetch conversation data when conversation ID changes
   useEffect(() => {
     if (!conversationId) return;
