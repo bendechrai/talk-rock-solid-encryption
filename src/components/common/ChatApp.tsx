@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MessageList } from "./MessageList";
-import { MessageInput } from "./MessageInput";
-import { ConversationList } from "./ConversationList";
-import { UserSelector } from "./UserSelector";
-import { Message } from "@/types/common";
-import styles from "./ChatApp.module.css";
-import { phoneStyles } from "./phoneStyles";
+import { useState, useEffect } from 'react';
+import styles from './ChatApp.module.css';
+import phoneStyles from './Phone.module.css';
+import { Message, User, Conversation } from '@/types/common';
+import { MessageList } from './MessageList';
+import { MessageInput } from './MessageInput';
+import { ConversationList } from './ConversationList';
+import { PhoneHeader } from './PhoneHeader';
 import { useMessages } from "@/lib/hooks/useMessages";
+import { fetchUserData, fetchConversationData } from '@/lib/helpers/dataHelpers';
 
 type PhoneColor =
   | "default"
@@ -112,8 +113,21 @@ export function ChatApp({
   };
 
   // Render the appropriate screen based on whether a conversation is selected
-  // Function to get user name from ID
+  // State to store user data
+  const [userData, setUserData] = useState<Record<string, User>>({});
+  
+  // State to store conversation data
+  const [conversationData, setConversationData] = useState<Record<string, Conversation>>({});
+
+  // Function to get user name from ID using database data
   const getUserName = (id: string) => {
+    // If we have the user data in our state, use it
+    if (userData[id] && userData[id].name) {
+      return userData[id].name;
+    }
+    
+    // Fallback to hardcoded names for demo purposes
+    // This ensures we don't get stuck in a loading state
     switch (id) {
       case "1":
         return "Alice";
@@ -122,11 +136,72 @@ export function ChatApp({
       case "3":
         return "Charlie";
       case "4":
-        return "Eve";
+        return "Diana";
       default:
         return `User ${id}`;
     }
   };
+  
+  // Function to get conversation name from ID using database data
+  const getConversationName = (id: string | null) => {
+    if (!id) return "";
+    
+    // If we have the conversation data in our state, use it
+    if (conversationData[id] && conversationData[id].name) {
+      return conversationData[id].name;
+    }
+    
+    // Provide a meaningful fallback based on conversation ID pattern
+    if (id.includes('_')) {
+      // This is likely a direct conversation between users
+      const userIds = id.split('_');
+      const userNames = userIds.map(userId => getUserName(userId));
+      return userNames.join(' & ');
+    } else if (id === 'group') {
+      return 'Group Chat';
+    }
+    
+    // Generic fallback
+    return `Chat ${id}`;
+  };
+  
+  // Fetch user data when current user ID changes
+  useEffect(() => {
+    const loadUserData = async () => {
+      // Only fetch if we don't already have this user's data
+      if (!userData[currentUserId]) {
+        const user = await fetchUserData(currentUserId, demoVersion);
+        if (user) {
+          setUserData(prev => ({
+            ...prev,
+            [currentUserId]: user
+          }));
+        }
+      }
+    };
+    
+    loadUserData();
+  }, [currentUserId, demoVersion, userData]);
+  
+  // Fetch conversation data when conversation ID changes
+  useEffect(() => {
+    if (!conversationId) return;
+    
+    // Only fetch if we don't already have this conversation's data
+    if (!conversationData[conversationId]) {
+      const loadConversationData = async () => {
+        const conversation = await fetchConversationData(conversationId, currentUserId, demoVersion);
+        if (conversation) {
+          setConversationData(prev => ({
+            ...prev,
+            [conversationId]: conversation
+          }));
+        }
+      };
+      
+      loadConversationData();
+    }
+  }, [conversationId, currentUserId, demoVersion, conversationData]);
   
   // Handle user change
   const handleUserChange = (newUserId: string) => {
@@ -164,19 +239,13 @@ export function ChatApp({
 
   const renderConversationScreen = () => (
     <>
-      <div className={styles.phoneHeader}>
-        <button
-          onClick={handleBackToList}
-          className={styles.backButton}
-          title="Back to conversations"
-        >
-          ←
-        </button>
-        <span className={styles.userInfo}>
-          <span>{getUserName(currentUserId)}</span>
-          <UserSelector currentUserId={currentUserId} onUserChange={handleUserChange} />
-        </span>
-      </div>
+      <PhoneHeader
+        userId={currentUserId}
+        userName={getConversationName(conversationId)}
+        showBackButton={true}
+        onBack={handleBackToList}
+        onChangeUser={handleUserChange}
+      />
 
       <MessageList messages={messages} currentUser={currentUserId} />
 
@@ -188,12 +257,11 @@ export function ChatApp({
 
   const renderConversationListScreen = () => (
     <>
-      <div className={styles.phoneHeader}>
-        <span className={styles.userInfo}>
-          <span>{getUserName(currentUserId)}</span>
-          <UserSelector currentUserId={currentUserId} onUserChange={handleUserChange} />
-        </span>
-      </div>
+      <PhoneHeader
+        userId={currentUserId}
+        userName={getUserName(currentUserId)}
+        onChangeUser={handleUserChange}
+      />
 
       <ConversationList
         userId={currentUserId}

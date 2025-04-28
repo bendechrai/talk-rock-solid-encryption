@@ -324,6 +324,10 @@ export default function Demo3() {
                   onKeysGenerated={(publicKey, privateKey) => 
                     handleKeysGenerated(currentUsers.user1, publicKey, privateKey)
                   }
+                  onChangeUser={(userId) =>
+                    setCurrentUsers((prev) => ({ ...prev, user1: userId }))
+                  }
+                  demoVersion={3}
                 />
               </Phone>
             </div>
@@ -359,6 +363,10 @@ export default function Demo3() {
                   onKeysGenerated={(publicKey, privateKey) => 
                     handleKeysGenerated(currentUsers.user2, publicKey, privateKey)
                   }
+                  onChangeUser={(userId) =>
+                    setCurrentUsers((prev) => ({ ...prev, user2: userId }))
+                  }
+                  demoVersion={3}
                 />
               </Phone>
             </div>

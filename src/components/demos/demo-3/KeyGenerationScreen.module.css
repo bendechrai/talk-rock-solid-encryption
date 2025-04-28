@@ -25,39 +25,10 @@
   text-align: center;
 }
 
-.lockIcon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.keyGenerationContent h2 {
-  margin: 0 0 16px 0;
-  color: #333;
-  font-size: 1.5rem;
-}
-
-.userInfo {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-}
-
-.userName {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #333;
-}
-
-.userId {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 4px;
-}
-
 .description {
   margin-bottom: 24px;
   color: #555;
-  font-size: 0.9rem;
+  font-size: 1.3rem;
   line-height: 1.5;
 }
 
@@ -99,43 +70,4 @@
   margin-bottom: 16px;
   width: 100%;
   font-size: 0.9rem;
-}
-
-.securityInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: 8px;
-}
-
-.infoItem {
-  display: flex;
-  align-items: center;
-  text-align: left;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
-.infoIcon {
-  font-size: 24px;
-  margin-right: 12px;
-  color: #4285f4;
-}
-
-.infoText {
-  display: flex;
-  flex-direction: column;
-}
-
-.infoText strong {
-  font-size: 0.9rem;
-  color: #333;
-  margin-bottom: 2px;
-}
-
-.infoText span {
-  font-size: 0.8rem;
-  color: #666;
 }

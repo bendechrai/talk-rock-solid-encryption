@@ -247,6 +247,31 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Demo container layout */
+.demoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+.phonesContainer {
+  display: flex;
+  width: 80%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.phoneWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Phone with Key Generation Screen */
 .phoneWithKeyGen {
   position: relative;
