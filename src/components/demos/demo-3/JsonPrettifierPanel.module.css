@@ -1,0 +1,161 @@
+/* Styling for the JSON Prettifier Panel */
+.jsonPrettifierPanel {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.jsonPrettifierPanel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #00aaff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+  font-size: 1.2rem;
+}
+
+.prettifierForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.jsonInput {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #00ff00;
+  font-family: monospace;
+  resize: vertical;
+  width: 100%;
+  min-height: 100px;
+}
+
+.loading {
+  color: #faad14;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.error {
+  background-color: #3a1c1c;
+  color: #ff4d4f;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.prettifiedResult {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.prettifiedContent {
+  font-family: monospace;
+  white-space: pre;
+  color: #52c41a;
+  min-height: 24px;
+  max-height: 300px;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #2a2a2a;
+}
+
+.prettifiedContent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.prettifiedContent::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+.prettifiedContent::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
+}
+
+/* Focus styles */
+.jsonInput:focus {
+  outline: none;
+  border-color: #00aaff;
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+/* Placeholder styling */
+.jsonInput::placeholder {
+  color: #666;
+  font-style: italic;
+}
+
+.toggleGroup {
+  margin-bottom: 12px;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleInput {
+  margin-right: 8px;
+  accent-color: #00aaff;
+}
+
+.toggleText {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: #00aaff;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #0099e6;
+}
+
+.button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.clearButton {
+  background-color: #555;
+}
+
+.clearButton:hover {
+  background-color: #666;
+}
