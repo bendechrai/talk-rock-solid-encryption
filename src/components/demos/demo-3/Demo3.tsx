@@ -21,91 +21,6 @@ interface KeyInfoProps {
   onRegenerateKeys: () => Promise<void>;
 }
 
-function KeyInfo({
-  userId,
-  keyStatus,
-  publicKey,
-  privateKey,
-  publicKeysCount,
-  onRegenerateKeys,
-}: KeyInfoProps) {
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
-
-  return (
-    <div className="key-info">
-      <div className="key-status">
-        <div className="status-indicator">
-          <span
-            className={`status-dot ${
-              keyStatus === "loaded" || keyStatus === "generated"
-                ? "active"
-                : "inactive"
-            }`}
-          ></span>
-          <span>Key Status: {keyStatus}</span>
-        </div>
-        <button className="regenerate-button" onClick={onRegenerateKeys}>
-          Regenerate Keys
-        </button>
-      </div>
-
-      <div className="user-id">
-        <strong>Your ID:</strong> {userId}
-      </div>
-
-      <div className="key-details">
-        <div className="public-key">
-          <div className="key-header">
-            <strong>Your Public Key</strong>
-            <span className="key-badge">Shared with others</span>
-          </div>
-          <div className="key-value">
-            <code>
-              {publicKey.substring(0, 32)}...
-              {publicKey.substring(publicKey.length - 8)}
-            </code>
-          </div>
-        </div>
-
-        <div className="private-key">
-          <div className="key-header">
-            <strong>Your Private Key</strong>
-            <span className="key-badge secure">Kept secret</span>
-            <button
-              className="toggle-key-button"
-              onClick={() => setShowPrivateKey(!showPrivateKey)}
-            >
-              {showPrivateKey ? "Hide" : "Show"}
-            </button>
-          </div>
-          <div className="key-value">
-            {showPrivateKey ? (
-              <code>
-                {privateKey.substring(0, 32)}...
-                {privateKey.substring(privateKey.length - 8)}
-              </code>
-            ) : (
-              <code>••••••••••••••••••••••••••••••••</code>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="network-info">
-        <div className="public-keys-count">
-          <strong>Public Keys Available:</strong> {publicKeysCount}
-        </div>
-        <div className="pfs-info">
-          <span className="pfs-badge">Perfect Forward Secrecy Enabled</span>
-          <span className="info-tooltip">
-            Using ephemeral keys for each message
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Demo3() {
   const [currentUsers, setCurrentUsers] = useState({
     user1: "1",
@@ -219,36 +134,81 @@ export default function Demo3() {
               return msg;
             }
 
-            // Check if the parsed data has the expected structure
-            if (!encryptedData || !encryptedData.recipients) {
-              console.warn(
-                "Message does not have expected encrypted structure:",
-                encryptedData
+            // Handle messages with different formats
+
+            // Format 1: Full E2E encrypted message with recipients array
+            if (
+              encryptedData &&
+              encryptedData.recipients &&
+              Array.isArray(encryptedData.recipients)
+            ) {
+              console.log(
+                `[Demo3] Message has proper E2E structure with recipients`
               );
-              return msg;
-            }
+              const { sender, recipients } = encryptedData;
 
-            const { sender, recipients } = encryptedData;
-
-            // Find our encrypted message
-            const myMessage = recipients.find((r: any) => r.userId === userId);
-
-            if (myMessage) {
-              // Decrypt with our private key
-              const decrypted = await decryptWithPrivateKey(
-                myMessage.encrypted,
-                privateKey
+              // Find our encrypted message
+              const myMessage = recipients.find(
+                (r: any) => r.userId === userId
               );
-              return {
-                ...msg,
-                content: decrypted,
-                sender: sender || msg.sender, // Use the sender from the encrypted data if available
-              };
-            }
 
-            return { ...msg, content: "(Message not intended for you)" };
+              if (myMessage) {
+                // Decrypt with our private key
+                try {
+                  const decrypted = await decryptWithPrivateKey(
+                    myMessage.encrypted,
+                    privateKey
+                  );
+
+                  if (
+                    decrypted &&
+                    decrypted !== "(Unable to decrypt message)"
+                  ) {
+                    return {
+                      ...msg,
+                      content: decrypted,
+                      sender: sender || msg.sender, // Use the sender from the encrypted data if available
+                    };
+                  } else {
+                    return { ...msg, content: "(Could not decrypt message)" };
+                  }
+                } catch (error) {
+                  return { ...msg, content: "(Could not decrypt message)" };
+                }
+              } else {
+                return { ...msg, content: "(Message not intended for you)" };
+              }
+            }
+            // Format 2: Simple encrypted message (no recipients array)
+            else if (
+              encryptedData &&
+              encryptedData.iv &&
+              encryptedData.ciphertext
+            ) {
+            
+              // For demo purposes, try to decrypt it anyway if it's from a conversation we're in
+              try {
+                const decrypted = await decryptWithPrivateKey(
+                  JSON.stringify(encryptedData),
+                  privateKey
+                );
+
+                if (decrypted && decrypted !== "(Unable to decrypt message)") {
+                
+                  return {
+                    ...msg,
+                    content: decrypted,
+                  };
+                } else {
+                  return { ...msg, content: "(Could not decrypt message)" };
+                }
+              } catch (directDecryptError) {
+                return { ...msg, content: "(Could not decrypt message)" };
+              }
+            } else {
+              return { ...msg, content: "(Could not decrypt message)" };
+            }
           } catch (e) {
-            console.error("Decryption error:", e);
             // If the message isn't in the expected format, return it as is
             return { ...msg, content: "(Unable to decrypt message)" };
           }

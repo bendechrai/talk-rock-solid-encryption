@@ -11,6 +11,7 @@ interface KeyManagementProps {
 
 interface UserKeyInfo {
   userId: string;
+  name: string;
   publicKey: string;
   privateKey?: string;
   keyStatus: 'none' | 'generating' | 'generated' | 'loaded' | 'error';
@@ -57,6 +58,7 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
         
         userKeyMap[userId] = {
           userId,
+          name: user.name,
           publicKey,
           privateKey: privateKey || undefined,
           keyStatus: privateKey && publicKey ? 'loaded' : publicKey ? 'generated' : 'none',
@@ -79,7 +81,7 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
     }
   };
   
-  // Generate new keys for a user
+  // Regenerate keys for a user
   const regenerateKeys = async (userId: string) => {
     try {
       // Update state to show generating status
@@ -106,17 +108,8 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
       
       if (!response.ok) throw new Error('Failed to save public key');
       
-      // Update state with new keys
-      setUsers(prev => ({
-        ...prev,
-        [userId]: {
-          ...prev[userId],
-          publicKey: keys.publicKey,
-          privateKey: keys.privateKey,
-          keyStatus: 'loaded',
-          lastUpdated: new Date().toISOString()
-        }
-      }));
+      // Reload user data to get the latest keys
+      await loadUsers();
       
       console.log(`Keys regenerated successfully for user ${userId}`);
     } catch (err) {
@@ -145,17 +138,8 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
         method: "DELETE",
       });
       
-      // Update local state
-      setUsers(prev => ({
-        ...prev,
-        [userId]: {
-          ...prev[userId],
-          publicKey: '',
-          privateKey: undefined,
-          keyStatus: 'none',
-          lastUpdated: new Date().toISOString()
-        }
-      }));
+      // Reload user data to reflect the changes
+      await loadUsers();
       
       showToast(`Keys reset successfully for user ${userId}`, 'success');
     } catch (err) {
@@ -165,14 +149,10 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
     }
   };
   
-  // Load user data on component mount and periodically refresh
+  // Load user data on component mount only
   useEffect(() => {
     loadUsers();
-    
-    // Refresh every 5 seconds
-    const interval = setInterval(loadUsers, 5000);
-    
-    return () => clearInterval(interval);
+    // No interval for automatic refresh
   }, []);
   
   // Get the selected user's key info
@@ -214,7 +194,7 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
                   className={`${styles.userItem} ${selectedUserId === user.userId ? styles.selected : ''}`}
                   onClick={() => setSelectedUserId(user.userId)}
                 >
-                  <div className={styles.userName}>User {user.userId}</div>
+                  <div className={styles.userName}>{user.name}</div>
                   <div className={`${styles.statusBadge} ${getStatusBadgeClass(user.keyStatus)}`}>
                     {user.keyStatus}
                   </div>
@@ -227,7 +207,7 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
             {selectedUser ? (
               <>
                 <div className={styles.userHeader}>
-                  <h4>User {selectedUser.userId} Keys</h4>
+                  <h4>{selectedUser.name}'s' Keys</h4>
                   <div className={styles.buttonGroup}>
                     <button 
                       className={styles.regenerateButton}
@@ -288,14 +268,6 @@ export function KeyManagement({ demoVersion }: KeyManagementProps) {
                   <div className={styles.keyMeta}>
                     <div className={styles.lastUpdated}>
                       <strong>Last Updated:</strong> {new Date(selectedUser.lastUpdated || '').toLocaleString()}
-                    </div>
-                    <div className={styles.securityInfo}>
-                      <div className={styles.securityBadge}>
-                        Perfect Forward Secrecy Enabled
-                      </div>
-                      <div className={styles.securityNote}>
-                        Using ephemeral keys for each message
-                      </div>
                     </div>
                   </div>
                 </div>

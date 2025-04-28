@@ -48,27 +48,35 @@ export async function generateKeys() {
  * @returns Shared secret as ArrayBuffer
  */
 export async function deriveSharedSecret(privateKey: string, publicKey: string): Promise<ArrayBuffer> {
+  console.log(`[Asymmetric] Deriving shared secret with private key: ${privateKey.substring(0, 10)}... and public key: ${publicKey.substring(0, 10)}...`);
   try {
     // Validate inputs
     if (!privateKey || privateKey.length < 32) {
+      console.error(`[Asymmetric] Invalid private key length: ${privateKey ? privateKey.length : 0}`);
       throw new Error(`Invalid private key length: ${privateKey ? privateKey.length : 0}`);
     }
     
     if (!publicKey || publicKey.length < 32) {
+      console.error(`[Asymmetric] Invalid public key length: ${publicKey ? publicKey.length : 0}`);
       throw new Error(`Invalid public key length: ${publicKey ? publicKey.length : 0}`);
     }
     
+    console.log('[Asymmetric] Converting hex strings to byte arrays...');
     const privateKeyBytes = hexToBytes(privateKey);
     const publicKeyBytes = hexToBytes(publicKey);
     
+    console.log(`[Asymmetric] Private key bytes length: ${privateKeyBytes.length}, Public key bytes length: ${publicKeyBytes.length}`);
+    
     // Perform Diffie-Hellman key exchange
+    console.log('[Asymmetric] Performing X25519 key exchange...');
     const sharedSecretBytes = x25519.getSharedSecret(privateKeyBytes, publicKeyBytes);
     // Convert to proper ArrayBuffer
     const sharedSecret = new Uint8Array(sharedSecretBytes).buffer;
     
+    console.log(`[Asymmetric] Shared secret derived successfully, length: ${sharedSecret.byteLength}`);
     return sharedSecret;
   } catch (error) {
-    console.error('Failed to derive shared secret:', error);
+    console.error('[Asymmetric] Failed to derive shared secret:', error);
     throw error; // Re-throw to be handled by the caller
   }
 }
@@ -80,25 +88,33 @@ export async function deriveSharedSecret(privateKey: string, publicKey: string):
  * @returns Encrypted message
  */
 export async function encryptWithPublicKey(text: string, recipientPublicKey: string) {
+  console.log(`[Asymmetric] Encrypting message for recipient with public key: ${recipientPublicKey.substring(0, 10)}...`);
   try {
     // Validate the public key before proceeding
     if (!recipientPublicKey || typeof recipientPublicKey !== 'string') {
+      console.error('[Asymmetric] Invalid recipient public key: empty or not a string');
       throw new Error('Invalid recipient public key: key is empty or not a string');
     }
     
     if (recipientPublicKey.length < 32) {
+      console.error(`[Asymmetric] Invalid recipient public key length: ${recipientPublicKey.length}`);
       throw new Error(`Invalid recipient public key length: ${recipientPublicKey.length} (expected at least 32)`);
     }
     
     // Generate a private key for this encryption
-    const { privateKey } = await generateKeys();
+    console.log('[Asymmetric] Generating new key pair for encryption...');
+    const { publicKey, privateKey } = await generateKeys();
+    console.log(`[Asymmetric] Generated key pair. Public key: ${publicKey.substring(0, 10)}...`);
     
     try {
       // Derive shared secret using DH
+      console.log('[Asymmetric] Deriving shared secret...');
       const sharedSecret = await deriveSharedSecret(privateKey, recipientPublicKey);
+      console.log('[Asymmetric] Successfully derived shared secret');
       
       // Use the shared secret to derive an AES key
       const encoder = new TextEncoder();
+      console.log('[Asymmetric] Importing key material...');
       const keyMaterial = await crypto.subtle.importKey(
         'raw',
         sharedSecret,
@@ -107,6 +123,7 @@ export async function encryptWithPublicKey(text: string, recipientPublicKey: str
         ['deriveKey']
       );
       
+      console.log('[Asymmetric] Deriving AES key...');
       const aesKey = await crypto.subtle.deriveKey(
         {
           name: 'PBKDF2',
@@ -121,6 +138,7 @@ export async function encryptWithPublicKey(text: string, recipientPublicKey: str
       );
       
       // Encrypt the message with the derived key
+      console.log('[Asymmetric] Encrypting message...');
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const encryptedData = await crypto.subtle.encrypt(
         { name: 'AES-GCM', iv: iv.buffer },
@@ -129,17 +147,24 @@ export async function encryptWithPublicKey(text: string, recipientPublicKey: str
       );
       
       // Return the encrypted data
-      return JSON.stringify({
-        publicKey: privateKey,  // We send our public key so recipient can derive the same shared secret
-        iv: bufferToBase64(iv.buffer),
-        ciphertext: bufferToBase64(encryptedData)
+      const ivBase64 = bufferToBase64(iv.buffer);
+      const ciphertextBase64 = bufferToBase64(encryptedData);
+      
+      console.log('[Asymmetric] Encryption successful. Creating result JSON...');
+      const result = JSON.stringify({
+        publicKey: publicKey,  // We send our public key so recipient can derive the same shared secret
+        iv: ivBase64,
+        ciphertext: ciphertextBase64
       });
+      
+      console.log(`[Asymmetric] Encryption complete. Result length: ${result.length}`);
+      return result;
     } catch (dhError) {
-      console.error('Diffie-Hellman key exchange failed:', dhError);
+      console.error('[Asymmetric] Diffie-Hellman key exchange failed:', dhError);
       throw new Error(`Key exchange failed: ${dhError.message}`);
     }
   } catch (error) {
-    console.error('Encryption failed:', error);
+    console.error('[Asymmetric] Encryption failed:', error);
     throw new Error(`Encryption failed: ${error.message}`);
   }
 }
@@ -151,15 +176,43 @@ export async function encryptWithPublicKey(text: string, recipientPublicKey: str
  * @returns Decrypted plain text
  */
 export async function decryptWithPrivateKey(encryptedMessage: string, privateKey: string) {
+  console.log(`[Asymmetric] Decrypting message with private key: ${privateKey.substring(0, 10)}...`);
+  console.log(`[Asymmetric] Encrypted message length: ${encryptedMessage.length}`);
   try {
     // Parse the encrypted message
-    const { publicKey, iv, ciphertext } = JSON.parse(encryptedMessage);
+    console.log('[Asymmetric] Parsing encrypted message JSON...');
+    let parsedMessage;
+    try {
+      parsedMessage = JSON.parse(encryptedMessage);
+      console.log('[Asymmetric] Successfully parsed message JSON');
+    } catch (parseError) {
+      console.error('[Asymmetric] Failed to parse encrypted message JSON:', parseError);
+      console.log(`[Asymmetric] Message preview: ${encryptedMessage.substring(0, 50)}...`);
+      throw new Error('Invalid encrypted message format');
+    }
+    
+    const { publicKey, iv, ciphertext } = parsedMessage;
+    
+    // Validate required fields
+    if (!publicKey || !iv || !ciphertext) {
+      console.error('[Asymmetric] Missing required fields in encrypted message:', { 
+        hasPublicKey: !!publicKey,
+        hasIv: !!iv,
+        hasCiphertext: !!ciphertext
+      });
+      throw new Error('Missing required fields in encrypted message');
+    }
+    
+    console.log(`[Asymmetric] Sender's public key: ${publicKey.substring(0, 10)}...`);
     
     // Derive shared secret using DH
+    console.log('[Asymmetric] Deriving shared secret for decryption...');
     const sharedSecret = await deriveSharedSecret(privateKey, publicKey);
+    console.log('[Asymmetric] Successfully derived shared secret');
     
     // Use the shared secret to derive an AES key
     const encoder = new TextEncoder();
+    console.log('[Asymmetric] Importing key material...');
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       sharedSecret,
@@ -168,6 +221,7 @@ export async function decryptWithPrivateKey(encryptedMessage: string, privateKey
       ['deriveKey']
     );
     
+    console.log('[Asymmetric] Deriving AES key...');
     const aesKey = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
@@ -182,9 +236,11 @@ export async function decryptWithPrivateKey(encryptedMessage: string, privateKey
     );
     
     // Decrypt the message
+    console.log('[Asymmetric] Converting base64 to buffers...');
     const ivBuffer = base64ToBuffer(iv);
     const ciphertextBuffer = base64ToBuffer(ciphertext);
     
+    console.log('[Asymmetric] Decrypting message...');
     const decryptedBuffer = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: ivBuffer },
       aesKey,
@@ -192,10 +248,13 @@ export async function decryptWithPrivateKey(encryptedMessage: string, privateKey
     );
     
     // Convert the decrypted buffer back to a string
+    console.log('[Asymmetric] Decoding result...');
     const decoder = new TextDecoder();
-    return decoder.decode(decryptedBuffer);
+    const result = decoder.decode(decryptedBuffer);
+    console.log(`[Asymmetric] Decryption successful. Result: ${result.substring(0, 20)}...`);
+    return result;
   } catch (error) {
-    console.error('Decryption failed:', error);
+    console.error('[Asymmetric] Decryption failed:', error);
     return '(Unable to decrypt message)';
   }
 }
