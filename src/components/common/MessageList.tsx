@@ -32,12 +32,19 @@ export function MessageList({
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      // Use the parent container's scrollTop property instead of scrollIntoView
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   };
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    // scrollToBottom();
+    // Add a small delay to ensure DOM is updated
+    setTimeout(scrollToBottom, 100);
   }, [messages]);
 
   return (
