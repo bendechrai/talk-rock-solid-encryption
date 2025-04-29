@@ -196,8 +196,9 @@ export default function Presentation() {
         // Dynamically import Reveal.js
         const Reveal = (await import("reveal.js")).default;
 
-        // Import plugins if needed
+        // Import plugins
         await import("reveal.js/plugin/notes/notes");
+        const RevealNotes = (await import("reveal.js/plugin/notes/notes")).default;
 
         // Import highlight.js plugin for code syntax highlighting
         const RevealHighlight = (
@@ -223,7 +224,7 @@ export default function Presentation() {
           disableLayout: false,
           // Workaround for TypeScript error with plugins property
           // @ts-expect-error - plugins is a valid Reveal.js option but not in the type definition
-          plugins: [RevealHighlight],
+          plugins: [RevealHighlight, RevealNotes],
         });
 
         // Initialize Reveal
