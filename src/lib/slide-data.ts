@@ -60,11 +60,11 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Introduction</h2>
       <ul>
-        <li>Encryption isn't just a technical choice but a necessity</li>
-        <li>Regulatory requirements (GDPR, CCPA, etc.)</li>
-        <li>Company reputation and PR risk</li>
-        <li>User trust and expectations</li>
-        <li>Legal and ethical obligations</li>
+        <li class="fragment">Encryption isn't just a technical choice but a necessity</li>
+        <li class="fragment">Regulatory requirements (GDPR, CCPA, etc.)</li>
+        <li class="fragment">Company reputation and PR risk</li>
+        <li class="fragment">User trust and expectations</li>
+        <li class="fragment">Legal and ethical obligations</li>
       </ul>
     `,
     notes: "Emphasize that encryption isn't just a technical choice but increasingly a necessity. Simply adding encryption to your app isn't enough. Many applications claim to be \"encrypted\" but have fundamental security flaws in their implementation.",
@@ -77,10 +77,10 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>The Vulnerability of Plain Text</h2>
       <ul>
-        <li>Most basic version of our chat app</li>
-        <li>Messages stored in plaintext</li>
-        <li>No access control validation</li>
-        <li>Common vulnerability in production applications</li>
+        <li class="fragment">Most basic version of our chat app</li>
+        <li class="fragment">Messages stored in plaintext</li>
+        <li class="fragment">No access control validation</li>
+        <li class="fragment">Common vulnerability in production applications</li>
       </ul>
     `,
     notes: "Let's start with the most basic version of our chat application. Here's \"Whisper\" in its initial form - a straightforward Next.js app where users can send messages to each other. But there's a problem. All messages are stored in plaintext. Anyone with database access can read every single conversation.",
@@ -103,11 +103,11 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Basic Encryption: The False Sense of Security</h2>
       <ul>
-        <li>Server-side encryption with a single key</li>
-        <li>AES-256-GCM implementation</li>
-        <li>Widely adopted, thoroughly vetted</li>
-        <li>Provides both confidentiality and authentication</li>
-        <li>Efficient with hardware acceleration</li>
+        <li class="fragment">Server-side encryption with a single key</li>
+        <li class="fragment">AES-256-GCM implementation</li>
+        <li class="fragment">Widely adopted, thoroughly vetted</li>
+        <li class="fragment">Provides both confidentiality and authentication</li>
+        <li class="fragment">Efficient with hardware acceleration</li>
       </ul>
     `,
     notes: "The obvious fix is to encrypt our messages. In our second version, we've implemented server-side encryption using AES-256-GCM. Why AES-256-GCM? It's widely adopted and thoroughly vetted by security experts. GCM mode provides both confidentiality and authentication in one package.",
@@ -130,12 +130,12 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>The Public-Private Key Revolution</h2>
       <ul>
-        <li>Using Diffie-Hellman key pairs for asymmetric encryption</li>
-        <li>Implementation using @noble/curves</li>
-        <li>End-to-end encryption where the server cannot read messages</li>
-        <li>Each user generates their own key pair</li>
-        <li>Messages encrypted with recipient's public key</li>
-        <li>Can only be decrypted with private key that never leaves the device</li>
+        <li class="fragment">Using Diffie-Hellman key pairs for asymmetric encryption</li>
+        <li class="fragment">Implementation using @noble/curves</li>
+        <li class="fragment">End-to-end encryption where the server cannot read messages</li>
+        <li class="fragment">Each user generates their own key pair</li>
+        <li class="fragment">Messages encrypted with recipient's public key</li>
+        <li class="fragment">Can only be decrypted with private key that never leaves the device</li>
       </ul>
     `,
     notes: "So how do we solve this? We need to ensure that even if our server is compromised, the attacker can't read our users' messages. This is where public-private key cryptography comes in. In version 3 of our app, each user generates their own key pair.",
@@ -172,10 +172,10 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Perfect Forward Secrecy: Protecting the Timeline</h2>
       <ul>
-        <li>Ensures past communication remains secure even if keys are compromised</li>
-        <li>Generating ephemeral keys for each conversation session</li>
-        <li>Key rotation protects past messages</li>
-        <li>Shared secrets used only for one session and then discarded</li>
+        <li class="fragment">Ensures past communication remains secure even if keys are compromised</li>
+        <li class="fragment">Generating ephemeral keys for each conversation session</li>
+        <li class="fragment">Key rotation protects past messages</li>
+        <li class="fragment">Shared secrets used only for one session and then discarded</li>
       </ul>
     `,
     notes: "Our app is now much more secure, but there's still a critical vulnerability: if someone's private key is ever compromised in the future, an attacker could go back and decrypt all of their past messages. This is where Perfect Forward Secrecy comes in.",
@@ -188,14 +188,14 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Ephemeral Key Management Challenges</h2>
       <ul>
-        <li>Ephemeral keys are temporary by design</li>
-        <li>Key expiration creates practical challenges:</li>
+        <li class="fragment">Ephemeral keys are temporary by design</li>
+        <li class="fragment">Key expiration creates practical challenges:</li>
         <ul>
-          <li>What if a recipient hasn't been online recently?</li>
-          <li>How long should keys remain valid?</li>
-          <li>What happens when keys expire during a conversation?</li>
+          <li class="fragment">What if a recipient hasn't been online recently?</li>
+          <li class="fragment">How long should keys remain valid?</li>
+          <li class="fragment">What happens when keys expire during a conversation?</li>
         </ul>
-        <li>Security vs. usability trade-offs</li>
+        <li class="fragment">Security vs. usability trade-offs</li>
       </ul>
     `,
     notes: "Ephemeral keys create a fundamental challenge: if keys expire quickly (good for security), users who haven't been online won't have valid keys. If Alice wants to message Bob, but Bob hasn't logged in for days, his ephemeral keys will have expired. This creates a tension between security (short-lived keys) and usability (ensuring messages can be delivered).",
@@ -210,14 +210,14 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Real-World Ephemeral Key Solutions</h2>
       <ul>
-        <li>Signal Protocol's approach:</li>
+        <li class="fragment">Signal Protocol's approach:</li>
         <ul>
-          <li>Pre-key bundles uploaded when online</li>
-          <li>One-time use keys for new conversations</li>
-          <li>Double Ratchet Algorithm for key evolution</li>
+          <li class="fragment">Pre-key bundles uploaded when online</li>
+          <li class="fragment">One-time use keys for new conversations</li>
+          <li class="fragment">Double Ratchet Algorithm for key evolution</li>
         </ul>
-        <li>Message queuing for offline recipients</li>
-        <li>Tiered key approach: identity, signed pre-keys, and one-time keys</li>
+        <li class="fragment">Message queuing for offline recipients</li>
+        <li class="fragment">Tiered key approach: identity, signed pre-keys, and one-time keys</li>
       </ul>
     `,
     notes: "Real-world applications solve this with sophisticated key management. Signal uses a 'pre-key bundle' system where users upload multiple ephemeral keys when online. Messages to offline users can be queued until they return. The Double Ratchet Algorithm evolves keys with each message, maintaining forward secrecy while ensuring delivery. This creates a balance between security and practical usability.",
@@ -245,19 +245,19 @@ export const slides: Slide[] = [
         <div class="grid-item">
           <h3>Demo Implementation</h3>
           <ul>
-            <li>Direct asymmetric encryption</li>
-            <li>Separate encryption for each recipient</li>
-            <li>Multiple message copies stored</li>
-            <li>Slower but simpler to understand</li>
+            <li class="fragment">Direct asymmetric encryption</li>
+            <li class="fragment">Separate encryption for each recipient</li>
+            <li class="fragment">Multiple message copies stored</li>
+            <li class="fragment">Slower but simpler to understand</li>
           </ul>
         </div>
         <div class="grid-item">
           <h3>Production Systems (Signal, etc.)</h3>
           <ul>
-            <li>Diffie-Hellman key exchange to derive shared secret</li>
-            <li>Shared secret used for symmetric encryption</li>
-            <li>Single message copy for all recipients</li>
-            <li>Faster and more storage-efficient</li>
+            <li class="fragment">Diffie-Hellman key exchange to derive shared secret</li>
+            <li class="fragment">Shared secret used for symmetric encryption</li>
+            <li class="fragment">Single message copy for all recipients</li>
+            <li class="fragment">Faster and more storage-efficient</li>
           </ul>
         </div>
       </div>
@@ -274,11 +274,11 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>The Multi-Device Challenge</h2>
       <ul>
-        <li>How to access encrypted messages on multiple devices</li>
-        <li>Secure key transfer between devices</li>
-        <li>QR code implementation for secure key transfer</li>
-        <li>Private key never transmitted in plaintext</li>
-        <li>Passphrase never sent over the network</li>
+        <li class="fragment">How to access encrypted messages on multiple devices</li>
+        <li class="fragment">Secure key transfer between devices</li>
+        <li class="fragment">QR code implementation for secure key transfer</li>
+        <li class="fragment">Private key never transmitted in plaintext</li>
+        <li class="fragment">Passphrase never sent over the network</li>
       </ul>
     `,
     notes: "Now we face another challenge: how do users access their encrypted messages on multiple devices? The private key that decrypts their messages exists only on one device, but users expect to seamlessly switch between their phone, laptop, and tablet.",
@@ -291,10 +291,10 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Group Chat Complexities</h2>
       <ul>
-        <li>Unique challenges of group messaging</li>
-        <li>Pairwise encryption approach</li>
-        <li>Message encrypted separately for each recipient</li>
-        <li>Trade-offs between security and efficiency</li>
+        <li class="fragment">Unique challenges of group messaging</li>
+        <li class="fragment">Pairwise encryption approach</li>
+        <li class="fragment">Message encrypted separately for each recipient</li>
+        <li class="fragment">Trade-offs between security and efficiency</li>
       </ul>
     `,
     notes: "Individual conversations are now secure, but what about group chats? This introduces significant new challenges. The simplest approach, which we've implemented in our demo, is pairwise encryption.",
@@ -307,10 +307,10 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Metadata Protection</h2>
       <ul>
-        <li>Protecting who is talking to whom</li>
-        <li>Message padding to hide content length</li>
-        <li>Timing obfuscation</li>
-        <li>Metadata minimization techniques</li>
+        <li class="fragment">Protecting who is talking to whom</li>
+        <li class="fragment">Message padding to hide content length</li>
+        <li class="fragment">Timing obfuscation</li>
+        <li class="fragment">Metadata minimization techniques</li>
       </ul>
     `,
     notes: "Even with end-to-end encryption, metadata remains vulnerable. This includes information about who is communicating with whom, when, and how often. An attacker with access to this metadata could potentially identify relationships, discover organizational structures, or even infer the content of conversations based on patterns.",
@@ -326,10 +326,10 @@ export const slides: Slide[] = [
         <img src="/images/forward-secrecy.png" alt="Perfect Forward Secrecy Diagram" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
       </div>
       <ol>
-        <li>Generate ephemeral key pairs for each conversation session</li>
-        <li>Exchange ephemeral public keys</li>
-        <li>Create shared secret using DH key exchange</li>
-        <li>Discard keys after session ends</li>
+        <li class="fragment">Generate ephemeral key pairs for each conversation session</li>
+        <li class="fragment">Exchange ephemeral public keys</li>
+        <li class="fragment">Create shared secret using DH key exchange</li>
+        <li class="fragment">Discard keys after session ends</li>
       </ol>
     `,
     notes: "This flowchart illustrates how Perfect Forward Secrecy works. For each new conversation session, both parties generate temporary ephemeral key pairs. They exchange ephemeral public keys and use them with their own ephemeral private keys to create a shared secret. This shared secret is used only for this session and then discarded.",
@@ -375,11 +375,11 @@ export const slides: Slide[] = [
         <img src="/images/key-transfer-flow.png" alt="Key Transfer Flow Diagram" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
       </div>
       <ol>
-        <li>New device generates random passphrase</li>
-        <li>QR code contains passphrase + transfer ID</li>
-        <li>Existing device encrypts private key with passphrase</li>
-        <li>Encrypted key sent to server with transfer ID</li>
-        <li>New device retrieves and decrypts the key</li>
+        <li class="fragment">New device generates random passphrase</li>
+        <li class="fragment">QR code contains passphrase + transfer ID</li>
+        <li class="fragment">Existing device encrypts private key with passphrase</li>
+        <li class="fragment">Encrypted key sent to server with transfer ID</li>
+        <li class="fragment">New device retrieves and decrypts the key</li>
       </ol>
     `,
     notes: "This diagram shows the secure key transfer process between devices. The QR code mechanism requires physical proximity as an added security measure. The private key is never transmitted in plaintext, and the symmetric encryption passphrase is never sent over the network - it's only exchanged via the QR code.",
@@ -427,11 +427,11 @@ export const slides: Slide[] = [
         <img src="/images/hierarchical-keys.png" alt="Hierarchical Key Bundles" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
       </div>
       <ul>
-        <li>Divide large group into manageable subgroups</li>
-        <li>Each subgroup has its own subgroup key (SGK)</li>
-        <li>Main group key encrypted with each subgroup key</li>
-        <li>When member leaves, only rotate affected subgroup key</li>
-        <li>Dramatically reduces key rotation overhead</li>
+        <li class="fragment">Divide large group into manageable subgroups</li>
+        <li class="fragment">Each subgroup has its own subgroup key (SGK)</li>
+        <li class="fragment">Main group key encrypted with each subgroup key</li>
+        <li class="fragment">When member leaves, only rotate affected subgroup key</li>
+        <li class="fragment">Dramatically reduces key rotation overhead</li>
       </ul>
     `,
     notes: "When scaling to groups with thousands or even hundreds of thousands of members, we need more sophisticated approaches. Hierarchical key bundles divide the large group into manageable subgroups. Each subgroup has its own key, and the main group key is encrypted with each subgroup key. When a member leaves, we only rotate the affected subgroup key and re-encrypt the group key with it, dramatically reducing the overhead.",
@@ -484,13 +484,13 @@ export const slides: Slide[] = [
         <img src="/images/security-usability.png" alt="Security vs Usability Spectrum" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
       </div>
       <ul>
-        <li>More security often means more friction</li>
-        <li>Key considerations:</li>
+        <li class="fragment">More security often means more friction</li>
+        <li class="fragment">Key considerations:</li>
         <ul>
-          <li>User experience impact of security measures</li>
-          <li>Performance implications</li>
-          <li>Appropriate security for your threat model</li>
-          <li>Regulatory requirements</li>
+          <li class="fragment">User experience impact of security measures</li>
+          <li class="fragment">Performance implications</li>
+          <li class="fragment">Appropriate security for your threat model</li>
+          <li class="fragment">Regulatory requirements</li>
         </ul>
       </ul>
     `,
@@ -506,12 +506,12 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Building Rock-Solid Encrypted Applications</h2>
       <ul>
-        <li>Start with a security-first mindset</li>
-        <li>Implement end-to-end encryption</li>
-        <li>Use established cryptographic libraries</li>
-        <li>Consider Perfect Forward Secrecy</li>
-        <li>Don't forget about metadata protection</li>
-        <li>Test, audit, and iterate</li>
+        <li class="fragment">Start with a security-first mindset</li>
+        <li class="fragment">Implement end-to-end encryption</li>
+        <li class="fragment">Use established cryptographic libraries</li>
+        <li class="fragment">Consider Perfect Forward Secrecy</li>
+        <li class="fragment">Don't forget about metadata protection</li>
+        <li class="fragment">Test, audit, and iterate</li>
       </ul>
     `,
     notes: "To summarize, building truly secure encrypted applications requires a holistic approach. Start with a security-first mindset, implement proper end-to-end encryption, use established cryptographic libraries, consider Perfect Forward Secrecy, protect metadata, and continuously test and audit your implementation.",
@@ -528,12 +528,12 @@ export const slides: Slide[] = [
     htmlContent: `
       <h2>Key Takeaways</h2>
       <ol>
-        <li>Never store sensitive data in plaintext</li>
-        <li>Don't rely solely on server-side encryption</li>
-        <li>Implement proper key management with user control</li>
-        <li>Consider perfect forward secrecy for temporal protection</li>
-        <li>Protect metadata, not just content</li>
-        <li>Design for the human element</li>
+        <li class="fragment">Never store sensitive data in plaintext</li>
+        <li class="fragment">Don't rely solely on server-side encryption</li>
+        <li class="fragment">Implement proper key management with user control</li>
+        <li class="fragment">Consider perfect forward secrecy for temporal protection</li>
+        <li class="fragment">Protect metadata, not just content</li>
+        <li class="fragment">Design for the human element</li>
       </ol>
     `,
     notes: "The most important takeaways: Never store sensitive data in plaintext. Don't rely solely on server-side encryption. Implement proper key management with user control. Consider perfect forward secrecy for temporal protection. Protect metadata, not just content. Design for the human element - the most secure system fails if users can't or won't use it properly.",
