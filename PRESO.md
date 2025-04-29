@@ -152,6 +152,22 @@ Here's how it works in our flowchart:
 
 Let's see this in action. As messages come in, notice how our app is constantly rotating keys. Even if I compromise Bob's private key now, I can only decrypt his current session - all previous messages remain secure because they were encrypted with ephemeral keys that no longer exist."
 
+### 4.1. Production PFS: Hybrid Encryption (2 minutes)
+**[Speaker notes]**
+- Explain the difference between our demo implementation and production systems
+- Highlight the performance and storage benefits of hybrid encryption
+- Clarify that our demo prioritizes educational clarity over performance
+
+**[Dialogue]**
+"I should point out that our demo implementation uses direct asymmetric encryption for simplicity and clarity. This makes the concept easier to understand, but it's not how production systems like Signal typically implement Perfect Forward Secrecy.
+
+In production systems, they use a hybrid approach:
+1. Ephemeral keys are used to perform a Diffie-Hellman key exchange, deriving a shared secret
+2. This shared secret is then used for symmetric encryption, which is much faster than asymmetric encryption
+3. Only one copy of the message needs to be stored, rather than encrypting it separately for each recipient
+
+This hybrid approach (asymmetric for key exchange, symmetric for message encryption) offers both security and performance benefits. For our educational demo, we've prioritized clarity over performance, but it's important to understand how real-world implementations optimize these systems."
+
 ### 5. The Multi-Device Challenge (5 minutes)
 **[Speaker notes]**
 - Explain the challenge of accessing encrypted messages on multiple devices

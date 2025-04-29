@@ -237,6 +237,38 @@ export const slides: Slide[] = [
   },
   {
     id: "14",
+    title: "Production PFS: Hybrid Encryption",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Production PFS: Hybrid Encryption</h2>
+      <div class="grid-container">
+        <div class="grid-item">
+          <h3>Demo Implementation</h3>
+          <ul>
+            <li>Direct asymmetric encryption</li>
+            <li>Separate encryption for each recipient</li>
+            <li>Multiple message copies stored</li>
+            <li>Slower but simpler to understand</li>
+          </ul>
+        </div>
+        <div class="grid-item">
+          <h3>Production Systems (Signal, etc.)</h3>
+          <ul>
+            <li>Diffie-Hellman key exchange to derive shared secret</li>
+            <li>Shared secret used for symmetric encryption</li>
+            <li>Single message copy for all recipients</li>
+            <li>Faster and more storage-efficient</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    notes: "Our demo uses direct asymmetric encryption for simplicity, but production systems like Signal use a more efficient approach. They use ephemeral keys to perform a Diffie-Hellman key exchange, deriving a shared secret. This shared secret is then used for symmetric encryption, which is much faster than asymmetric encryption. It also means only one copy of the message needs to be stored, rather than encrypting it separately for each recipient. This hybrid approach (asymmetric for key exchange, symmetric for message encryption) offers both security and performance benefits.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "15",
     title: "The Multi-Device Challenge",
     contentType: "regular",
     htmlContent: `
@@ -253,7 +285,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "15",
+    id: "16",
     title: "Group Chat Complexities",
     contentType: "regular",
     htmlContent: `
@@ -269,7 +301,7 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "16",
+    id: "17",
     title: "Metadata Protection",
     contentType: "regular",
     htmlContent: `
@@ -285,7 +317,190 @@ export const slides: Slide[] = [
     attributes: {}
   },
   {
-    id: "17",
+    id: "18",
+    title: "Perfect Forward Secrecy: How It Works",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Perfect Forward Secrecy: How It Works</h2>
+      <div style="margin: 1.5rem 0; text-align: center;">
+        <img src="/images/forward-secrecy.png" alt="Perfect Forward Secrecy Diagram" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
+      </div>
+      <ol>
+        <li>Generate ephemeral key pairs for each conversation session</li>
+        <li>Exchange ephemeral public keys</li>
+        <li>Create shared secret using DH key exchange</li>
+        <li>Discard keys after session ends</li>
+      </ol>
+    `,
+    notes: "This flowchart illustrates how Perfect Forward Secrecy works. For each new conversation session, both parties generate temporary ephemeral key pairs. They exchange ephemeral public keys and use them with their own ephemeral private keys to create a shared secret. This shared secret is used only for this session and then discarded.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "19",
+    title: "Key Compromise Visualization",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Key Compromise Visualization</h2>
+      <div class="grid-container">
+        <div class="grid-item">
+          <h3>Without Forward Secrecy</h3>
+          <div class="compromise-diagram">
+            <img src="/images/no-forward-secrecy.png" alt="Without Forward Secrecy" style="max-width: 100%; max-height: 40vh;" />
+          </div>
+          <p>If private key is compromised, <strong>all past messages</strong> can be decrypted</p>
+        </div>
+        <div class="grid-item">
+          <h3>With Forward Secrecy</h3>
+          <div class="compromise-diagram">
+            <img src="/images/with-forward-secrecy.png" alt="With Forward Secrecy" style="max-width: 100%; max-height: 40vh;" />
+          </div>
+          <p>If private key is compromised, <strong>only current session</strong> is affected</p>
+        </div>
+      </div>
+    `,
+    notes: "This visual comparison shows the difference between systems with and without Perfect Forward Secrecy. Without PFS, if a long-term private key is compromised, all past messages can be decrypted. With PFS, even if the long-term key is compromised, past messages remain secure because they were encrypted with ephemeral keys that no longer exist.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "20",
+    title: "Multi-Device Key Transfer Flow",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Multi-Device Key Transfer Flow</h2>
+      <div style="margin: 1.5rem 0; text-align: center;">
+        <img src="/images/key-transfer-flow.png" alt="Key Transfer Flow Diagram" style="max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
+      </div>
+      <ol>
+        <li>New device generates random passphrase</li>
+        <li>QR code contains passphrase + transfer ID</li>
+        <li>Existing device encrypts private key with passphrase</li>
+        <li>Encrypted key sent to server with transfer ID</li>
+        <li>New device retrieves and decrypts the key</li>
+      </ol>
+    `,
+    notes: "This diagram shows the secure key transfer process between devices. The QR code mechanism requires physical proximity as an added security measure. The private key is never transmitted in plaintext, and the symmetric encryption passphrase is never sent over the network - it's only exchanged via the QR code.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "21",
+    title: "Group Chat Encryption Approaches",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Group Chat Encryption Approaches</h2>
+      <div class="grid-container">
+        <div class="grid-item">
+          <h3>Pairwise Encryption</h3>
+          <div class="approach-diagram">
+            <img src="/images/pairwise-encryption.png" alt="Pairwise Encryption" style="max-width: 100%; max-height: 30vh;" />
+          </div>
+          <p><strong>Pros:</strong> Simple, secure</p>
+          <p><strong>Cons:</strong> Scales poorly (n² problem)</p>
+        </div>
+        <div class="grid-item">
+          <h3>Shared Group Key</h3>
+          <div class="approach-diagram">
+            <img src="/images/group-key.png" alt="Shared Group Key" style="max-width: 100%; max-height: 30vh;" />
+          </div>
+          <p><strong>Pros:</strong> Efficient</p>
+          <p><strong>Cons:</strong> Complex key rotation when members leave</p>
+        </div>
+      </div>
+    `,
+    notes: "Group chats introduce significant new challenges. The simplest approach is pairwise encryption - when Alice sends a message to a group with Bob and Charlie, her client encrypts the message separately for each recipient using their respective public keys. While secure, this doesn't scale well. The alternative is using a shared group key, but this creates complex key rotation problems when members leave the group.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "22",
+    title: "Scaling to Massive Groups",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Scaling to Massive Groups: Hierarchical Key Bundles</h2>
+      <div style="margin: 1.5rem 0; text-align: center;">
+        <img src="/images/hierarchical-keys.png" alt="Hierarchical Key Bundles" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
+      </div>
+      <ul>
+        <li>Divide large group into manageable subgroups</li>
+        <li>Each subgroup has its own subgroup key (SGK)</li>
+        <li>Main group key encrypted with each subgroup key</li>
+        <li>When member leaves, only rotate affected subgroup key</li>
+        <li>Dramatically reduces key rotation overhead</li>
+      </ul>
+    `,
+    notes: "When scaling to groups with thousands or even hundreds of thousands of members, we need more sophisticated approaches. Hierarchical key bundles divide the large group into manageable subgroups. Each subgroup has its own key, and the main group key is encrypted with each subgroup key. When a member leaves, we only rotate the affected subgroup key and re-encrypt the group key with it, dramatically reducing the overhead.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "23",
+    title: "Metadata Protection Techniques",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Metadata Protection Techniques</h2>
+      <div class="grid-container three-column">
+        <div class="grid-item">
+          <h3>Message Padding</h3>
+          <div class="technique-icon">
+            <img src="/images/padding-icon.png" alt="Message Padding" style="max-width: 80%; max-height: 15vh;" />
+          </div>
+          <p>Standardize message sizes to hide actual length</p>
+        </div>
+        <div class="grid-item">
+          <h3>Timing Obfuscation</h3>
+          <div class="technique-icon">
+            <img src="/images/timing-icon.png" alt="Timing Obfuscation" style="max-width: 80%; max-height: 15vh;" />
+          </div>
+          <p>Random delays to prevent timing analysis</p>
+        </div>
+        <div class="grid-item">
+          <h3>Decoy Traffic</h3>
+          <div class="technique-icon">
+            <img src="/images/decoy-icon.png" alt="Decoy Traffic" style="max-width: 80%; max-height: 15vh;" />
+          </div>
+          <p>Fake messages to obscure real patterns</p>
+        </div>
+      </div>
+    `,
+    notes: "Even with perfect encryption, metadata remains vulnerable. This includes who is talking to whom, when, and how often. Protection techniques include message padding to standardize sizes, timing obfuscation with random delays, and decoy traffic to obscure real communication patterns. Each technique comes with performance and usability trade-offs.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "24",
+    title: "Security vs. Usability Trade-offs",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Security vs. Usability Trade-offs</h2>
+      <div style="margin: 1.5rem 0; text-align: center;">
+        <img src="/images/security-usability.png" alt="Security vs Usability Spectrum" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);" />
+      </div>
+      <ul>
+        <li>More security often means more friction</li>
+        <li>Key considerations:</li>
+        <ul>
+          <li>User experience impact of security measures</li>
+          <li>Performance implications</li>
+          <li>Appropriate security for your threat model</li>
+          <li>Regulatory requirements</li>
+        </ul>
+      </ul>
+    `,
+    notes: "Security isn't binary - it's a spectrum. Every decision involves trade-offs between security, usability, and performance. The most secure system fails if users can't or won't use it properly. Your job is to make informed decisions based on your specific threat model and requirements.",
+    attributes: {
+      'data-transition': 'slide'
+    }
+  },
+  {
+    id: "25",
     title: "Conclusion",
     contentType: "regular",
     htmlContent: `
@@ -304,6 +519,44 @@ export const slides: Slide[] = [
       'data-background-color': "#000033",
       'data-background-opacity': 0.8,
       'data-transition': 'fade'
+    }
+  },
+  {
+    id: "26",
+    title: "Key Takeaways",
+    contentType: "regular",
+    htmlContent: `
+      <h2>Key Takeaways</h2>
+      <ol>
+        <li>Never store sensitive data in plaintext</li>
+        <li>Don't rely solely on server-side encryption</li>
+        <li>Implement proper key management with user control</li>
+        <li>Consider perfect forward secrecy for temporal protection</li>
+        <li>Protect metadata, not just content</li>
+        <li>Design for the human element</li>
+      </ol>
+    `,
+    notes: "The most important takeaways: Never store sensitive data in plaintext. Don't rely solely on server-side encryption. Implement proper key management with user control. Consider perfect forward secrecy for temporal protection. Protect metadata, not just content. Design for the human element - the most secure system fails if users can't or won't use it properly.",
+    attributes: {
+      'data-transition': 'fade'
+    }
+  },
+  {
+    id: "27",
+    title: "Thank You",
+    contentType: "regular",
+    htmlContent: `
+      <div class="title-slide">
+        <h1>Thank You!</h1>
+        <p class="byline">Questions?</p>
+        <p class="contact">@bendechr.ai</p>
+      </div>
+    `,
+    notes: "Thank you for your attention! I'm happy to take any questions.",
+    attributes: {
+      'data-background-image': "/backgrounds/thank-you.png",
+      'data-background-size': 'cover',
+      'data-background-opacity': 0.8
     }
   }
 ];
