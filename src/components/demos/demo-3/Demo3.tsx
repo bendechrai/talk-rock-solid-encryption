@@ -10,7 +10,6 @@ import { AdminPanel } from "@/components/common/AdminPanel";
 import { Phone } from "@/components/common/Phone";
 import styles from "./Demo3.module.css";
 import { KeyManagement } from './KeyManagement';
-import { JsonPrettifierPanel } from './JsonPrettifierPanel';
 import { KeyGenerationScreen } from "./KeyGenerationScreen";
 
 interface KeyInfoProps {
@@ -384,7 +383,6 @@ export default function Demo3() {
       <div className={styles.adminPanel}>
         <AdminPanel demoVersion={3}>
           <KeyManagement demoVersion={3} />
-          <JsonPrettifierPanel />
         </AdminPanel>
       </div>
     </div>
