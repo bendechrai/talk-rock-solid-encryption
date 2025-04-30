@@ -10,6 +10,7 @@ import {
 } from "react";
 import styles from "./DatabaseViewer.module.css";
 import { useToast } from "./Toast";
+import { Modal } from "./Modal";
 
 // Define interface for the database viewer component
 export interface DatabaseViewerProps {
@@ -35,6 +36,7 @@ export const DatabaseViewer = forwardRef<
   // Track copied cell by a unique identifier (table-row-column) instead of content
   const [copiedCellId, setCopiedCellId] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get toast function for notifications
@@ -134,38 +136,41 @@ export const DatabaseViewer = forwardRef<
       });
   };
 
-  // Function to handle database reset directly
-  const handleReset = async () => {
-    if (confirm("Are you sure you want to reset the database?")) {
-      setIsResetting(true);
-      try {
-        // Make the API call directly
-        const response = await fetch("/api/admin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "reset" }),
-        });
+  // Function to open the reset confirmation modal
+  const handleReset = () => {
+    setIsResetModalOpen(true);
+  };
 
-        if (!response.ok) {
-          throw new Error(`Server responded with status: ${response.status}`);
-        }
+  // Function to handle the actual database reset
+  const confirmReset = async () => {
+    setIsResetting(true);
+    try {
+      // Make the API call directly
+      const response = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset" }),
+      });
 
-        // Show success message
-        showToast("Database reset successfully", "success");
-
-        // Refresh the database contents after reset
-        fetchDatabaseContents();
-      } catch (error) {
-        console.error("Error resetting database:", error);
-        showToast(
-          `Failed to reset database: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`,
-          "error"
-        );
-      } finally {
-        setIsResetting(false);
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
       }
+
+      // Show success message
+      showToast("Database reset successfully", "success");
+
+      // Refresh the database contents after reset
+      fetchDatabaseContents();
+    } catch (error) {
+      console.error("Error resetting database:", error);
+      showToast(
+        `Failed to reset database: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "error"
+      );
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -633,6 +638,15 @@ export const DatabaseViewer = forwardRef<
           {isResetting ? "Resetting..." : "Reset Database"}
         </button>
       </div>
+      <Modal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={confirmReset}
+        title="Reset Database"
+        message="Are you sure you want to reset the database?"
+        confirmText="Reset"
+        cancelText="Cancel"
+      />
     </div>
   );
 });
