@@ -175,12 +175,7 @@ export async function decryptWithPrivateKey(encryptedMessage: string, privateKey
     
     // Validate required fields
     if (!publicKey || !iv || !ciphertext) {
-      console.error('[Asymmetric] Missing required fields in encrypted message:', { 
-        hasPublicKey: !!publicKey,
-        hasIv: !!iv,
-        hasCiphertext: !!ciphertext
-      });
-      throw new Error('Missing required fields in encrypted message');
+      return '(Unable to decrypt message)';
     }
     
     // Derive shared secret using DH
