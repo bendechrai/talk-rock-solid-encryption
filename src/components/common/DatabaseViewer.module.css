@@ -112,8 +112,7 @@
 }
 
 .copiedCell {
-  background-color: rgba(40, 167, 69, 0.2) !important;
-  animation: fadeOut 2s ease;
+  background-color: rgba(0, 255, 0, 0.1) !important;
 }
 
 .copiedCell::after {
@@ -129,6 +128,21 @@
   font-size: 12px;
   white-space: nowrap;
   z-index: 10;
+}
+
+.expiredKey {
+  opacity: 0.7;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.expiredStatus {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.validStatus {
+  color: #00ff41;
+  font-weight: bold;
 }
 
 @keyframes fadeOut {

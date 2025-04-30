@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.css";
-import { AdminCogButton } from "../presentation/AdminCogButton";
-import { DatabaseViewer, DatabaseViewerRef } from "./DatabaseViewer";
 import Draggable from "react-draggable";
+import { DatabaseViewer, DatabaseViewerRef } from "./DatabaseViewer";
+import ApiQueryPanel from "./ApiQueryPanel";
+import { AdminCogButton } from "../presentation/AdminCogButton";
 
 interface AdminPanelProps {
   demoVersion: number;
@@ -34,7 +35,10 @@ export function AdminPanel({
 
             <DatabaseViewer
               ref={databaseViewerRef}
+              demoVersion={demoVersion}
             />
+
+            <ApiQueryPanel demoVersion={demoVersion} />
 
             {children && children}
           </div>

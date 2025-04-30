@@ -272,8 +272,19 @@ export default function Presentation() {
             // Create a section element with the appropriate attributes from our slide data
             const sectionProps = {
               ...getSlideAttributes(slide),
-              "data-notes": slide.notes,
             };
+            
+            // Format notes as a list if they're an array
+            if (slide.notes) {
+              if (Array.isArray(slide.notes)) {
+                // Create an HTML list for array notes
+                const notesList = `<ul>${slide.notes.map(note => `<li>${note}</li>`).join('')}</ul>`;
+                sectionProps["data-notes"] = notesList;
+              } else {
+                // Use notes as-is if it's a string
+                sectionProps["data-notes"] = slide.notes;
+              }
+            }
 
             // Add content type as data attribute for CSS targeting
             sectionProps["data-content-type"] = slide.contentType;

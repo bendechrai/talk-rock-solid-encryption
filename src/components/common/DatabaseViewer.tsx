@@ -12,7 +12,9 @@ import styles from "./DatabaseViewer.module.css";
 import { useToast } from "./Toast";
 
 // Define interface for the database viewer component
-export interface DatabaseViewerProps {}
+export interface DatabaseViewerProps {
+  demoVersion: number;
+}
 
 // Define interface for database viewer ref
 export interface DatabaseViewerRef {
@@ -23,7 +25,7 @@ export interface DatabaseViewerRef {
 export const DatabaseViewer = forwardRef<
   DatabaseViewerRef,
   DatabaseViewerProps
->((props, ref) => {
+>(({ demoVersion }, ref) => {
   const [dbContents, setDbContents] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [editingConversation, setEditingConversation] = useState<string | null>(
@@ -41,7 +43,7 @@ export const DatabaseViewer = forwardRef<
   // Function to fetch database contents
   const fetchDatabaseContents = useCallback(() => {
     setIsLoading(true);
-    
+
     fetch("/api/admin")
       .then((response) => {
         if (!response.ok) {
@@ -56,7 +58,7 @@ export const DatabaseViewer = forwardRef<
       .catch((error) => {
         console.error("Error fetching database:", error);
         const errorMessage = `Failed to load database: ${error.message}`;
-        showToast(errorMessage, 'error');
+        showToast(errorMessage, "error");
         setIsLoading(false);
       });
   }, [showToast]); // Include showToast in dependencies
@@ -143,19 +145,24 @@ export const DatabaseViewer = forwardRef<
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "reset" }),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Server responded with status: ${response.status}`);
         }
-        
+
         // Show success message
-        showToast('Database reset successfully', 'success');
-        
+        showToast("Database reset successfully", "success");
+
         // Refresh the database contents after reset
         fetchDatabaseContents();
       } catch (error) {
         console.error("Error resetting database:", error);
-        showToast(`Failed to reset database: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+        showToast(
+          `Failed to reset database: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+          "error"
+        );
       } finally {
         setIsResetting(false);
       }
@@ -193,8 +200,6 @@ export const DatabaseViewer = forwardRef<
     <div className={styles.databaseViewer}>
       <div className={styles.databaseViewerContent}>
         <h3>Database Viewer</h3>
-        
-
 
         <h4>Users Table</h4>
         <table>
@@ -236,7 +241,7 @@ export const DatabaseViewer = forwardRef<
                   <td
                     onClick={() =>
                       handleCopyToClipboard(
-                        user.phoneColor || 'default',
+                        user.phoneColor || "default",
                         `users-${user.id}-phoneColor`
                       )
                     }
@@ -246,74 +251,13 @@ export const DatabaseViewer = forwardRef<
                         : ""
                     }`}
                   >
-                    {user.phoneColor || 'default'}
+                    {user.phoneColor || "default"}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan={3}>Loading...</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        <h4>Public Keys Table</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>User ID</th>
-              <th>User Name</th>
-              <th>Public Key</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dbContents && dbContents.publicKeys ? (
-              dbContents.publicKeys.map((keyEntry: any) => {
-                // Find the user name for this key
-                const user = dbContents.users?.find((u: any) => u.id === keyEntry.userId);
-                const userName = user ? user.name : 'Unknown User';
-                
-                return (
-                  <tr key={`pubkey-${keyEntry.userId}`}>
-                    <td
-                      onClick={() =>
-                        handleCopyToClipboard(keyEntry.userId, `pubkey-${keyEntry.userId}-id`)
-                      }
-                      className={`${styles.clickableCell} ${
-                        copiedCellId === `pubkey-${keyEntry.userId}-id`
-                          ? styles.copiedCell
-                          : ""
-                      }`}
-                    >
-                      {keyEntry.userId}
-                    </td>
-                    <td>{userName}</td>
-                    <td
-                      onClick={() =>
-                        handleCopyToClipboard(
-                          keyEntry.publicKey,
-                          `pubkey-${keyEntry.userId}-key`
-                        )
-                      }
-                      className={`${styles.contentCell} ${styles.clickableCell} ${
-                        copiedCellId === `pubkey-${keyEntry.userId}-key`
-                          ? styles.copiedCell
-                          : ""
-                      }`}
-                    >
-                      {keyEntry.publicKey}
-                    </td>
-                    <td>
-                      {new Date(keyEntry.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={4}>Loading...</td>
               </tr>
             )}
           </tbody>
@@ -494,6 +438,190 @@ export const DatabaseViewer = forwardRef<
             )}
           </tbody>
         </table>
+
+        {demoVersion >= 3 && (
+          <>
+            <h4>Public Keys Table</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>User Name</th>
+                  <th>Public Key</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dbContents && dbContents.publicKeys ? (
+                  dbContents.publicKeys.map((keyEntry: any) => {
+                    // Find the user name for this key
+                    const user = dbContents.users?.find(
+                      (u: any) => u.id === keyEntry.userId
+                    );
+                    const userName = user ? user.name : "Unknown User";
+
+                    return (
+                      <tr key={`pubkey-${keyEntry.userId}`}>
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              keyEntry.userId,
+                              `pubkey-${keyEntry.userId}-id`
+                            )
+                          }
+                          className={`${styles.clickableCell} ${
+                            copiedCellId === `pubkey-${keyEntry.userId}-id`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {keyEntry.userId}
+                        </td>
+                        <td>{userName}</td>
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              keyEntry.publicKey,
+                              `pubkey-${keyEntry.userId}-key`
+                            )
+                          }
+                          className={`${styles.contentCell} ${
+                            styles.clickableCell
+                          } ${
+                            copiedCellId === `pubkey-${keyEntry.userId}-key`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {keyEntry.publicKey}
+                        </td>
+                        <td>{new Date(keyEntry.createdAt).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={4}>Loading...</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {demoVersion >= 4 && (
+          <>
+            <h4>Ephemeral Keys Table</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User ID</th>
+                  <th>Conversation ID</th>
+                  <th>Public Key</th>
+                  <th>Created At</th>
+                  <th>Expires At</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dbContents && dbContents.ephemeralKeys ? (
+                  dbContents.ephemeralKeys.map((key: any) => {
+                    // Find the user name for this key
+                    const user = dbContents.users?.find(
+                      (u: any) => u.id === key.userId
+                    );
+                    const userName = user ? user.name : "Unknown User";
+                    const now = new Date();
+                    const isExpired = new Date(key.expiresAt) < now;
+
+                    return (
+                      <tr
+                        key={`ephkey-${key.id}`}
+                        className={isExpired ? styles.expiredKey : ""}
+                      >
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(key.id, `ephkey-${key.id}-id`)
+                          }
+                          className={`${styles.clickableCell} ${
+                            copiedCellId === `ephkey-${key.id}-id`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {key.id}
+                        </td>
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              key.userId,
+                              `ephkey-${key.id}-userId`
+                            )
+                          }
+                          className={`${styles.clickableCell} ${
+                            copiedCellId === `ephkey-${key.id}-userId`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {key.userId} ({userName})
+                        </td>
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              key.conversationId,
+                              `ephkey-${key.id}-convId`
+                            )
+                          }
+                          className={`${styles.clickableCell} ${
+                            copiedCellId === `ephkey-${key.id}-convId`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {key.conversationId}
+                        </td>
+                        <td
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              key.publicKey,
+                              `ephkey-${key.id}-key`
+                            )
+                          }
+                          className={`${styles.contentCell} ${
+                            styles.clickableCell
+                          } ${
+                            copiedCellId === `ephkey-${key.id}-key`
+                              ? styles.copiedCell
+                              : ""
+                          }`}
+                        >
+                          {key.publicKey}
+                        </td>
+                        <td>{new Date(key.createdAt).toLocaleString()}</td>
+                        <td>{new Date(key.expiresAt).toLocaleString()}</td>
+                        <td
+                          className={
+                            isExpired
+                              ? styles.expiredStatus
+                              : styles.validStatus
+                          }
+                        >
+                          {isExpired ? "EXPIRED" : "VALID"}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7}>Loading...</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
 
       <div className={styles.databaseActions}>
