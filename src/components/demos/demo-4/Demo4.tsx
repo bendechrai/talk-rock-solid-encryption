@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { Message } from "@/types/common";
 import {
   encryptWithEphemeralKeys,
@@ -31,21 +31,16 @@ export default function Demo4() {
     Record<string, string[]>
   >({});
 
-  // Function to check if a user has an ephemeral key for a conversation
-  const hasEphemeralKey = (userId: string, conversationId: string): boolean => {
+  // Function to check if a user has an ephemeral key for a conversation - memoized to prevent issues during render
+  const hasEphemeralKey = useCallback((userId: string, conversationId: string): boolean => {
     // First check localStorage directly using the getCurrentEphemeralKey function
     const activeKey = getCurrentEphemeralKey(userId, conversationId);
     if (activeKey) {
-      // If we found a key, make sure our UI state is updated
-      if (!ephemeralKeyStatus[userId]?.includes(conversationId)) {
-        // Update the state to match reality
-        markEphemeralKeyGenerated(userId, conversationId);
-      }
       return true;
     }
     // Fall back to the state tracking (mainly for newly generated keys)
     return ephemeralKeyStatus[userId]?.includes(conversationId) || false;
-  };
+  }, [ephemeralKeyStatus]);
 
   // Function to mark that a user has an ephemeral key for a conversation
   const markEphemeralKeyGenerated = (
@@ -259,8 +254,11 @@ export default function Demo4() {
               }
               messageProcessor={createMessageProcessor(currentUsers.user1)}
               ephemeralKeyGenerator={(userId, conversationId) => {
-                // Check if this user needs to generate an ephemeral key for this conversation
-                if (!hasEphemeralKey(userId, conversationId)) {
+                // Use a memoized check to prevent state updates during render
+                const needsKey = !hasEphemeralKey(userId, conversationId);
+                
+                // Only render the key generation screen if needed
+                if (needsKey) {
                   return (
                     <EphemeralKeyGenerationScreen
                       userId={userId}
@@ -317,8 +315,11 @@ export default function Demo4() {
               }
               messageProcessor={createMessageProcessor(currentUsers.user2)}
               ephemeralKeyGenerator={(userId, conversationId) => {
-                // Check if this user needs to generate an ephemeral key for this conversation
-                if (!hasEphemeralKey(userId, conversationId)) {
+                // Use a memoized check to prevent state updates during render
+                const needsKey = !hasEphemeralKey(userId, conversationId);
+                
+                // Only render the key generation screen if needed
+                if (needsKey) {
                   return (
                     <EphemeralKeyGenerationScreen
                       userId={userId}
