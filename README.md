@@ -97,16 +97,60 @@ one click's worth of change:
 }
 ```
 
-## What is ported so far
+## The demos
 
-The end-to-end encryption section is fully animated, and demos 1 to 3 run live. The other
-sections of the talk are still to be ported.
+Four demo scenes sit in the talk where the live demos happen. Each shows two phones running the
+chat app against the real server:
+
+1. **A simple chat app.** Nothing is encrypted.
+2. **Encrypted on the server.** The server encrypts at rest with one key and decrypts for anyone.
+3. **End-to-end encryption.** Each device has a key pair; a message is sealed once per member.
+4. **Short-lived chat keys.** Each conversation gets its own keys, which expire after a minute.
+
+"Behind the scenes" opens the presenter's view of the server next to one phone (pick which with
+the two badges beside it):
+
+| Tab | Shows |
+| --- | --- |
+| Messages | Every stored message: readable text in white, ciphertext in green, sealed messages as one chip per recipient. "Raw" shows the stored value; "Copy" copies it. |
+| Chats | Conversations, with members you can add and remove, and the users table. |
+| Keys | The public keys the server holds, and each chat key with its time left. |
+| API | Ask the API for anything. There is no login. |
+| Devices | The keys each device holds. Generate, reveal, copy, delete; for chat keys, expire one now rather than waiting out the minute. |
+| Decrypt | Try a key against a stored message. |
+
+"Reset" empties the database and every device's keys; it asks twice.
 
 ## Checks
 
 ```bash
 npm test
+```
+
+```bash
 npm run typecheck
+```
+
+Three audits drive a real browser against the running presentation (`npm run dev` first). They
+need Playwright: `npm install --no-save playwright && npx playwright install chromium`.
+
+Flag any text too small to read from the back of a room, at every step of every scene:
+
+```bash
+npm run audit:legibility -w presentation
+```
+
+Replay the four demos following the Melbourne narration and check each beat (this resets the
+database):
+
+```bash
+npm run audit:demos -w presentation
+```
+
+Save a screenshot of every step, to review a scene as the audience sees it:
+
+```bash
+npm run audit:screenshots -w presentation -- /tmp/shots e2e --play
 ```
 
 ## Licence

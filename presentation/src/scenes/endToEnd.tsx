@@ -106,7 +106,8 @@ export const endToEnd: Scene = {
   View,
   steps: [
     {
-      notes: 'Alice generates a key pair: a random private key first, then a public key derived from it. Private stays private; public is shared.',
+      notes:
+        'Alice generates a key pair: a random private key first, then a public key derived from it. The private key is kept private; the public key is kept public.',
       build: (tl) => {
         show(tl, '#keygen-code');
         pop(tl, '#alice-private', '>-0.1');
@@ -121,7 +122,15 @@ export const endToEnd: Scene = {
       },
     },
     {
-      notes: 'Bob generates a key pair too, on his own device.',
+      notes: 'Alice shares the PUBLIC key with Bob. It goes by way of the server, which hands it to anyone in the conversation. The private key never moves.',
+      build: (tl) => {
+        fly(tl, '#alice-public-server', at.alicePublic, at.alicePublicOnServer, { bend: 90, reveal: true });
+        show(tl, '#directory-label', '>-0.2');
+        fly(tl, '#alice-public-bob', at.alicePublicOnServer, at.alicePublicAtBob, { bend: -110, reveal: true, at: '>-0.1' });
+      },
+    },
+    {
+      notes: 'Meanwhile, Bob generates a public and private key on his own device.',
       build: (tl) => {
         pop(tl, '#bob-private');
         show(tl, '#bob-private-label', '<0.2');
@@ -135,20 +144,12 @@ export const endToEnd: Scene = {
       },
     },
     {
-      notes: 'Each shares their PUBLIC key. It goes to the server, which hands it to anyone in the conversation. The private keys never move.',
+      notes: 'Bob shares his public key with Alice. Now each holds the other\'s public key.',
       build: (tl) => {
         hide(tl, '#keygen-code');
         hide(tl, '#alice-private-label, #alice-public-label, #bob-private-label, #bob-public-label', '<');
-        fly(tl, '#alice-public-server', at.alicePublic, at.alicePublicOnServer, { bend: 90, reveal: true, at: '>' });
-        fly(tl, '#bob-public-server', at.bobPublic, at.bobPublicOnServer, { bend: -90, reveal: true, at: '<0.15' });
-        show(tl, '#directory-label', '>-0.2');
-      },
-    },
-    {
-      notes: 'Alice now has Bob\'s public key, and Bob has Alice\'s.',
-      build: (tl) => {
-        fly(tl, '#bob-public-alice', at.bobPublicOnServer, at.bobPublicAtAlice, { bend: 110, reveal: true });
-        fly(tl, '#alice-public-bob', at.alicePublicOnServer, at.alicePublicAtBob, { bend: -110, reveal: true, at: '<0.15' });
+        fly(tl, '#bob-public-server', at.bobPublic, at.bobPublicOnServer, { bend: -90, reveal: true, at: '>' });
+        fly(tl, '#bob-public-alice', at.bobPublicOnServer, at.bobPublicAtAlice, { bend: 110, reveal: true, at: '>-0.1' });
       },
     },
     {
@@ -158,7 +159,8 @@ export const endToEnd: Scene = {
       },
     },
     {
-      notes: 'Before it is sent, Alice encrypts it with Bob\'s public key. Public keys encrypt; you encrypt with the recipient\'s.',
+      notes:
+        'Before it is sent, Alice encrypts it with Bob\'s public key. Public keys encrypt, and you use the recipient\'s; private keys decrypt. (Aside, not shown: private keys can also sign, and the signature is checked with the public key.)',
       build: (tl) => {
         fly(tl, '#bob-public-alice', at.bobPublicAtAlice, at.aliceScreen, { bend: -50, duration: 0.7 });
         swap(tl, '#alice-plain', '#alice-cipher', '>-0.1');
