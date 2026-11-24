@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 112">
+  <!-- One person's device. The figure on the screen takes `currentColor`, so a scene can light it up. -->
+  <rect x="11" y="2" width="128" height="90" rx="12" fill="#3A4868"/>
+  <rect x="19" y="10" width="112" height="74" rx="6" fill="#0F1A30"/>
+  <rect x="19" y="10" width="112" height="74" rx="6" fill="currentColor" opacity=".22"/>
+  <circle cx="75" cy="36" r="13" fill="currentColor"/>
+  <path d="M49 84a26 26 0 0 1 52 0z" fill="currentColor"/>
+  <path d="M0 92h150l-6 13a8 8 0 0 1-7 5H13a8 8 0 0 1-7-5z" fill="#55648A"/>
+  <rect x="60" y="92" width="30" height="4" rx="2" fill="#3A4868"/>
+</svg>

@@ -1,0 +1,59 @@
+/* Key rotation and private key retention. Sizes are stage pixels; nothing readable is under 40. */
+
+/* A one-line statement across the top of a diagram that changes with the step. */
+.rotation-headline {
+  position: absolute;
+  left: 80px;
+  top: 40px;
+  width: 1600px;
+  margin: 0;
+  font-size: 56px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.rotation-headline small {
+  display: block;
+  margin-top: 10px;
+  font-size: 42px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+/* The five retention considerations. */
+.rotation-list {
+  position: absolute;
+  left: 80px;
+  top: 186px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.rotation-item {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.rotation-icon {
+  flex: none;
+  width: 148px;
+  height: 148px;
+  padding: 26px;
+  border-radius: 32px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+}
+.rotation-item-title {
+  font-size: 60px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.rotation-item-sub {
+  margin-top: 10px;
+  font-size: 44px;
+  line-height: 1.1;
+  color: var(--muted);
+}

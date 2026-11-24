@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 44" fill="currentColor">
+  <!-- A public key whose owner is unknown: a hexagon head, which no character in the cast uses. -->
+  <path d="M12 4h18l10 18l-10 18H12L2 22z M21 16a6 6 0 1 0 0 12a6 6 0 1 0 0-12z" fill-rule="evenodd"/>
+  <rect x="36" y="18" width="56" height="8" rx="4"/><rect x="66" y="24" width="8" height="12" rx="2"/><rect x="80" y="24" width="8" height="9" rx="2"/>
+</svg>
