@@ -1,91 +1,114 @@
 # Building Rock-Solid Encrypted Applications
 
-This project is a demonstration for a 60-minute technical talk on implementing secure encryption in web applications. It showcases the evolution of a chat application called 'Whisper' from completely insecure to properly encrypted.
+The talk and its live demos in one repository. The slides are animated scenes that run in the
+browser, and the demos are the real chat app ("Whisper") running against a real backend, on the
+same stage.
 
-## Project Overview
+## Running it
 
-This is a **demonstration project** designed to illustrate encryption concepts in an educational context, not a production-ready application. The project contains:
+You need Node.js 22 or newer.
 
-1. A slide presentation system built with Reveal.js and Next.js
-2. Interactive demos showing different encryption approaches (plaintext, symmetric, asymmetric, and more)
-3. Code examples that can be examined during the presentation
-4. An in-memory database for simplified demonstration without external dependencies
+```bash
+npm install
+```
 
-## Presentation Structure
+Start the backend (the chat server, on port 4000):
 
-### Introduction (5 minutes)
-- Why encryption matters: regulatory requirements, company reputation, user trust
-- The importance of proper implementation
+```bash
+npm run server
+```
 
-### Evolution of a Secure Chat Application (45 minutes)
+Start the presentation (on port 5173), then open http://localhost:5173:
 
-1. **The Vulnerability of Plain Text** (Demo 1)
-   - Basic chat application with plaintext messages
-   - Demonstration of database vulnerabilities
-   - Common security flaws in production applications
+```bash
+npm run present
+```
 
-2. **Basic Encryption: The False Sense of Security** (Demo 2)
-   - Server-side encryption with AES-256-GCM
-   - Single key implementation and its vulnerabilities
-   - Attack demonstration
-
-3. **The Public-Private Key Revolution** (Demo 3)
-   - End-to-end encryption with Diffie-Hellman key pairs
-   - Implementation using @noble/curves
-   - Demonstration of secure messaging
-
-4. **Perfect Forward Secrecy**
-   - Protecting past messages with ephemeral keys
-   - Key rotation implementation
-
-5. **The Multi-Device Challenge**
-   - Secure key transfer between devices
-   - QR code implementation for physical proximity verification
-
-6. **Group Chat Complexities**
-   - Challenges unique to group messaging
-   - Pairwise encryption approach
-
-7. **Metadata Protection**
-   - The importance of protecting metadata
-   - Implementation techniques
-
-### Conclusion and Q&A (10 minutes)
-- Recap of key principles
-- Resources for further learning
-- Q&A session
-
-## Getting Started
-
-First, run the development server:
+Or start both in one terminal:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the presentation.
+Everything runs locally and nothing is fetched from the internet while presenting. The diagram
+scenes work without the backend; the demos need it.
 
-The presentation will start with the first slide, and you can navigate through the slides using the arrow keys. When you reach a demo slide, the corresponding chat application demo will be displayed.
+## Presenting
 
-## Technical Implementation
+| Key | Does |
+| --- | --- |
+| Right arrow, Space, Enter, Page Down | Next step |
+| Left arrow, Backspace, Page Up | Previous step |
+| Home / End | First / last step of the talk |
+| B or . | Blank the screen |
+| N | Show speaker notes for the current step |
+| F | Full screen |
 
-This project uses:
+A clicker sends Page Down and Page Up, which always work. While you are typing in a demo phone,
+Space, Enter and the arrow keys belong to the text field and do not move the talk.
 
-- **Next.js**: For the application framework
-- **React**: For the UI components
-- **crypto-js**: For basic encryption in Demo 2
-- **@noble/curves**: For advanced asymmetric encryption in Demo 3
-- **In-memory database**: For simplified data storage without external dependencies
-- **reveal.js**: For the slide presentation system
+Pressing next while a step is still animating finishes that step immediately and plays the one
+after. Going back never animates. The address bar always holds the current scene and step, so
+reloading the page returns to exactly where you were.
 
-## Demo Applications
+## Layout
 
-1. **Demo 1**: Basic chat with plaintext messages
-2. **Demo 2**: Chat with symmetric encryption (AES-256-GCM)
-3. **Demo 3**: Chat with asymmetric encryption (public/private key pairs)
+```
+shared/        Types and the encryption code used by both sides (AES-GCM, X25519 sealed boxes)
+server/        The Whisper backend: an HTTP API over one JSON file
+presentation/  The stage: scenes, artwork, animation engine and the demo chat app
+docs/          Reference material, including a transcript of the talk
+```
 
-Each demo builds upon the previous one, showcasing the evolution of security in the application.
+### The server
 
-## License
+The message endpoints come in three versions, one per stage of the talk:
 
-This project is MIT licensed.
+- `/api/v1` stores and returns plaintext.
+- `/api/v2` encrypts at rest with a single server key, and decrypts for anyone who asks.
+- `/api/v3` stores and returns whatever the client sent, which with end-to-end encryption is
+  ciphertext the server cannot read.
+
+None of the endpoints check who is asking. That is part of the demonstration.
+
+The database is `server/data/db.json`. It is created on first run and is not committed. "Reset
+everything" in a demo's server inspector empties it and clears the keys held in the browser.
+
+### The presentation
+
+- `src/art/svg/` holds every drawing as a standalone SVG file. Edit them in any vector tool.
+- `src/art/index.tsx` turns drawings into actors: characters, laptops, keys, messages, routes.
+- `src/engine/` is the stage. `Deck.tsx` handles navigation; `motion.ts` is the vocabulary scenes
+  use to move things (`show`, `pop`, `fly` along a Bézier curve, `along` a route, and so on).
+- `src/scenes/` holds the talk. `index.tsx` lists the scenes in order.
+- `src/demo/` is the chat app. `protocols.ts` defines what a phone does to a message at each
+  stage; the phone and the server inspector are shared by every demo.
+
+A scene is a component that puts every actor on stage, plus a list of steps. Each step describes
+one click's worth of change:
+
+```tsx
+{
+  notes: 'Alice encrypts with Bob\'s public key.',
+  build: (tl) => {
+    fly(tl, '#bob-public-alice', at.bobPublicAtAlice, at.aliceScreen, { bend: -50 });
+    swap(tl, '#alice-plain', '#alice-cipher');
+  },
+}
+```
+
+## What is ported so far
+
+The end-to-end encryption section is fully animated, and demos 1 to 3 run live. The other
+sections of the talk are still to be ported.
+
+## Checks
+
+```bash
+npm test
+npm run typecheck
+```
+
+## Licence
+
+MIT.

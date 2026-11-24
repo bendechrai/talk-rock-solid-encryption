@@ -1,0 +1,10 @@
+{
+  "name": "@whisper/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "test": "tsx --test src/*.test.ts" },
+  "dependencies": { "@noble/curves": "^2.4.0" },
+  "devDependencies": { "tsx": "^4.19.0" }
+}
