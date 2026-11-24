@@ -83,8 +83,8 @@ body {
   border: 1px solid var(--line);
   background: var(--panel);
   font-family: var(--mono);
-  font-size: 30px;
-  line-height: 1.5;
+  font-size: 40px;
+  line-height: 1.45;
   color: var(--text);
   white-space: pre;
 }

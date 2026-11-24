@@ -8,63 +8,63 @@
 import {
   Character, CipherChip, Flow, Label, Laptop, PrivateKey, PublicKey, ScreenCipher, ScreenMessage, ScreenNote, Server,
 } from '../art/index.tsx';
+import { CodeCard, SceneTitle } from '../art/html.tsx';
 import { Svg } from '../engine/Stage.tsx';
 import { along, fly, hide, moveTo, pop, pulse, show, swap } from '../engine/motion.ts';
 import type { Scene } from '../engine/types.ts';
-import { cast, color } from '../theme.ts';
+import { cast, color, type } from '../theme.ts';
 
 // Where things sit. Actor positions are top-left corners in stage pixels.
 const KEY = 1.4;
-const CHIP_SCALE = 1.3;
 const at = {
   alicePrivate: { x: 300, y: 440 },
-  alicePublic: { x: 400, y: 462 },
-  bobPublicAtAlice: { x: 552, y: 462 },
+  alicePublic: { x: 430, y: 462 },
+  bobPublicAtAlice: { x: 590, y: 462 },
   aliceScreen: { x: 410, y: 638 },
 
-  alicePublicAtBob: { x: 1228, y: 462 },
-  bobPublic: { x: 1380, y: 462 },
+  alicePublicAtBob: { x: 1190, y: 462 },
+  bobPublic: { x: 1350, y: 462 },
   bobPrivate: { x: 1530, y: 440 },
   bobScreen: { x: 1395, y: 616 },
 
-  alicePublicOnServer: { x: 812, y: 815 },
-  bobPublicOnServer: { x: 968, y: 815 },
-  chipOnServer: { x: 851, y: 613 },
+  alicePublicOnServer: { x: 812, y: 830 },
+  bobPublicOnServer: { x: 968, y: 830 },
+  chipOnServer: { x: 825, y: 606 },
 };
 
-const CIPHER = ['c26d74c865bc', 'df1c08d38559', 'fc433de1a070'];
+const CIPHER = ['c26d74c865bc', 'df1c08d38559'];
 const CHIP = 'c26d74c865…';
 
 function View() {
   return (
     <>
       <Svg>
-        <Flow id="to-server" d="M650 660C710 590 770 590 826 636" hidden />
-        <Flow id="to-bob" d="M1094 636C1150 590 1210 590 1270 660" hidden />
-        <Flow id="to-eve" d="M960 524C960 440 1200 480 1262 394" tint={cast.eve.color} hidden />
+        <Flow id="to-server" d="M650 660C710 590 760 590 808 634" hidden />
+        <Flow id="to-bob" d="M1112 634C1160 590 1210 590 1270 660" hidden />
+        <Flow id="to-eve" d="M960 506C960 440 1100 470 1150 400" tint={cast.eve.color} hidden />
 
         <Character who="alice" x={40} y={400} scale={1.5} />
-        <Label x={190} y={890} text="Alice" tint={cast.alice.color} size={44} />
+        <Label x={190} y={890} text="Alice" tint={cast.alice.color} />
         <Laptop x={300} y={560} scale={1.5}>
           <ScreenMessage id="alice-plain" text="Hi!" hidden />
           <ScreenCipher id="alice-cipher" lines={CIPHER} hidden />
         </Laptop>
 
-        <Server x={820} y={520} scale={1.4} />
-        <Label id="directory-label" x={960} y={918} text="public keys" tint={color.muted} size={28} weight={500} hidden />
+        <Server x={800} y={500} scale={1.6} />
+        <Label id="directory-label" x={960} y={950} text="public keys" tint={color.muted} size={type.min} weight={500} hidden />
 
         <Laptop x={1260} y={560} scale={1.5}>
           <ScreenCipher id="bob-cipher" lines={CIPHER} hidden />
           <ScreenMessage id="bob-plain" text="Hi!" hidden />
         </Laptop>
         <Character who="bob" x={1580} y={400} scale={1.5} />
-        <Label x={1730} y={890} text="Bob" tint={cast.bob.color} size={44} />
+        <Label x={1730} y={890} text="Bob" tint={cast.bob.color} />
 
         <Character id="eve" who="eve" x={880} y={70} scale={1.15} hidden />
-        <Label id="eve-name" x={860} y={260} text="Eve" tint={cast.eve.color} size={44} anchor="end" hidden />
-        <Laptop id="eve-laptop" x={1130} y={190} scale={1.1} hidden>
+        <Label id="eve-name" x={860} y={260} text="Eve" tint={cast.eve.color} anchor="end" hidden />
+        <Laptop id="eve-laptop" x={1130} y={150} scale={1.5} hidden>
           <ScreenCipher id="eve-cipher" lines={CIPHER} hidden />
-          <ScreenNote id="eve-stuck" text="can't decrypt" hidden />
+          <ScreenNote id="eve-stuck" text={"can't\ndecrypt"} hidden />
         </Laptop>
 
         {/* Key pairs. Copies of the public keys start hidden on top of the originals. */}
@@ -72,28 +72,28 @@ function View() {
         <PublicKey id="alice-public" owner="alice" {...at.alicePublic} scale={KEY} hidden />
         <PublicKey id="alice-public-server" owner="alice" {...at.alicePublic} scale={KEY} hidden />
         <PublicKey id="alice-public-bob" owner="alice" {...at.alicePublicOnServer} scale={KEY} hidden />
-        <Label id="alice-private-label" x={345} y={424} text="private" tint={color.muted} size={26} weight={500} hidden />
-        <Label id="alice-public-label" x={470} y={424} text="public" tint={color.muted} size={26} weight={500} hidden />
+        <Label id="alice-private-label" x={345} y={420} text="private" tint={color.muted} size={type.min} weight={500} hidden />
+        <Label id="alice-public-label" x={500} y={420} text="public" tint={color.muted} size={type.min} weight={500} hidden />
 
         <PrivateKey id="bob-private" owner="bob" {...at.bobPrivate} scale={KEY} hidden />
         <PublicKey id="bob-public" owner="bob" {...at.bobPublic} scale={KEY} hidden />
         <PublicKey id="bob-public-server" owner="bob" {...at.bobPublic} scale={KEY} hidden />
         <PublicKey id="bob-public-alice" owner="bob" {...at.bobPublicOnServer} scale={KEY} hidden />
-        <Label id="bob-public-label" x={1450} y={424} text="public" tint={color.muted} size={26} weight={500} hidden />
-        <Label id="bob-private-label" x={1575} y={424} text="private" tint={color.muted} size={26} weight={500} hidden />
+        <Label id="bob-public-label" x={1420} y={420} text="public" tint={color.muted} size={type.min} weight={500} hidden />
+        <Label id="bob-private-label" x={1575} y={420} text="private" tint={color.muted} size={type.min} weight={500} hidden />
 
         {/* The message in transit. One chip per hop, so the server keeps its copy. */}
-        <CipherChip id="chip-stored" text={CHIP} x={0} y={0} scale={CHIP_SCALE} hidden />
-        <CipherChip id="chip-to-bob" text={CHIP} {...at.chipOnServer} scale={CHIP_SCALE} hidden />
-        <CipherChip id="chip-to-eve" text={CHIP} {...at.chipOnServer} scale={CHIP_SCALE} hidden />
+        <CipherChip id="chip-stored" text={CHIP} x={0} y={0} hidden />
+        <CipherChip id="chip-to-bob" text={CHIP} {...at.chipOnServer} hidden />
+        <CipherChip id="chip-to-eve" text={CHIP} {...at.chipOnServer} hidden />
       </Svg>
 
-      <h1 className="scene-title">End-to-end encryption</h1>
-      <pre id="keygen-code" className="code-card" style={{ left: 560, top: 200, opacity: 0 }}>
+      <SceneTitle>End-to-end encryption</SceneTitle>
+      <CodeCard id="keygen-code" left={404} top={156} hidden>
         <span className="dim">{'// on the device, never on the server\n'}</span>
         {'const privateKey = '}<span className="hl">randomPrivateKey</span>{'();\n'}
         {'const publicKey  = '}<span className="hl">getPublicKey</span>{'(privateKey);'}
-      </pre>
+      </CodeCard>
     </>
   );
 }

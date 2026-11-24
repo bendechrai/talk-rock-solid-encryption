@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audit:legibility": "node audit/legibility.cjs",
+    "audit:screenshots": "node audit/screenshots.cjs"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.1.0",

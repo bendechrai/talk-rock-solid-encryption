@@ -14,6 +14,15 @@ export const color = {
   cipherGround: '#0E2A1E',
 } as const;
 
+/**
+ * Conversations get their own colours, separate from the cast. Ben calls them "the blue
+ * conversation" (a private chat) and "the green conversation" (the group chat).
+ */
+export const conversation = {
+  blue: '#4C9DFF',
+  green: '#B5E853',
+} as const;
+
 export type Who = 'alice' | 'bob' | 'charlie' | 'eve';
 export type Shape = 'triangle' | 'square' | 'circle' | 'diamond';
 
@@ -38,3 +47,19 @@ export const castById: Record<string, CastMember & { who: Who }> = Object.fromEn
 
 /** The stage is authored at this size and scaled to fit whatever screen it is shown on. */
 export const STAGE = { width: 1920, height: 1080 } as const;
+
+/**
+ * Text sizes in stage pixels. The stage is 1080 pixels tall, and someone at the back of a room
+ * sits about six to eight screen-heights away, so anything the audience has to read needs to be
+ * at least `min`. `texture` is for ciphertext, which only has to look scrambled.
+ * `npm run audit:legibility` checks every step of every scene against these.
+ */
+export const type = {
+  heading: 104,
+  title: 76,
+  body: 48,
+  label: 44,
+  code: 40,
+  min: 40,
+  texture: 28,
+} as const;

@@ -49,6 +49,11 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
 
   const scene = scenes[position.scene];
 
+  // The audit scripts in presentation/audit read this to visit every step of every scene.
+  useEffect(() => {
+    (window as unknown as { __deck?: unknown }).__deck = scenes.map((s) => ({ id: s.id, title: s.title, steps: s.steps.length }));
+  }, [scenes]);
+
   const moveTo = useCallback((next: Position, animate = false) => {
     const target = clamp(scenes, next);
     if (target.scene === current.current.scene && target.step === current.current.step) return;
