@@ -13,9 +13,11 @@ Set by Ben on 2026-11-24. Work on this repo is not finished until all five hold.
    shown as texture is at least 28 and is marked `data-texture`.
 2. **Diagrams follow the narration.** Diagrams, transitions and animations make sense with what
    Ben is saying at that moment. The reference narration is
-   `docs/transcript-ndc-melbourne-2025.md`. Each step's `notes` records the narration it serves.
+   `docs/transcript-ndc-melbourne-2025.md`. Each step's `notes` records the narration it serves;
+   `npm run audit:notes -w presentation` prints them in click order and fails if one is missing.
 3. **Technically accurate.** What the slides show is correct, and places where the spoken
-   narration is inaccurate are flagged to Ben rather than copied onto a slide.
+   narration is inaccurate are flagged to Ben rather than copied onto a slide. The flags live in
+   `docs/accuracy-review.md`, in talk order.
 4. **The four demos do what the script says.** Each of the four phone demos has been played
    through following the narration, and behaves as described.
    `npm run audit:demos -w presentation` replays them.

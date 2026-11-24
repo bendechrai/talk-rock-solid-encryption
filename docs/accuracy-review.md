@@ -151,3 +151,94 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
   is what makes it trustworthy. The slide caption says "a user id or a signed token".
 - **Not shown.** The linked phone would also publish its identity public key to the server. Like
   the original, the slide shows only the conversation key sets growing.
+
+## Scalability (about 54:30)
+
+- **"Growing exponentially."** The amount stored multiplies; it does not grow exponentially.
+  Every message is stored once for every device that has to read it. The slide shows the sum
+  (1 × 7, 1 × 4, 1 × 4 = 15 stored for 3 sent) and never uses the word. Suggested: "it
+  multiplies".
+- **Why seven, then four.** Not explained in Melbourne. The slide reads it as: the first message
+  is in the group chat, so the other seven of eight devices each get a copy; the second and third
+  are in a chat with fewer devices, so four each. Check that this is the story intended.
+- **The PGP block.** Shown as evidence that public-key encryption is bulky, and the narration
+  credits the demo app's smaller payload to "using symmetric encryption". PGP is hybrid too: the
+  message is encrypted once with a symmetric key and only that key is encrypted per recipient.
+  The block is big because each RSA-4096 recipient costs 512 bytes, plus base64 armour. The block
+  on the slide is real (GnuPG, "hi", two RSA-4096 recipients, 1,589 bytes), and a second click
+  brackets it into its three parts. The honest comparison, which the last slide of the section
+  captions, is X25519 + AES (635 bytes for three recipients) against RSA-4096 (1,589 for two).
+
+## Symmetric encryption (about 56:30)
+
+- **"That's weak. Yes, it is weak"** and later "symmetric key encryption is less secure because
+  of the fact that there's one key". AES-256 is not weaker than public-key encryption; the
+  messages in Demo 3 were already encrypted with it. The real difficulty is the one the narration
+  then names: both sides need the same key, so how do you get it to them? The slide lists that,
+  and does not say "weak" or "less secure". Suggested: "the cipher is strong; the hard part is
+  sharing the key".
+- **"The whole point of a shared key is everybody knows it."** Everybody *in the conversation*.
+- **"Having to encrypt server side."** That was a property of Demo 2's design, not of symmetric
+  encryption. The slide says "Demo 2 kept it on the server".
+
+## Diffie-Hellman key exchange (about 57:30)
+
+- **The roles of 7 and 23.** Said as two numbers shouted at random, ordered lowest and highest.
+  They are a generator (7) and a prime modulus (23), agreed in public; in practice they are
+  fixed, published parameters. The slide labels them.
+- **Bob's sum.** Said: "take the seven that Alice shouted out, mod it by the five that I imagined,
+  then raise it by the five, and then mod by the 23". It is 7 to the power 5, mod 23, which is 17.
+  The slide shows it.
+- **"For some reason, that works every time. I think it's pure magic."** One click shows why:
+  (7⁶)⁵ and (7⁵)⁶ are both 7³⁰. Skip the click to keep the magic.
+- **"They would probably use the public private key ... to keep it a bit more safe, but you don't
+  have to."** You do have to authenticate the exchange somehow. Without it, someone in the
+  middle can run one exchange with Alice and another with Bob and read everything. The numbers
+  do not need to be secret; they need to be *signed*. The last click of the diagram says so.
+- **The audience question about primes.** Answered roughly right. The precise version is on a
+  new slide ("With real numbers"): the prime is about 617 digits (2,048 bits), or an elliptic
+  curve is used instead; each secret is 256 random bits; the shared secret is hashed into the AES
+  key. "Rainbow table" is not quite the term: with numbers this small an attacker just tries
+  every secret.
+- **This is not new to the demo.** Demo 3 already does a Diffie-Hellman exchange (X25519) and
+  encrypts with AES for every sealed copy. The same slide shows the two lines of code. Worth
+  saying, because the narration presents it as a change of approach.
+- **It does not remove the multiplication.** A shared secret belongs to one pair of people, so a
+  group message still needs one sealed copy per recipient. The narration gets there ("seven
+  messages between three people, 21 messages"); a slide before it now shows why.
+
+## Metadata attacks (about 1:01:30)
+
+- **Gendered wording.** "This one guy", "what are you doing, dude", "because he's leaking". The
+  slides say "this person", "their manager" and "if it is financial data that is leaking".
+- **Friday at 4.** The original slide said 4:55pm; the slide keeps that.
+- **How sure the inferences are.** The original slides stated some of them flatly. Every guess on
+  the new slides carries a "probably" or a question mark, and the last one reads "All guesswork,
+  yet these devices now have likely owners", which matches "I totally made it up".
+- **"300%".** A rise of 300% is four times the traffic. Fine as said.
+
+## Metadata protection (about 1:04:00)
+
+- **Padding.** The original code card padded to 512 bytes "PKCS#7-style". PKCS#7 padding cannot
+  exceed 255 bytes, so that would not work. The new card marks the end of the message with one
+  byte and fills the rest of the block with zeros. Two things worth saying: pad *before*
+  encrypting, and padding hides length only to the nearest block (a third click shows a 600-byte
+  message taking two blocks).
+- **Decoy traffic.** Said: "encrypt it, store it in the database". A decoy has to be *sent* by a
+  device to hide who is talking to whom from the server or the network. Rows the server invents
+  would only mislead someone who reads the database later. The slide shows decoys travelling
+  between devices, and names the cost: bandwidth, storage and battery.
+- **Key rotation.** Not spoken to in Melbourne. New keys make messages harder to link to earlier
+  ones only if the server cannot tie the new key to the old one. In the demo app it can, because
+  keys are published per user. The slide carries that condition.
+- **Retrieve all messages.** Said: "if everybody gets everything it's really hard to work out who
+  it's for". True of which conversations you read. The server still sees that you are online and
+  how much you send, and the cost is the same as for decoys. The slide says both.
+
+## Beyond chat apps and summary
+
+- **Beyond chat apps** was skipped in Melbourne. The three cards carry the original slides'
+  text.
+- **Summary.** There was no summary slide; one was built from the closing words. "Super
+  encrypted" became "end-to-end", and "implementation challenges" is spelled out as "key
+  rotation, many devices, scale".

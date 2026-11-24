@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "audit:legibility": "node audit/legibility.cjs",
     "audit:screenshots": "node audit/screenshots.cjs",
-    "audit:demos": "node audit/demos.cjs"
+    "audit:demos": "node audit/demos.cjs",
+    "audit:notes": "node audit/notes.cjs"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.1.0",

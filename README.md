@@ -71,8 +71,8 @@ The message endpoints come in three versions, one per stage of the talk:
 
 None of the endpoints check who is asking. That is part of the demonstration.
 
-The database is `server/data/db.json`. It is created on first run and is not committed. "Reset
-everything" in a demo's server inspector empties it and clears the keys held in the browser.
+The database is `server/data/db.json`. It is created on first run and is not committed. "Reset" in
+a demo's header empties it and clears the keys held in the browser.
 
 ### The presentation
 
@@ -96,6 +96,26 @@ one click's worth of change:
   },
 }
 ```
+
+## The talk
+
+65 scenes, 226 clicks. Each file in `presentation/src/scenes/` is one part of the talk:
+
+| File | Scenes | Covers |
+| --- | --- | --- |
+| `opening.tsx` | `open-*` | Title, bio, why encryption matters, the plaintext chat app, encryption on the server, recap |
+| `endToEnd.tsx` | `e2e` | Key pairs, exchanging public keys through the server, one message end to end |
+| `multiRecipient.tsx` | `multi-*` | A third person, one sealed copy per member, what a stolen key exposes |
+| `ephemeral.tsx` | `eph-*` | A key pair per conversation, and re-encrypting history for a new member |
+| `rotation.tsx` | `rot-*` | Key rotation, and whether to keep old private keys |
+| `devices.tsx` | `dev-*` | One user with several devices, and linking a new device |
+| `scaling.tsx` | `scale-*` | How copies multiply, symmetric encryption, Diffie-Hellman |
+| `metadata.tsx` | `meta-*` | What metadata gives away, ways to hide it, summary |
+
+Every step carries a presenter note (press N) with the narration it serves, taken from the
+Melbourne recording (`docs/transcript-ndc-melbourne-2025.md`). Where that narration was
+technically inaccurate, the slide shows the accurate version and
+`docs/accuracy-review.md` lists what to say instead.
 
 ## The demos
 
@@ -131,7 +151,7 @@ npm test
 npm run typecheck
 ```
 
-Three audits drive a real browser against the running presentation (`npm run dev` first). They
+Four audits drive a real browser against the running presentation (`npm run dev` first). They
 need Playwright: `npm install --no-save playwright && npx playwright install chromium`.
 
 Flag any text too small to read from the back of a room, at every step of every scene:
@@ -145,6 +165,12 @@ database):
 
 ```bash
 npm run audit:demos -w presentation
+```
+
+Print every presenter note in click order, and fail if a step has none:
+
+```bash
+npm run audit:notes -w presentation
 ```
 
 Save a screenshot of every step, to review a scene as the audience sees it:

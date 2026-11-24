@@ -817,7 +817,8 @@ function FetchView() {
         <Server x={90} y={470} scale={1.5} />
         <Label id="which" x={240} y={440} text="which chat?" tint={color.muted} hidden />
 
-        <Frame x={440} y={330} width={360} height={250} tint={conversation.blue} label="private chat" />
+        {/* Grey, not blue: by this point in the talk Charlie has joined the blue chat. */}
+        <Frame x={440} y={330} width={360} height={250} tint={color.muted} label="another chat" />
         <Frame x={440} y={620} width={360} height={250} tint={conversation.green} label="group chat" />
         {fetchAt.store.map((p, n) => <CipherChip key={n} id={`stored-${n}`} text={CHIP[n]} {...p} />)}
 
