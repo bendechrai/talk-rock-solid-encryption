@@ -832,7 +832,7 @@ export const deviceScenes: Scene[] = [
     'dev-title',
     'Single user, multiple devices: title',
     <>Single user, <em>multiple devices</em></>,
-    'Single user, multi-device. This is where the earlier questions about transferring keys were heading.',
+    'Single user, multi-device. This is where the earlier questions about transferring keys were heading. (A question was taken here: is key rotation automatic? No, you code it. In the demo the ephemeral key pair expires after a minute and the app generates a new one when it next sends.)',
   ),
   keysScene,
   joinScene,
