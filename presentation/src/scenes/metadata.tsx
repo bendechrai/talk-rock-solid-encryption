@@ -598,7 +598,7 @@ const padding: Scene = {
       notes: 'The padding goes on before encryption. A marker byte says where the real message ends, so the receiver can strip the padding after decrypting.',
       build: (tl) => {
         swap(tl, '#c-pad', '#c-code');
-        tl.to('#pad-diagram', { opacity: 0.1, duration: 0.3 }, 0);
+        tl.to('#pad-diagram', { opacity: 0.07, duration: 0.3 }, 0);
         show(tl, '#pad-code', 0.2);
       },
     },

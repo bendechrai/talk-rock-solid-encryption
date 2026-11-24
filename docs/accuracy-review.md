@@ -11,7 +11,14 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
 
 - **Signal's growth.** Said: "Signal's user base grew by 4,000% after the WhatsApp privacy
   changes." The widely reported figure is that Signal *downloads* rose by about 4,200% week on
-  week after WhatsApp's January 2021 privacy policy change. Say "downloads".
+  week after WhatsApp's January 2021 privacy policy change. Say "downloads". The slide does.
+- **The GDPR ceiling.** Said: "$20 million, uh, 20 million euros ... or 4% of your global
+  revenue." It is EUR 20 million or 4% of worldwide annual turnover, whichever is higher.
+- **Where each example sits.** In Melbourne the Colonial Pipeline figure came out under
+  "regulatory" and the GDPR fine under "reputation". The slide puts each figure beside the reason
+  it supports, so the order on screen differs slightly from that delivery.
+- **Legal and ethical obligations** has no example: the screen flickered at that point in
+  Melbourne and nothing was said. It may deserve one.
 
 ## Encrypted on the server (7:12)
 
@@ -23,6 +30,14 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
 - **"It's padded out really, really quickly."** AES-GCM does not pad. The ciphertext is the
   length of the message plus a 16-byte tag; it looks longer because the IV and tag are stored
   with it and the whole thing is base64-encoded.
+- **What gets stored.** Said at 8:41: "we're encoding the plain text and returning that to the
+  database". It is the ciphertext that goes to the database. And at 7:56 the message is described
+  as stored before the key is mentioned; the slide has the server encrypt first, then store.
+- **"Shared secret."** Said at 8:05 of the server's key. Nobody shares it: it is one key held
+  only by the server and used for every message. The slide says "one key for every message".
+- **"In transit it's still in plain text."** True of the application: the phone hands the server
+  readable text. In production TLS would protect the wire, but TLS ends at the server, so the
+  server still receives plaintext. Worth one clause if anyone asks.
 
 ## End-to-end encryption (12:33)
 

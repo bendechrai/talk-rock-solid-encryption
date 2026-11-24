@@ -24,7 +24,7 @@ const USER_ID = 'alice@example.com';
 // Bubble widths are set by hand to fit the words: SVG text cannot size its own background.
 const LAPTOP_BUBBLE = 560;
 const PHONE_BUBBLE = 244;
-const PHONE_BUBBLE_SMALL = 214;
+const PHONE_BUBBLE_SMALL = 234;
 
 // ---- Drawings used only in this section ----
 
@@ -421,7 +421,7 @@ const link = {
   intoQr: { x: 460, y: 565 },
   qrLeaving: { x: 507, y: 537 },
   qrOnPhone: { x: 1177, y: 545 },
-  issuedTicket: { x: 62, y: 500 },
+  issuedTicket: { x: 62, y: 486 },
 
   // What the phone reads from the code.
   phoneAddress: { x: 1380, y: 455 },
@@ -441,8 +441,8 @@ const link = {
   laptopBundleTicket: { x: 86, y: 900 },
   laptopBundleKey: { x: 352, y: 900 },
   laptopOpening: { x: 250, y: 862 },
-  receivedTicket: { x: 62, y: 582 },
-  phoneKeyAside: { x: 90, y: 620 },
+  receivedTicket: { x: 62, y: 632 },
+  phoneKeyAside: { x: 100, y: 560 },
   identityOnLaptop: { x: 62, y: 893 },
   laptopSealing: { x: 340, y: 900 },
   sealedOnLaptop: { x: 216, y: 890 },
@@ -536,7 +536,7 @@ function LinkView() {
         <Bundle id="laptop-bundle" {...link.laptopBundle} hidden />
         <Ticket id="received-ticket" {...link.laptopBundleTicket} scale={TOKEN_SCALE} hidden />
         <PublicKey id="received-key" owner="alice" {...link.laptopBundleKey} scale={KEY} hidden />
-        <Actor id="match" x={288} y={541} hidden><Art name="dev-check" /></Actor>
+        <Actor id="match" x={153} y={564} hidden><Art name="dev-check" /></Actor>
 
         {/* The identity, encrypted to the phone's public key and sent back. */}
         <IdCard id="laptop-identity" {...link.identityOnLaptop} scale={CARD} hidden />
@@ -766,10 +766,10 @@ const linkScene: Scene = {
 // ---- Both devices know who they are (original slide 157) ----
 
 const linked = {
-  laptop: { x: 300, y: 420 },
-  phone: { x: 1380, y: 400 },
-  laptopBubble: { x: 380, y: 520 },
-  phoneBubble: { x: 1448, y: 520 },
+  laptop: { x: 290, y: 410 },
+  phone: { x: 1375, y: 400 },
+  laptopBubble: { x: 417, y: 520 },
+  phoneBubble: { x: 1433, y: 520 },
   chipStart: { x: 560, y: 530 },
   chipEnd: { x: 1390, y: 580 },
 };
@@ -779,14 +779,14 @@ function LinkedView() {
     <>
       <Svg>
         <Character who="alice" x={20} y={560} scale={1.3} />
-        <Laptop {...linked.laptop} scale={3.2} />
-        <Handset {...linked.phone} scale={3.4} />
-        <IdCard x={374} y={306} />
+        <Laptop {...linked.laptop} scale={3.4} />
+        <Handset {...linked.phone} scale={3.5} />
+        <IdCard x={388} y={306} />
         <IdCard x={1240} y={306} />
 
         <Bubble id="laptop-mine" lines={[MESSAGE]} mine width={LAPTOP_BUBBLE} size={56} {...linked.laptopBubble} hidden />
         <CipherChip id="copy" text="9b41f07e2c…" {...linked.chipStart} scale={1.2} hidden />
-        <Bubble id="phone-mine" lines={MESSAGE_ON_PHONE} mine width={PHONE_BUBBLE_SMALL} size={type.min} {...linked.phoneBubble} hidden />
+        <Bubble id="phone-mine" lines={MESSAGE_ON_PHONE} mine width={PHONE_BUBBLE_SMALL} size={type.label} {...linked.phoneBubble} hidden />
       </Svg>
       <SceneTitle>Device linking</SceneTitle>
       <CodeCard id="is-sender" left={80} top={164} hidden>
