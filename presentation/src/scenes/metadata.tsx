@@ -77,7 +77,7 @@ function Device({ i, lit = false }: { i: number; lit?: boolean }) {
 
 /** The edge of the company. */
 function Walls() {
-  return <rect x="30" y="292" width="1622" height="770" rx="40" fill={color.panel} fillOpacity="0.45" stroke={color.line} strokeWidth="4" />;
+  return <rect x="30" y="284" width="1622" height="778" rx="40" fill={color.panel} fillOpacity="0.45" stroke={color.line} strokeWidth="4" />;
 }
 
 function Link({ id, a, b, hidden = true, width = 7 }: { id: string; a: number; b: number; hidden?: boolean; width?: number }) {

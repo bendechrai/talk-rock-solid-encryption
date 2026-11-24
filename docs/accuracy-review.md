@@ -79,6 +79,26 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
   deleted, which the talk goes on to treat as a choice. Protocols described as having perfect
   forward secrecy, such as Signal's Double Ratchet, derive a new key for every message. "Forward
   secrecy" without "perfect" is the safer claim.
+- **"Doesn't really know who was the recipient."** Said at about 35:20 of someone watching
+  traffic in and out of the server, and true of that observer. It is not true of the server,
+  which holds the blue key set and so knows exactly who is in the chat; and the number of sealed
+  copies tells anyone who sees the stored message how many recipients it has. The slide caption
+  stays with what is certain: "Everyone fetches it. Only a blue key opens it."
+- **"If this key gets exposed, anything encrypted with this key is no longer readable."** Said in
+  Demo 4 as Bob's key expires. Expiry stops *new* messages being sealed to the key. Messages
+  already sealed to it stay readable by anyone holding that private key, which is why the next
+  section's question (keep old private keys or delete them) matters.
+- **"We added Charlie to the conversation."** Said at 42:17. In Melbourne Charlie was added during
+  Demo 3, to the Alice and Bob chat on identity keys, not in Demo 4. The slides show Charlie
+  joining the blue chat, as the original slides did, so the picture is consistent either way.
+- **Re-encrypting history is a choice.** The slides show how a new member can be given old
+  messages: an existing member's device opens each one and seals it again for everyone, because
+  the server cannot. Whether a new member *should* see history is a product decision, and many
+  secure messengers deliberately do not allow it. Worth a sentence.
+- **New on the slides.** One scene (`eph-idea`) was added before the key-pair diagram to carry
+  what was said over the title slide: identity keys stay, each conversation gets its own
+  short-lived pair, pairs are replaced, and a stolen one opens little. Drop it from
+  `beforeDemo4` in `presentation/src/scenes/ephemeral.tsx` to talk over the title instead.
 
 ## Key rotation and retention (43:50)
 
