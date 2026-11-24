@@ -1,5 +1,5 @@
 /** Thin wrappers around the Whisper server's HTTP API. */
-import type { Conversation, DatabaseSnapshot, PublicKeyEntry, StoredMessage, User } from '@whisper/shared';
+import type { Conversation, DatabaseSnapshot, EphemeralKeyEntry, PublicKeyEntry, StoredMessage, User } from '@whisper/shared';
 
 export type ApiVersion = 'v1' | 'v2' | 'v3';
 
@@ -19,6 +19,9 @@ export const api = {
   conversations: (userId: string) =>
     request<{ conversations: Conversation[] }>(`/api/conversations?userId=${encodeURIComponent(userId)}`).then((r) => r.conversations),
 
+  conversation: (conversationId: string) =>
+    request<{ conversation: Conversation }>(`/api/conversations/${conversationId}`).then((r) => r.conversation),
+
   messages: (version: ApiVersion, conversationId: string) =>
     request<{ messages: StoredMessage[] }>(`/api/${version}/conversations/${conversationId}/messages`).then((r) => r.messages),
 
@@ -35,6 +38,20 @@ export const api = {
     request(`/api/users/${userId}/key`, { method: 'PUT', body: JSON.stringify({ publicKey }) }),
 
   withdrawKey: (userId: string) => request(`/api/users/${userId}/key`, { method: 'DELETE' }).catch(() => undefined),
+
+  ephemeralKeys: (conversationId: string) =>
+    request<{ keys: EphemeralKeyEntry[] }>(`/api/conversations/${conversationId}/ephemeral-keys`).then((r) => r.keys),
+
+  publishEphemeralKey: (conversationId: string, userId: string, publicKey: string, expiresAt: string) =>
+    request<{ key: EphemeralKeyEntry }>(`/api/conversations/${conversationId}/ephemeral-keys/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ publicKey, expiresAt }),
+    }).then((r) => r.key),
+
+  setEphemeralExpiry: (keyId: string, expiresAt: string) =>
+    request(`/api/ephemeral-keys/${keyId}/expiry`, { method: 'PUT', body: JSON.stringify({ expiresAt }) }).catch(() => undefined),
+
+  withdrawEphemeralKey: (keyId: string) => request(`/api/ephemeral-keys/${keyId}`, { method: 'DELETE' }).catch(() => undefined),
 
   database: () => request<DatabaseSnapshot>('/api/admin/database'),
 

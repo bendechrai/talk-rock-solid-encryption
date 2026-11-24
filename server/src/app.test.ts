@@ -95,4 +95,10 @@ test('the server keeps only the newest ephemeral key per user and conversation',
   const { body } = await json('/api/conversations/1/ephemeral-keys');
   assert.equal(body.keys.length, 1);
   assert.equal(body.keys[0].publicKey, second);
+
+  // The server still hands out a key after it has expired: it has nothing newer to offer.
+  const past = new Date(Date.now() - 1000).toISOString();
+  const expired = await json(`/api/ephemeral-keys/${body.keys[0].id}/expiry`, { method: 'PUT', body: JSON.stringify({ expiresAt: past }) });
+  assert.equal(expired.body.key.expiresAt, past);
+  assert.equal((await json('/api/conversations/1/ephemeral-keys')).body.keys[0].publicKey, second);
 });

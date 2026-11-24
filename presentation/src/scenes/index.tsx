@@ -1,5 +1,5 @@
 import { demoScene } from '../demo/Demo.tsx';
-import { endToEnd as endToEndProtocol, plaintext, serverSide } from '../demo/protocols.ts';
+import { endToEnd as endToEndProtocol, ephemeral, plaintext, serverSide } from '../demo/protocols.ts';
 import type { Scene } from '../engine/types.ts';
 import { deviceScenes } from './devices.tsx';
 import { endToEnd } from './endToEnd.tsx';
@@ -43,6 +43,12 @@ export const scenes: Scene[] = [
   ),
   ...afterDemo3,
   ...beforeDemo4,
+  demoScene(
+    'demo-4',
+    'Demo 4: short-lived chat keys',
+    ephemeral,
+    'Alice generates a chat key and sends; Bob generates his and cannot read that first message. After a minute a key expires: the next send makes a new one. Behind the scenes, Devices: old private keys are still held, until you delete them.',
+  ),
   ...afterDemo4,
   ...rotationScenes,
   ...deviceScenes,

@@ -146,6 +146,14 @@ export class Database {
     return this.state.ephemeralKeys.filter((k) => k.conversationId === conversationId);
   }
 
+  setEphemeralExpiry(id: string, expiresAt: string): EphemeralKeyEntry | undefined {
+    const key = this.state.ephemeralKeys.find((k) => k.id === id);
+    if (!key) return undefined;
+    key.expiresAt = expiresAt;
+    this.save();
+    return key;
+  }
+
   deleteEphemeralKey(id: string): boolean {
     const before = this.state.ephemeralKeys.length;
     this.state.ephemeralKeys = this.state.ephemeralKeys.filter((k) => k.id !== id);

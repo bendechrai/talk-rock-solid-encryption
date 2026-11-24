@@ -118,9 +118,8 @@ export function createApp(db: Database): Hono {
     return c.json({ ok: true });
   });
 
-  app.delete('/api/users/:id/key', (c) =>
-    db.deletePublicKey(c.req.param('id')) ? c.json({ ok: true }) : c.json({ error: 'No key for that user' }, 404),
-  );
+  // Deleting is idempotent: asking to remove a key that is already gone is not an error.
+  app.delete('/api/users/:id/key', (c) => c.json({ ok: true, removed: db.deletePublicKey(c.req.param('id')) }));
 
   // ---- Ephemeral (per-conversation) keys ---------------------------------------------------
 
@@ -145,9 +144,18 @@ export function createApp(db: Database): Hono {
     return c.json({ key: db.setEphemeralKey(userId, id, publicKey, expiresAt) });
   });
 
-  app.delete('/api/ephemeral-keys/:keyId', (c) =>
-    db.deleteEphemeralKey(c.req.param('keyId')) ? c.json({ ok: true }) : c.json({ error: 'Key not found' }, 404),
-  );
+  app.put('/api/ephemeral-keys/:keyId/expiry', async (c) => {
+    const body = await c.req.json().catch(() => null);
+    const expiresAt = body?.expiresAt;
+    if (typeof expiresAt !== 'string' || Number.isNaN(Date.parse(expiresAt))) {
+      return c.json({ error: 'expiresAt must be an ISO date' }, 400);
+    }
+    const key = db.setEphemeralExpiry(c.req.param('keyId'), expiresAt);
+    return key ? c.json({ key }) : c.json({ error: 'Key not found' }, 404);
+  });
+
+  // The server only holds a person's newest key, so a device deleting an older one finds nothing here.
+  app.delete('/api/ephemeral-keys/:keyId', (c) => c.json({ ok: true, removed: db.deleteEphemeralKey(c.req.param('keyId')) }));
 
   // ---- Admin: what the presenter uses to show the audience the server's view -----------------
 
