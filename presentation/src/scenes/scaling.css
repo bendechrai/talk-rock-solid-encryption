@@ -58,6 +58,13 @@
   color: var(--text);
 }
 .scaling-banner b { font-weight: 700; }
-.scaling-banner .secret { color: var(--cipher); font-weight: 700; }
+/* The shared secret, in both owners' colours. */
+.scaling-banner .secret {
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(90deg, #ffb627 50%, #a78bfa 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 .scaling-banner .warn { color: #ff6b5e; font-weight: 700; }
 .scaling-banner sup { font-size: 40px; line-height: 0; vertical-align: 0.5em; }

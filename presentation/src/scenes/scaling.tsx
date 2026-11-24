@@ -141,7 +141,7 @@ type Side = 'top' | 'bottom' | 'left' | 'right';
 /** A point just outside the middle of one side of a device, optionally shifted along that side. */
 function edge(id: DeviceId, side: Side, shift = 0): Point {
   const device: Device = devices[id];
-  const gap = 16;
+  const gap = 30;
   const box = device.kind === 'laptop'
     ? { left: 22 * LAPTOP, right: 218 * LAPTOP, top: 6 * LAPTOP, bottom: 158 * LAPTOP, midX: 120 * LAPTOP, midY: 73 * LAPTOP }
     : { left: 8 * PHONE, right: 92 * PHONE, top: 4 * PHONE, bottom: 186 * PHONE, midX: 50 * PHONE, midY: 95 * PHONE };
@@ -435,14 +435,14 @@ function PgpView() {
 
         <g id="pgp-size" opacity="0">
           <Label x={1270} y={212} text="2 letters, for 2 people" tint={color.muted} anchor="start" weight={500} />
-          <Label x={1270} y={300} text="1,589 bytes" tint={color.cipher} anchor="start" size={type.title} />
+          <Label x={1270} y={294} text="1,589 bytes" tint={color.cipher} anchor="start" size={type.title} />
         </g>
 
         <g id="pgp-part-1" opacity="0">
           <Bracket y1={218} y2={540} tint={cast.bob.color} />
-          <Label x={1244} y={362} text="the message key," tint={cast.bob.color} anchor="start" />
-          <Label x={1244} y={416} text="locked for Bob" tint={cast.bob.color} anchor="start" />
-          <Label x={1244} y={470} text="RSA: 512 bytes" tint={color.muted} anchor="start" size={type.min} weight={500} />
+          <Label x={1244} y={378} text="the message key," tint={cast.bob.color} anchor="start" />
+          <Label x={1244} y={432} text="locked for Bob" tint={cast.bob.color} anchor="start" />
+          <Label x={1244} y={486} text="RSA: 512 bytes" tint={color.muted} anchor="start" size={type.min} weight={500} />
         </g>
         <g id="pgp-part-2" opacity="0">
           <Bracket y1={548} y2={870} tint={cast.charlie.color} />
@@ -521,16 +521,17 @@ function SymmetricView() {
     <>
       <Svg>
         {/* What symmetric encryption is: one key, used in both directions. */}
-        <PlainChip text="Hi!" x={110} y={172} />
-        <Arrow from={{ x: 284, y: 220 }} to={{ x: 340, y: 220 }} />
-        <SecretKey id="sym-key-in" x={368} y={165} scale={1.4} />
-        <Arrow from={{ x: 486, y: 220 }} to={{ x: 542, y: 220 }} />
-        <CipherChip text="c26d74c865…" x={570} y={190} />
-        <Arrow from={{ x: 866, y: 220 }} to={{ x: 922, y: 220 }} />
-        <SecretKey id="sym-key-out" x={950} y={165} scale={1.4} />
-        <Arrow from={{ x: 1068, y: 220 }} to={{ x: 1124, y: 220 }} />
-        <PlainChip text="Hi!" x={1152} y={172} />
-        <Label x={1360} y={236} text="one key, both ways" tint={color.muted} anchor="start" weight={500} />
+        <PlainChip text="Hi!" x={90} y={170} scale={1.3} />
+        <Arrow from={{ x: 312, y: 232 }} to={{ x: 372, y: 232 }} />
+        <SecretKey id="sym-key-in" x={404} y={162} scale={1.8} />
+        <Arrow from={{ x: 548, y: 232 }} to={{ x: 608, y: 232 }} />
+        <CipherChip text="c26d74c865…" x={640} y={194} scale={1.25} />
+        <Arrow from={{ x: 1004, y: 232 }} to={{ x: 1064, y: 232 }} />
+        <SecretKey id="sym-key-out" x={1096} y={162} scale={1.8} />
+        <Arrow from={{ x: 1240, y: 232 }} to={{ x: 1300, y: 232 }} />
+        <PlainChip text="Hi!" x={1332} y={170} scale={1.3} />
+        <Label x={1870} y={216} text="one key," tint={color.muted} anchor="end" weight={500} />
+        <Label x={1870} y={268} text="both ways" tint={color.muted} anchor="end" weight={500} />
 
         {pros.map((text, i) => (
           <g key={text} id={`pro-${i}`} opacity="0">
@@ -639,12 +640,12 @@ const dh = {
   right: 1220,
   rows: [345, 465],
   /** Offsets from a column's left edge to each part of "base^exp mod 23 = result". */
-  base: (digits: number) => (digits === 1 ? 160 : 135),
-  exp: 208,
-  mod: 297,
-  modulus: 417,
-  equals: 507,
-  result: (digits: number) => (digits === 1 ? 566 : 592),
+  base: (digits: number) => (digits === 1 ? 142 : 116),
+  exp: 190,
+  mod: 279,
+  modulus: 399,
+  equals: 484,
+  result: (digits: number) => (digits === 1 ? 552 : 586),
   thought: { alice: { x: 350, y: 520 }, bob: { x: 1270, y: 520 } },
   said: {
     g: { x: 760, y: 250 },
@@ -731,7 +732,7 @@ function SumParts({ sum }: { sum: Sum }) {
       <Num id={`${sum.id}-exp`} {...at.exp} text={sum.exp} size={60} tint={cast[sum.side].color} />
       <Num id={`${sum.id}-modulus`} {...at.modulus} text="23" />
       {secret && (
-        <rect id={`${sum.id}-ring`} x={at.result.x - 78} y={at.result.y - 86} width="156" height="112" rx="26" fill="none" stroke={SHARED} strokeWidth="7" opacity="0" />
+        <rect id={`${sum.id}-ring`} x={at.result.x - 68} y={at.result.y - 86} width="136" height="112" rx="26" fill="none" stroke={SHARED} strokeWidth="7" opacity="0" />
       )}
       <Num id={`${sum.id}-result`} {...at.result} text={sum.result} tint={secret ? SHARED : color.paper} />
     </>
@@ -1110,7 +1111,7 @@ function PairsView() {
         <Character who="bob" x={1550} y={190} scale={1.25} />
         <Label x={1675} y={604} text="Bob" tint={cast.bob.color} />
         <Character id="charlie" who="charlie" x={835} y={668} scale={1.25} hidden />
-        <Label id="charlie-name" x={1108} y={1010} text="Charlie" tint={cast.charlie.color} anchor="start" hidden />
+        <Label id="charlie-name" x={812} y={1012} text="Charlie" tint={cast.charlie.color} anchor="end" hidden />
 
         <SecretKey id="key-ab" pair={['alice', 'bob']} {...pairs.ab} scale={PAIR_KEY} />
         <SecretKey id="key-ac" pair={['alice', 'charlie']} {...pairs.ac} scale={PAIR_KEY} hidden />
@@ -1180,7 +1181,7 @@ const readers: Who[] = ['alice', 'bob', 'charlie'];
 const grid = {
   bubbleX: 275,
   columns: [880, 1180, 1480],
-  rowTop: (i: number) => 218 + i * 120,
+  rowTop: (i: number) => 248 + i * 114,
 };
 const bubbleWidth = (text: string) => Math.round(text.length * 24.5 + 64);
 
@@ -1201,12 +1202,12 @@ function GroupView() {
       <Svg>
         {readers.map((who, j) => (
           <g key={who}>
-            <PublicKey owner={who} x={grid.columns[j] + 8} y={156} />
-            <Label x={grid.columns[j] + 122} y={197} text={cast[who].name} tint={cast[who].color} anchor="start" />
+            <PublicKey owner={who} x={grid.columns[j] + 8} y={184} />
+            <Label x={grid.columns[j] + 122} y={225} text={cast[who].name} tint={cast[who].color} anchor="start" />
           </g>
         ))}
         <Label x={1860} y={76} text="messages × people = sealed copies" tint={color.muted} size={type.min} weight={500} anchor="end" />
-        <Stack id="count" values={chat.map((_, i) => `${i} × 3 = ${i * 3}`).concat('7 × 3 = 21')} x={1860} y={150} size={84} tint={color.cipher} anchor="end" />
+        <Stack id="count" values={chat.map((_, i) => `${i} × 3 = ${i * 3}`).concat('7 × 3 = 21')} x={1860} y={156} size={84} tint={color.cipher} anchor="end" />
 
         {/* Chips are drawn first so that they come out from behind the message they are copies of. */}
         {chat.map((_, i) => readers.map((who, j) => (

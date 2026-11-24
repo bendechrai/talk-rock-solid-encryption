@@ -514,6 +514,7 @@ function LinkView() {
         <PrivateKey id="phone-private" owner="alice" {...link.phonePrivate} scale={KEY} hidden />
         <PublicKey id="phone-public" owner="alice" {...link.phonePublic} scale={KEY} hidden />
         <Label id="phone-keys-label" x={1134} y={422} text="identity keys" {...keyLabel} hidden />
+        <Label id="phone-private-stays" x={1134} y={422} text="private key stays on the phone" {...keyLabel} tint={color.text} hidden />
 
         {/* What goes into the QR code. */}
         <Address id="list-address" {...link.listAddress} scale={TOKEN_SCALE} hidden />
@@ -665,7 +666,8 @@ const linkScene: Scene = {
         fly(tl, '#phone-ticket', link.phoneTicket, link.phoneBundleTicket, { bend: -50, duration: 0.7, at: '<' });
         fly(tl, '#phone-public-copy', link.phonePublic, link.phoneBundleKey, { bend: -70, reveal: true, at: '<0.2' });
         show(tl, '#phone-bundle', '>-0.2');
-        pulse(tl, '#phone-private', '>');
+        swap(tl, '#phone-keys-label', '#phone-private-stays', '>');
+        pulse(tl, '#phone-private', '<');
       },
     },
     {
@@ -689,6 +691,7 @@ const linkScene: Scene = {
       notes: 'Let’s send it over, via the connection.',
       build: (tl) => {
         say(tl, 12);
+        swap(tl, '#phone-private-stays', '#phone-keys-label', '<');
         show(tl, '#to-laptop-line', '<');
         moveTo(tl, '#request', link.requestOnLaptop, '<0.1', 1.3);
       },

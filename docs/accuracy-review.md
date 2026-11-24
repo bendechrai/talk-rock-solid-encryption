@@ -58,7 +58,14 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
   recipient's public key (`shared/src/asymmetric.ts`). Suggested: "encrypt the message for that
   member using their public key".
 - **A copy for yourself.** Said correctly in the demo and worth keeping: the sender must seal a
-  copy to their own public key or they could never read their own message again.
+  copy to their own public key or they could never read their own message again. The slide now
+  shows it as "the sender's own copy".
+- **Sending copies to people outside the group.** Said at 29:22 as something the system could do
+  to hide who a message is for. The demo app does not do it. The slide draws it as a "could",
+  with a grey route to a laptop marked "not in the group".
+- **Simplified on the slide.** Each sealed copy is drawn as a padlocked chip tagged with its
+  recipient. In reality every copy has different ciphertext and carries the one-off public key
+  that sealed it; the slide leaves both out to keep the idea of "one copy each" clear.
 
 ## Ephemeral keys (31:43)
 

@@ -97,11 +97,14 @@ function Tag({ id, on, text, width }: { id: string; on: number; text: string; wi
   );
 }
 
+/** Packets are drawn at 56 x 44 and enlarged so the back row can follow them. */
+const PACKET = 1.5;
+
 function Packets({ count }: { count: number }) {
   return (
     <>
       {Array.from({ length: count }, (_, n) => (
-        <Actor key={n} id={`pk-${n}`} x={0} y={0} hidden>
+        <Actor key={n} id={`pk-${n}`} x={0} y={0} scale={PACKET} hidden>
           <Art name="meta-packet" />
         </Actor>
       ))}
@@ -143,7 +146,9 @@ function look(tl: Timeline, named: Partial<Record<Look, number[]>>, rest: Look, 
 function send(tl: Timeline, packet: number, a: number, b: number, at: number, duration = 0.7, bend = 28): void {
   const from = centre(a);
   const to = centre(b);
-  fly(tl, `#pk-${packet}`, { x: from.x - 28, y: from.y - 22 }, { x: to.x - 28, y: to.y - 22 }, { reveal: true, at, duration, bend });
+  const dx = 28 * PACKET;
+  const dy = 22 * PACKET;
+  fly(tl, `#pk-${packet}`, { x: from.x - dx, y: from.y - dy }, { x: to.x - dx, y: to.y - dy }, { reveal: true, at, duration, bend });
   hide(tl, `#pk-${packet}`, at + duration, 0.15);
 }
 
@@ -237,7 +242,7 @@ function OrganisationView() {
 
           <circle id="burst" cx="840" cy="676" r="90" fill="none" stroke={BLUE} strokeWidth="5" opacity="0" />
           <Packets count={12} />
-          <Actor id="big" x={0} y={0} scale={2.2} hidden>
+          <Actor id="big" x={0} y={0} scale={2.7} hidden>
             <Art name="meta-packet" />
           </Actor>
         </g>
@@ -562,7 +567,7 @@ function PaddingView() {
       </Svg>
 
       <SceneTitle>Message size</SceneTitle>
-      <Caption id="c-length" wide hidden={false}>Encryption hides the words, but not how many there were</Caption>
+      <Caption id="c-length" wide hidden={false}>Encryption hides the words, but not the length of the message</Caption>
       <Caption id="c-pad" wide>Pad every message to a fixed-size block, then encrypt<span className="meta-sub">A short &ldquo;Yes&rdquo; now looks exactly like a status report</span></Caption>
       <Caption id="c-code" wide>Mark where the message ends, fill the rest of the block with zeros</Caption>
       <Caption id="c-blocks" wide>A longer message still shows how many blocks it needed</Caption>
