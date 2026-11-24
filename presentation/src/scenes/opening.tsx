@@ -222,7 +222,7 @@ const why: Scene = {
       build: (tl) => { show(tl, '#why-trust'); },
     },
     {
-      notes: 'And legal and ethical obligations: it is other people\'s data, and we are expected to keep it safe.',
+      notes: 'And legal and ethical obligations. (The Melbourne recording has no narration for this one: the screen flickered here.)',
       build: (tl) => { show(tl, '#why-ethics'); },
     },
   ],
@@ -430,7 +430,7 @@ function EncryptedCode() {
         {'const ciphertext = await crypto.subtle.encrypt(\n'}
         {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv }, '}<span className="hl">SERVER_KEY</span>{', encode(plaintext));'}
       </CodeCard>
-      <CodeCard id="decrypt-code" left={364} top={CODE_TOP} hidden>
+      <CodeCard id="decrypt-code" left={320} top={CODE_TOP} hidden>
         <span className="dim">{'// the same key, and the IV stored with the message\n'}</span>
         {'const plaintext = await crypto.subtle.decrypt(\n'}
         {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv }, '}<span className="hl">SERVER_KEY</span>{', ciphertext);'}
@@ -647,7 +647,7 @@ export const betweenDemo1And2: Scene[] = [
   sectionTitle(
     'open-encrypted-title',
     'An encrypted chat app: title',
-    <>Let&rsquo;s build an <em>encrypted</em> chat app</>,
+    <>Let&rsquo;s build an<br /><em>encrypted</em> chat app</>,
     'We want to make this a bit more secure. So let us encrypt it.',
   ),
   encryptedOnServer,

@@ -300,7 +300,7 @@ const third: Scene = {
 const title = sectionTitle(
   'multi-title',
   'Multi-recipient: title',
-  <>Let&rsquo;s build an end-to-end encrypted <em>multi-recipient</em> chat app</>,
+  <>Let&rsquo;s build an end-to-end<br />encrypted <em>multi-recipient</em><br />chat app</>,
   'So what we want now is the multi-recipient chat app, which we have already seen the demo for. This is the pictorial version of the hand-wavy version I just gave you.',
 );
 
@@ -550,7 +550,7 @@ const deliver: Scene = {
       },
     },
     {
-      notes: '...which then get spread out to every member. Every member receives all three copies.',
+      notes: '...which then get spread out to every member. Bob and Charlie each receive all three copies; Alice\u2019s device already holds them.',
       build: (tl) => {
         show(tl, '#to-bob-line, #to-charlie-line');
         fly(tl, '#at-bob', onServer(3), spot.bob.foot(3), { bend: 50, reveal: true, at: '>-0.1' });

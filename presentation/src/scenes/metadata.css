@@ -51,33 +51,34 @@
 /* "Beyond chat apps": three cards. */
 .meta-card {
   position: absolute;
-  top: 270px;
+  top: 262px;
   width: 560px;
-  height: 730px;
+  height: 780px;
   padding: 40px 40px 0;
   border-radius: 36px;
   border: 3px solid var(--line);
   background: var(--panel);
 }
 .meta-card svg { display: block; width: 120px; height: 120px; }
-.meta-card h2 { margin: 28px 0 0; min-height: 128px; font-size: 56px; line-height: 1.12; font-weight: 700; letter-spacing: -0.015em; }
+.meta-card h2 { margin: 28px 0 0; min-height: 190px; font-size: 56px; line-height: 1.12; font-weight: 700; letter-spacing: -0.015em; }
 .meta-card p { margin: 22px 0 0; font-size: 42px; line-height: 1.22; }
 .meta-card p.meta-how { color: var(--cipher); }
 
 /* The spoken summary. */
 .meta-point {
   position: absolute;
-  left: 350px;
-  width: 1490px;
+  left: 340px;
+  width: 1520px;
   height: 120px;
   display: flex;
   align-items: center;
   margin: 0;
-  font-size: 50px;
+  font-size: 48px;
   line-height: 1.16;
   font-weight: 500;
 }
 .meta-point b { font-weight: 700; }
+.meta-nowrap { white-space: nowrap; }
 
 /* The closing slide. */
 .meta-thanks { position: absolute; left: 0; right: 0; margin: 0; text-align: center; }

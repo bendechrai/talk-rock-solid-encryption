@@ -64,11 +64,11 @@ const MESH: [number, number][] = ALL.flatMap((a) =>
 const BLUE = conversation.blue;
 const IDLE = '#5E6E94';
 
-function Device({ i }: { i: number }) {
+function Device({ i, lit = false }: { i: number; lit?: boolean }) {
   const { x, y } = DEVICES[i];
   return (
-    <g id={`dev-${i}`} transform={`translate(${x} ${y})`} style={{ color: IDLE }}>
-      <rect id={`halo-${i}`} x="-12" y="-12" width="204" height="158" rx="28" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="6" opacity="0" />
+    <g id={`dev-${i}`} transform={`translate(${x} ${y})`} style={{ color: lit ? BLUE : IDLE }}>
+      <rect id={`halo-${i}`} x="-12" y="-12" width="204" height="158" rx="28" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="6" opacity={lit ? 1 : 0} />
       <rect id={`ring-${i}`} x="-12" y="-12" width="204" height="158" rx="28" fill="none" stroke="currentColor" strokeWidth="6" strokeDasharray="16 12" opacity="0" />
       <g transform={`scale(${SIZE})`}><Art name="meta-device" /></g>
     </g>
@@ -490,35 +490,36 @@ const organisation: Scene = {
 // Scene: message size
 // ---------------------------------------------------------------------------------------------
 
-/** 512 bytes is drawn 640 pixels wide. */
-const BLOCK = 640;
-const LEFT = 80;
+/** 512 bytes is drawn 620 pixels wide. The shortest message is drawn wider than it is, to fit its text. */
+const BLOCK = 620;
+const LEFT = 330;
 const lanes = [
-  { y: 372, message: 100, blocks: 1, text: 'Yes', before: '3 bytes', after: '3 → 512 bytes' },
-  { y: 538, message: 437, blocks: 1, text: 'status report', before: '350 bytes', after: '350 → 512 bytes' },
-  { y: 704, message: 750, blocks: 2, text: 'a much longer message', before: '600 bytes', after: '600 → 1024 bytes' },
+  { y: 356, message: 110, blocks: 1, text: 'Yes', size: '3 bytes', stored: '512 bytes' },
+  { y: 546, message: 424, blocks: 1, text: 'status report', size: '350 bytes', stored: '512 bytes' },
+  { y: 736, message: 727, blocks: 2, text: 'a much longer message', size: '600 bytes', stored: '1024 bytes' },
 ];
+const hasPadWord = (n: number) => BLOCK * lanes[n].blocks - lanes[n].message > 260;
 
 function Lane({ n }: { n: number }) {
-  const { y, message, text, before, after, blocks } = lanes[n];
+  const { y, message, text, size, stored, blocks } = lanes[n];
   const full = BLOCK * blocks;
   return (
     <g id={`lane-${n}`} opacity={n === 2 ? 0 : 1}>
+      <Label x={LEFT - 30} y={y + 58} text={size} anchor="end" weight={500} />
       {/* The plaintext: the message in white, then the padding. */}
-      <rect id={`pad-${n}`} x={LEFT + message - 16} y={y} width={16} height="68" rx="14" fill="url(#meta-hatch)" stroke={color.muted} strokeWidth="3" opacity="0" />
-      <rect x={LEFT} y={y} width={message} height="68" rx="14" fill={color.paper} />
-      <text x={LEFT + message / 2} y={y + 48} textAnchor="middle" fontSize={type.min} fontWeight="700" fill={color.ink}>{text}</text>
-      {full - message > 260 && (
-        <text id={`pad-word-${n}`} x={LEFT + (message + full) / 2} y={y + 48} textAnchor="middle" fontSize={type.min} fontWeight="500" fill={color.text} opacity="0">padding</text>
+      <rect id={`pad-${n}`} x={LEFT + message - 18} y={y} width={18} height="84" rx="16" fill="url(#meta-hatch)" stroke={color.muted} strokeWidth="3" opacity="0" />
+      <rect x={LEFT} y={y} width={message} height="84" rx="16" fill={color.paper} />
+      <text x={LEFT + message / 2} y={y + 58} textAnchor="middle" fontSize={type.label} fontWeight="700" fill={color.ink}>{text}</text>
+      {hasPadWord(n) && (
+        <text id={`pad-word-${n}`} x={LEFT + (message + full) / 2} y={y + 58} textAnchor="middle" fontSize={type.label} fontWeight="500" fill={color.text} opacity="0">padding</text>
       )}
       {/* What is stored: ciphertext exactly as long as what went in. */}
-      <rect id={`cipher-${n}`} x={LEFT} y={y + 80} width={message} height="54" rx="14" fill={color.cipherGround} stroke={color.cipher} strokeWidth="4" />
-      <g transform={`translate(${LEFT + 16} ${y + 86}) scale(.6)`}>
+      <rect id={`cipher-${n}`} x={LEFT} y={y + 96} width={message} height="60" rx="16" fill={color.cipherGround} stroke={color.cipher} strokeWidth="4" />
+      <g transform={`translate(${LEFT + 18} ${y + 103}) scale(.64)`}>
         <path d="M16 32V22a14 14 0 0 1 28 0v10" fill="none" stroke={color.cipher} strokeWidth="7" />
         <rect x="8" y="30" width="44" height="36" rx="8" fill={color.cipher} />
       </g>
-      <Label id={`before-${n}`} x={LEFT + message + 30} y={y + 84} text={before} anchor="start" tint={color.text} />
-      <Label id={`after-${n}`} x={LEFT + full + 30} y={y + 84} text={after} anchor="start" tint={color.text} hidden />
+      <Label id={`stored-${n}`} x={LEFT + full + 28} y={y + 142} text={stored} anchor="start" tint={color.cipher} hidden />
     </g>
   );
 }
@@ -527,12 +528,11 @@ function Lane({ n }: { n: number }) {
 function padLane(tl: Timeline, n: number, at: number): void {
   const { message, blocks } = lanes[n];
   const full = BLOCK * blocks;
-  hide(tl, `#before-${n}`, at, 0.2);
   tl.set(`#pad-${n}`, { opacity: 1 }, at + 0.05);
-  tl.to(`#pad-${n}`, { attr: { width: full - message + 16 }, duration: 0.8, ease: 'power2.inOut' }, at + 0.1);
+  tl.to(`#pad-${n}`, { attr: { width: full - message + 18 }, duration: 0.8, ease: 'power2.inOut' }, at + 0.1);
   tl.to(`#cipher-${n}`, { attr: { width: full }, duration: 0.8, ease: 'power2.inOut' }, at + 0.1);
-  if (full - message > 260) show(tl, `#pad-word-${n}`, at + 0.7);
-  show(tl, `#after-${n}`, at + 0.8);
+  if (hasPadWord(n)) show(tl, `#pad-word-${n}`, at + 0.7);
+  show(tl, `#stored-${n}`, at + 0.8);
 }
 
 function PaddingView() {
@@ -547,13 +547,13 @@ function PaddingView() {
         </defs>
         <g id="pad-diagram">
           <g id="guide-1" opacity="0">
-            <line x1={LEFT + BLOCK} y1="350" x2={LEFT + BLOCK} y2="690" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
+            <line x1={LEFT + BLOCK} y1="336" x2={LEFT + BLOCK} y2="716" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
           </g>
           <g id="guide-2" opacity="0">
-            <line x1={LEFT + BLOCK} y1="690" x2={LEFT + BLOCK} y2="860" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
-            <line x1={LEFT + BLOCK * 2} y1="680" x2={LEFT + BLOCK * 2} y2="860" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
-            <Label x={LEFT + BLOCK / 2} y={916} text="block 1" tint={color.muted} />
-            <Label x={LEFT + BLOCK * 1.5} y={916} text="block 2" tint={color.muted} />
+            <line x1={LEFT + BLOCK} y1="716" x2={LEFT + BLOCK} y2="912" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
+            <line x1={LEFT + BLOCK * 2} y1="716" x2={LEFT + BLOCK * 2} y2="912" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
+            <Label x={LEFT + BLOCK / 2} y={968} text="block 1" tint={color.muted} />
+            <Label x={LEFT + BLOCK * 1.5} y={968} text="block 2" tint={color.muted} />
           </g>
           <Lane n={0} />
           <Lane n={1} />
@@ -567,7 +567,7 @@ function PaddingView() {
       <Caption id="c-code" wide>Mark where the message ends, fill the rest of the block with zeros</Caption>
       <Caption id="c-blocks" wide>A longer message still shows how many blocks it needed</Caption>
 
-      <CodeCard id="pad-code" left={80} top={360} hidden>
+      <CodeCard id="pad-code" left={80} top={400} hidden>
         {'function '}<span className="hl">pad</span>{'(msg, block = 512) {\n'}
         {'  const size = Math.ceil((msg.length + 1) / block) * block;\n'}
         {'  const out = new Uint8Array(size);   '}<span className="dim">{'// all zeros\n'}</span>
@@ -633,18 +633,18 @@ function DecoyView() {
           <Walls />
           <Link id="pair-link" a={who.ceo} b={who.cto} hidden={false} />
           {DECOYS.map(([a, b], n) => <Link key={n} id={`decoy-${n}`} a={a} b={b} />)}
-          {ALL.map((i) => <Device key={i} i={i} />)}
+          {ALL.map((i) => <Device key={i} i={i} lit={PAIR.includes(i)} />)}
           <Packets count={12} />
         </g>
       </Svg>
 
       <SceneTitle>Decoy traffic</SceneTitle>
-      <Caption id="c-shape" hidden={false}>Real traffic has a shape: an observer can see who talks to whom</Caption>
-      <Caption id="c-fake">Send convincing fake messages at random times, between random devices</Caption>
-      <Caption id="c-key" wide>Each decoy is encrypted for a key pair that is thrown away: nobody can ever read it</Caption>
-      <Caption id="c-noise">Genuine messages hide in the noise: which exchange was real?<span className="meta-sub">The cost: extra bandwidth, storage and battery</span></Caption>
+      <Caption id="c-shape" wide hidden={false}>Real traffic has a shape: an observer can see who talks to whom</Caption>
+      <Caption id="c-fake" wide>Send convincing fake messages at random times, between random devices</Caption>
+      <Caption id="c-key" wide>Each decoy is encrypted for a throwaway key pair: nobody can ever read it</Caption>
+      <Caption id="c-noise" wide>Genuine messages hide in the noise: which exchange was real?<span className="meta-sub">The cost: extra bandwidth, storage and battery</span></Caption>
 
-      <CodeCard id="decoy-code" left={80} top={380} hidden>
+      <CodeCard id="decoy-code" left={80} top={420} hidden>
         <span className="dim">{'// a message that nobody can ever read\n'}</span>
         {'const throwaway = '}<span className="hl">generateKeyPair</span>{'();\n'}
         {'const noise = crypto.getRandomValues(new Uint8Array(512));\n'}
@@ -702,9 +702,12 @@ const decoy: Scene = {
 
 const CHIP = ['c26d74c865…', '9be1f04a7d…', '41aa0c93e2…', 'e07b5d21c8…', '6f3a9d0b17…'];
 const logRows = [
-  { y: 400, key: 'a1f3' }, { y: 490, key: '7c2e' }, { y: 580, key: 'a1f3' },
-  { y: 736, key: 'e9b4' }, { y: 826, key: '30d8' },
+  { y: 72, key: 'a1f3' }, { y: 156, key: '7c2e' }, { y: 240, key: 'a1f3' },
+  { y: 372, key: 'e9b4' }, { y: 456, key: '30d8' },
 ];
+/** The log is drawn in its own coordinates and enlarged. */
+const LOG = { x: 80, y: 318, scale: 1.3 };
+const logY = (y: number) => LOG.y + y * LOG.scale;
 
 function Fingerprint({ x, y, text, fresh }: { x: number; y: number; text: string; fresh: boolean }) {
   return (
@@ -718,9 +721,9 @@ function Fingerprint({ x, y, text, fresh }: { x: number; y: number; text: string
 
 function Hypothesis({ id, y, text }: { id: string; y: number; text: string }) {
   return (
-    <Actor id={id} x={790} y={y} hidden>
-      <rect width="760" height="72" rx="36" fill={color.panelRaised} stroke={color.muted} strokeWidth="3" strokeDasharray="14 10" />
-      <text x="40" y="51" fontSize={type.label} fontWeight="700" fill={color.text}>{text}</text>
+    <Actor id={id} x={980} y={y} hidden>
+      <rect width="830" height="84" rx="42" fill={color.panelRaised} stroke={color.muted} strokeWidth="3" strokeDasharray="14 10" />
+      <text x="44" y="58" fontSize={type.body} fontWeight="700" fill={color.text}>{text}</text>
     </Actor>
   );
 }
@@ -729,33 +732,34 @@ function RotationView() {
   return (
     <>
       <Svg>
-        <rect x="80" y="330" width="640" height="590" rx="32" fill={color.panel} stroke={color.line} strokeWidth="3" />
-        <Label x={120} y={382} text="for key" anchor="start" tint={color.muted} size={type.min} weight={500} />
-        <Label x={410} y={382} text="message" anchor="start" tint={color.muted} size={type.min} weight={500} />
-        {logRows.map(({ y, key }, n) => (
-          <g key={n} id={`row-${n}`} opacity={n > 2 ? 0 : 1}>
-            <Fingerprint x={120} y={y} text={key} fresh={n > 2} />
-            <CipherChip x={410} y={y + 2} text={CHIP[n]} />
+        <g transform={`translate(${LOG.x} ${LOG.y}) scale(${LOG.scale})`}>
+          <rect width="640" height="544" rx="28" fill={color.panel} stroke={color.line} strokeWidth="3" />
+          <Label x={40} y={50} text="for key" anchor="start" tint={color.muted} size={type.min} weight={500} />
+          <Label x={330} y={50} text="message" anchor="start" tint={color.muted} size={type.min} weight={500} />
+          {logRows.map(({ y, key }, n) => (
+            <g key={n} id={`row-${n}`} opacity={n > 2 ? 0 : 1}>
+              <Fingerprint x={40} y={y} text={key} fresh={n > 2} />
+              <CipherChip x={330} y={y + 2} text={CHIP[n]} />
+            </g>
+          ))}
+          <rect x="20" y="60" width="600" height="256" rx="24" fill={BLUE} fillOpacity="0.07" stroke={BLUE} strokeWidth="4" />
+          <g id="rotated" opacity="0">
+            <line x1="20" y1="338" x2="620" y2="338" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
+            <rect x="186" y="314" width="268" height="48" rx="12" fill={color.panel} />
+            <Label x={320} y={352} text="keys rotated" tint={color.muted} size={type.min} weight={500} />
           </g>
-        ))}
-        <g id="linked">
-          <rect x="100" y="388" width="600" height="270" rx="26" fill={BLUE} fillOpacity="0.07" stroke={BLUE} strokeWidth="4" />
-          <Label x={790} y={540} text="the same two keys: one conversation" anchor="start" tint={BLUE} />
         </g>
-        <g id="rotated" opacity="0">
-          <line x1="100" y1="698" x2="700" y2="698" stroke={color.muted} strokeWidth="4" strokeDasharray="4 14" strokeLinecap="round" />
-          <rect x="262" y="672" width="276" height="52" rx="12" fill={color.panel} />
-          <Label x={400} y={712} text="keys rotated" tint={color.muted} size={type.min} weight={500} />
-        </g>
-        <Hypothesis id="guess-same" y={690} text="the same chat, with new keys?" />
-        <Hypothesis id="guess-new" y={776} text="a brand-new chat?" />
-        <Hypothesis id="guess-members" y={862} text="new members joining?" />
+        <Label x={980} y={logY(170)} text="the same two keys:" anchor="start" tint={BLUE} size={type.body} />
+        <Label x={980} y={logY(170) + 60} text="one conversation" anchor="start" tint={BLUE} size={type.body} />
+        <Hypothesis id="guess-same" y={748} text="the same chat, with new keys?" />
+        <Hypothesis id="guess-new" y={848} text="a brand-new chat?" />
+        <Hypothesis id="guess-members" y={948} text="new members joining?" />
       </Svg>
 
       <SceneTitle>Key rotation</SceneTitle>
       <Caption id="c-linked" wide hidden={false}>The server sees which public key each message is encrypted for</Caption>
       <Caption id="c-fresh" wide>After a rotation, new messages carry new fingerprints: new &ldquo;identities&rdquo;</Caption>
-      <Caption id="c-harder" wide>New keys make it harder to link messages to earlier ones<span className="meta-sub">Only if the server cannot tie a new key to the old one, for example through the account</span></Caption>
+      <Caption id="c-harder" wide>New keys make it harder to link messages to earlier ones<span className="meta-sub">Only if the server cannot tie new keys to old ones, for example by account</span></Caption>
     </>
   );
 }
@@ -804,6 +808,7 @@ function FetchView() {
   return (
     <>
       <Svg>
+        <g transform="translate(0 44)">
         <Server x={90} y={470} scale={1.5} />
         <Label id="which" x={240} y={440} text="which chat?" tint={color.muted} hidden />
 
@@ -820,6 +825,7 @@ function FetchView() {
 
         {fetchAt.store.map((p, n) => <CipherChip key={n} id={`copy-${n}`} text={CHIP[n]} {...p} hidden />)}
         <Label id="sealed" x={1065} y={612} text="cannot decrypt" tint={color.muted} size={type.min} hidden />
+        </g>
       </Svg>
 
       <SceneTitle>Retrieve all messages</SceneTitle>
@@ -892,7 +898,7 @@ function BeyondView() {
       <p className="meta-lede">The same building blocks protect far more than messages</p>
       <Card id="card-health" left={80} art="meta-health" heading="Healthcare platforms" what="Patient records, test results, telehealth" how="Temporary access to imaging and referrals" />
       <Card id="card-finance" left={680} art="meta-finance" heading="Financial services" what="Transaction details, statements, portfolios" how="Forward secrecy for trading and banking sessions" />
-      <Card id="card-legal" left={1280} art="meta-legal" heading="Legal and professional services" what="Client communications, case files, discovery" how="Time-limited document access for external reviewers" />
+      <Card id="card-legal" left={1280} art="meta-legal" heading="Legal and professional services" what="Client-attorney communications, case files, discovery" how="Time-limited document access for external reviewers" />
     </>
   );
 }
@@ -958,7 +964,7 @@ function SummaryView() {
 
       <SceneTitle>In summary</SceneTitle>
       <p id="point-0" className="meta-point" style={{ top: ROW(0) - 60, opacity: 0 }}><span><b>Why</b> we need encryption</span></p>
-      <p id="point-1" className="meta-point" style={{ top: ROW(1) - 60, opacity: 0 }}><span>From <b>plaintext</b>, through server-side encryption, to <b>end-to-end</b></span></p>
+      <p id="point-1" className="meta-point" style={{ top: ROW(1) - 60, opacity: 0 }}><span>From <b>plaintext</b>, through server-side encryption, to <b className="meta-nowrap">end-to-end</b></span></p>
       <p id="point-2" className="meta-point" style={{ top: ROW(2) - 60, opacity: 0 }}><span><b>Multi-recipient</b> encryption, <b>ephemeral keys</b> for forward secrecy, re-encrypting history</span></p>
       <p id="point-3" className="meta-point" style={{ top: ROW(3) - 60, opacity: 0 }}><span><b>Implementation challenges:</b> key rotation, many devices, scale</span></p>
       <p id="point-4" className="meta-point" style={{ top: ROW(4) - 60, opacity: 0 }}><span><b>Diffie-Hellman</b> key exchange</span></p>

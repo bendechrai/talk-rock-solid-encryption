@@ -29,11 +29,11 @@ const MEMBERS: Member[] = ['alice', 'bob', 'charlie'];
 // Positions are top-left corners in stage pixels.
 // ---------------------------------------------------------------------------------------------
 
-/** Each person's column: where the character, the laptop and the name go. */
+/** Each person's column: where the character and the laptop go, and where the name ends. */
 const column: Record<Member, { person: number; laptop: number; name: number }> = {
-  alice: { person: 10, laptop: 260, name: 140 },
-  bob: { person: 630, laptop: 880, name: 760 },
-  charlie: { person: 1250, laptop: 1500, name: 1380 },
+  alice: { person: 20, laptop: 248, name: 236 },
+  bob: { person: 627, laptop: 855, name: 843 },
+  charlie: { person: 1234, laptop: 1462, name: 1450 },
 };
 
 const PERSON_Y = 288;
@@ -81,26 +81,30 @@ const greenOnServer: Record<Member, Point> = {
   charlie: { x: 1420, y: SET_KEY_Y },
 };
 
-/** Which slot each device keeps each conversation's private key in. */
-const tileSlot: Record<Chat, number> = { blue: 0, green: 1 };
-const tileAt = (chat: Chat, who: Member) => slot(who, tileSlot[chat]);
+/** Which slot each device keeps each conversation's private key in: the order the keys were made. */
+const tileSlot: Record<Member, Record<Chat, number>> = {
+  alice: { blue: 0, green: 1 },
+  bob: { blue: 0, green: 1 },
+  charlie: { green: 0, blue: 1 },
+};
+const tileAt = (chat: Chat, who: Member) => slot(who, tileSlot[who][chat]);
 
 /** A fetched set of public keys waits under the laptop until it is used. */
-const park = { alice: { x: 262, y: 684 }, bob: { x: 580, y: 684 } };
-const setOnScreen = { alice: { x: 287, y: 468 }, bob: { x: 835, y: 468 } };
+const park = { alice: { x: 250, y: 684 }, bob: { x: 530, y: 684 } };
+const setOnScreen = { alice: { x: 275, y: 468 }, bob: { x: 810, y: 468 } };
 
 /** Where a stored message rests on the server: two copies, then three. */
 const stored = { two: { x: 860, y: 885 }, three: { x: 860, y: 854 } };
 
 /** The conversation outlines: the blue chat is Alice and Bob; the green chat is everyone. */
-const frame = { x: 16, y: 244, height: 526, two: 1238, three: 1864 };
+const frame = { x: 16, y: 244, height: 526, two: 1220, three: 1880 };
 
 const routes = {
-  aliceToServer: 'M586 676C680 740 770 760 852 824',
-  serverToAlice: 'M852 824C770 760 680 740 586 676',
-  serverToBob: 'M1000 820C1010 770 1050 730 1090 678',
-  bobToServer: 'M1090 678C1050 730 1010 770 1000 820',
-  serverToCharlie: 'M1086 840C1220 770 1420 760 1590 678',
+  aliceToServer: 'M566 676C660 740 770 760 852 824',
+  serverToAlice: 'M852 824C770 760 660 740 566 676',
+  serverToBob: 'M992 820C1000 770 1030 730 1056 678',
+  bobToServer: 'M1056 678C1030 730 1000 770 992 820',
+  serverToCharlie: 'M1086 840C1220 770 1400 760 1560 678',
 };
 
 // The same message sealed twice never looks the same, so the re-sealed copies get new bytes.
@@ -253,7 +257,7 @@ function People({ screens = {} }: { screens?: Partial<Record<Member, ReactNode>>
         <g key={who}>
           <Character who={who} x={column[who].person} y={PERSON_Y} scale={1.3} />
           <Laptop x={column[who].laptop} y={LAPTOP_Y} scale={1.5}>{screens[who]}</Laptop>
-          <Label x={column[who].name} y={NAME_Y} text={cast[who].name} tint={cast[who].color} />
+          <Label x={column[who].name} y={NAME_Y} text={cast[who].name} tint={cast[who].color} anchor="end" />
         </g>
       ))}
       <Server {...SERVER} scale={1.2} />
@@ -356,8 +360,8 @@ function IdeaView() {
         <Label x={230} y={832} text="Alice" tint={cast.alice.color} />
 
         <g id="what">
-          <ChatPrivateKey owner="alice" x={690} y={400} scale={2.6} />
-          <ChatPublicKey owner="alice" x={1000} y={478} scale={2.8} />
+          <ChatPrivateKey owner="alice" x={619} y={359} scale={3.2} />
+          <ChatPublicKey owner="alice" x={952} y={465} scale={3.4} />
         </g>
 
         <LaneOutline id="lane-identity" y={lane.identity} height={170} tint={color.muted} label="identity" hidden />
@@ -471,7 +475,7 @@ function KeysView() {
         <ChatPublicKey id="bob-blue-public" owner="bob" {...slotPublic('bob', 1)} hidden />
         <ChatPublicKey id="alice-green-public" owner="alice" {...slotPublic('alice', 2)} hidden />
         <ChatPublicKey id="bob-green-public" owner="bob" {...slotPublic('bob', 2)} hidden />
-        <ChatPublicKey id="charlie-green-public" owner="charlie" {...slotPublic('charlie', 2)} hidden />
+        <ChatPublicKey id="charlie-green-public" owner="charlie" {...slotPublic('charlie', 1)} hidden />
 
         {COUNTED.map((_, i) => (
           <Label key={i} id={`count-${i + 1}`} x={1090} y={124} text={String(i + 1)} size={type.title} anchor="end" hidden />
@@ -569,7 +573,7 @@ const keysScene: Scene = {
         show(tl, '#green-box, #green-label');
         fly(tl, '#alice-green-public', slotPublic('alice', 2), greenOnServer.alice, { bend: 80, at: '>-0.1' });
         fly(tl, '#bob-green-public', slotPublic('bob', 2), greenOnServer.bob, { bend: 60, at: '<0.15' });
-        fly(tl, '#charlie-green-public', slotPublic('charlie', 2), greenOnServer.charlie, { bend: -60, at: '<0.15' });
+        fly(tl, '#charlie-green-public', slotPublic('charlie', 1), greenOnServer.charlie, { bend: -60, at: '<0.15' });
       },
     },
     {
