@@ -99,3 +99,35 @@ Entries are in talk order. Timestamps are from the Melbourne recording.
   Periods vary widely by country and record type. Suggested: "for years".
 - **Worth saying aloud.** Rotation only protects the past if old private keys are deleted. The
   slides show the trade-off; one sentence would make it explicit.
+
+## Single user, multiple devices (47:49)
+
+- **"The server now has an additional key to encrypt things with."** The server never encrypts in
+  this design. The sender's device fetches one more public key and seals one more copy.
+  Suggested: "so every message now gets one more sealed copy, for the phone".
+- **"How do we know that it's the same device?"** and later "they're both from the same device".
+  The question is whether two devices belong to the same *user*. The slide says "the same user".
+
+## Device linking (49:23)
+
+- **"Take the private key of the device."** Said at 51:29 and again at 51:45, then corrected. The
+  phone sends its *public* key. No private key leaves either device anywhere in this flow, and
+  the slide makes that explicit: the phone's shield stays put under the label "private key stays
+  on the phone", and the final caption reads "No private key moved".
+- **What Signal does.** Said at 21:06, introducing this section: Signal's devices "don't actually
+  share public private keys". As far as I know that is not accurate for Signal: when a device is
+  linked, the existing device sends the account's identity key pair to the new one, encrypted to
+  a temporary public key the new device shows in its QR code. Signal also has the *new* device
+  display the code and the existing one scan it, the reverse of this diagram. The flow on the
+  slide is a sound design in its own right, so the simplest fix is not to attribute it to Signal.
+  Nothing on the slides names Signal.
+- **Why the QR code matters.** Said: it avoids "a network that can be tampered or interfered
+  with". That is the whole point, and worth one more sentence: because the temporary public key
+  arrives by camera, the phone knows whose key it is encrypting to. The slide caption says
+  "Shown on screen, never sent over a network".
+- **What the identity proves.** Said: the identity "could just be an email address or even just a
+  user ID". That is enough for the app to decide which bubbles are "mine", but it proves nothing
+  to anyone else: any device could claim the same id. A signed token, or a check by the server,
+  is what makes it trustworthy. The slide caption says "a user id or a signed token".
+- **Not shown.** The linked phone would also publish its identity public key to the server. Like
+  the original, the slide shows only the conversation key sets growing.

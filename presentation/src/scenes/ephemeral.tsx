@@ -60,7 +60,7 @@ const identity = {
   /** Beside the laptop, where the last section left them. */
   tray: (who: Member) => ({ private: { x: column[who].laptop + 24, y: 282 }, public: { x: column[who].laptop + 130, y: 300 } }),
   /** Up beside the owner's name, out of the way. */
-  header: (who: Member) => ({ private: { x: column[who].laptop + 8, y: 148 }, public: { x: column[who].laptop + 98, y: 166 } }),
+  header: (who: Member) => ({ private: { x: column[who].laptop + 8, y: 144 }, public: { x: column[who].laptop + 98, y: 162 } }),
 };
 
 const SERVER = { x: 840, y: 830 };

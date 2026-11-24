@@ -899,12 +899,12 @@ const diffieHellman: Scene = {
 // 5. The shared secret is the symmetric key
 // ---------------------------------------------------------------------------------------------
 
-const KEY = 1.4;
+const KEY = 1.7;
 const use = {
-  aliceKey: { x: 470, y: 420 },
-  aliceScreen: { x: 435, y: 618 },
-  bobKey: { x: 1360, y: 420 },
-  bobScreen: { x: 1395, y: 618 },
+  aliceKey: { x: 486, y: 404 },
+  aliceScreen: { x: 426, y: 606 },
+  bobKey: { x: 1325, y: 404 },
+  bobScreen: { x: 1386, y: 606 },
   chipOnServer: { x: 825, y: 606 },
 };
 const USE_CIPHER = ['01lM09UrpNYe', 'RYi1NzvH51cG'];
@@ -936,11 +936,11 @@ function UseView() {
         <Label x={1730} y={890} text="Bob" tint={cast.bob.color} />
 
         {/* Each side made the same key from the 12 it worked out. Neither key was ever sent. */}
-        <Num x={372} y={502} text="12" tint={SHARED} size={type.title} hidden={false} />
-        <Arrow from={{ x: 424, y: 474 }} to={{ x: 456, y: 474 }} />
+        <Num x={372} y={504} text="12" tint={SHARED} size={96} hidden={false} />
+        <Arrow from={{ x: 440, y: 470 }} to={{ x: 472, y: 470 }} />
         <SecretKey id="alice-key" pair={AB} {...use.aliceKey} scale={KEY} />
-        <Num x={1548} y={502} text="12" tint={SHARED} size={type.title} hidden={false} />
-        <Arrow from={{ x: 1496, y: 474 }} to={{ x: 1464, y: 474 }} />
+        <Num x={1548} y={504} text="12" tint={SHARED} size={96} hidden={false} />
+        <Arrow from={{ x: 1480, y: 470 }} to={{ x: 1448, y: 470 }} />
         <SecretKey id="bob-key" pair={AB} {...use.bobKey} scale={KEY} />
 
         <CipherChip id="chip-stored" text={USE_CHIP} x={0} y={0} hidden />
