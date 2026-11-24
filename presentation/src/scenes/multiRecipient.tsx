@@ -35,7 +35,7 @@ function KeyHead({ owner }: { owner: Who }) {
       return (
         <path
           d="M8 22L32 8v28z M25 14.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 1 0 0-15z"
-          fillRule="evenodd" fill={fill} stroke={fill} strokeWidth="5" strokeLinejoin="round"
+          fillRule="evenodd" fill={fill} stroke={fill} strokeWidth="5" strokeLinejoin="round" transform="rotate(90 21 22)"
         />
       );
     case 'square':
@@ -193,7 +193,7 @@ function on(place: KitPlace) {
 // The three-person layout: Bob top centre, Alice bottom left, Charlie bottom right, server bottom centre.
 const TRIO: Record<Member, KitPlace> = {
   alice: { x: 20, y: 660, mirror: false },
-  bob: { x: 690, y: 110, mirror: true },
+  bob: { x: 780, y: 140, mirror: true },
   charlie: { x: 1330, y: 660, mirror: true },
 };
 const SERVER = { x: 820, y: 785 };
@@ -210,10 +210,10 @@ function refuse(tl: Timeline, target: string, rest: Point) {
 // ---- 1. A third person joins (slides 54-56) -------------------------------------------------
 
 const ROW: Record<'alice' | 'bob', KitPlace> = {
-  alice: { x: 20, y: 350, mirror: false },
-  bob: { x: 1330, y: 350, mirror: true },
+  alice: { x: 20, y: 400, mirror: false },
+  bob: { x: 1330, y: 400, mirror: true },
 };
-const ROW_SERVER = { x: 820, y: 420 };
+const ROW_SERVER = { x: 820, y: 470 };
 
 function ThirdView() {
   const kit = parts(false);
@@ -221,8 +221,8 @@ function ThirdView() {
   return (
     <>
       <Svg>
-        <Flow id="recap-up" d="M606 610C670 560 740 560 808 596" />
-        <Flow id="recap-down" d="M1112 596C1180 560 1250 560 1314 610" />
+        <Flow id="recap-up" d="M606 660C670 610 740 610 808 646" />
+        <Flow id="recap-down" d="M1112 646C1180 610 1250 610 1314 660" />
         <Flow id="to-charlie" d="M1112 930C1180 890 1250 890 1322 930" hidden />
 
         <Kit id="alice-kit" who="alice" place={ROW.alice} extras={<PrivateKey owner="alice" {...kit.privateKey} scale={KEY} />}>
@@ -243,6 +243,7 @@ function ThirdView() {
 
         <Envelope id="old-message" owners={['alice', 'bob']} {...onServer(2)} hidden />
         <PrivateKey id="charlie-private" owner="charlie" {...spot.charlie.privateKey} scale={KEY} hidden />
+        <Label id="recap-label" x={960} y={840} text="sealed once for Alice, once for Bob" tint={color.muted} weight={500} />
         <Label id="why" x={960} y={640} text="no copy was sealed for Charlie" tint={color.muted} weight={500} hidden />
       </Svg>
       <SceneTitle>A third person joins</SceneTitle>
@@ -260,7 +261,7 @@ const third: Scene = {
     {
       notes: 'But what if you want to add a third person? We added Charlie to the conversation in the demo.',
       build: (tl) => {
-        hide(tl, '#recap-up-line, #recap-down-line');
+        hide(tl, '#recap-up-line, #recap-down-line, #recap-label');
         moveTo(tl, '#alice-kit', TRIO.alice, '>', 0.9);
         moveTo(tl, '#bob-kit', TRIO.bob, '<', 0.9);
         moveTo(tl, '#server-kit', SERVER, '<', 0.9);
@@ -388,13 +389,14 @@ const keys: Scene = {
 
 const SEAL_LAPTOP = { x: 280, y: 700, scale: 1.8 };
 const sealScreen = { x: SEAL_LAPTOP.x + 120 * SEAL_LAPTOP.scale, y: SEAL_LAPTOP.y + 73 * SEAL_LAPTOP.scale };
-const ROWS: Record<Member, number> = { alice: 585, bob: 760, charlie: 935 };
-const BIG = 1.5;
-const sealKey = (who: Member): Point => ({ x: 800, y: ROWS[who] - 33 });
-const sealKeyOnScreen: Point = { x: sealScreen.x - 75, y: sealScreen.y - 33 };
-const sealCopyOnScreen: Point = { x: sealScreen.x - 78, y: sealScreen.y - 45 };
-const sealCopy = (who: Member): Point => ({ x: 1130, y: ROWS[who] - 45 });
-const BUNDLE = { x: 1130, y: 700 };
+const ROWS: Record<Member, number> = { alice: 590, bob: 765, charlie: 940 };
+const BIG_KEY = 1.9;
+const BIG = 1.7;
+const sealKey = (who: Member): Point => ({ x: 780, y: ROWS[who] - 22 * BIG_KEY });
+const sealKeyOnScreen: Point = { x: sealScreen.x - 50 * BIG_KEY, y: sealScreen.y - 22 * BIG_KEY };
+const sealCopyOnScreen: Point = { x: sealScreen.x - (COPY.width / 2) * BIG, y: sealScreen.y - (COPY.height / 2) * BIG };
+const sealCopy = (who: Member): Point => ({ x: 1090, y: ROWS[who] - (COPY.height / 2) * BIG });
+const BUNDLE = { x: 1090, y: 700 };
 const bundled = (index: number): Point => ({ x: BUNDLE.x + (10 + index * COPY.pitch) * BIG, y: BUNDLE.y + 10 * BIG });
 
 function SealView() {
@@ -408,16 +410,16 @@ function SealView() {
         </Laptop>
 
         <Envelope id="bundle" owners={MEMBERS} empty {...BUNDLE} scale={BIG} hidden />
-        <Label id="bundle-label" x={BUNDLE.x + (envelopeWidth(3) * BIG) / 2} y={BUNDLE.y + 190} text="one message, three sealed copies" tint={color.muted} weight={500} hidden />
+        <Label id="bundle-label" x={BUNDLE.x + (envelopeWidth(3) * BIG) / 2} y={BUNDLE.y + 206} text="one message, three sealed copies" tint={color.muted} weight={500} hidden />
 
         {MEMBERS.map((who) => (
           <g key={who}>
             <SealedCopy id={`${who}-copy`} owner={who} {...sealCopyOnScreen} scale={BIG} hidden />
-            <Label id={`${who}-for`} x={1320} y={ROWS[who] + 16} text={`for ${cast[who].name}`} tint={cast[who].color} size={type.body} anchor="start" hidden />
-            <PublicKey id={`${who}-key`} owner={who} {...sealKey(who)} scale={BIG} />
+            <Label id={`${who}-for`} x={1300} y={ROWS[who] + 20} text={`for ${cast[who].name}`} tint={cast[who].color} size={56} anchor="start" hidden />
+            <PublicKey id={`${who}-key`} owner={who} {...sealKey(who)} scale={BIG_KEY} />
           </g>
         ))}
-        <Label id="alice-own" x={1320} y={ROWS.alice + 68} text={'the sender\u2019s own copy'} tint={color.muted} size={type.min} weight={500} anchor="start" hidden />
+        <Label id="alice-own" x={1300} y={ROWS.alice + 72} text={'the sender\u2019s own copy'} tint={color.muted} size={type.min} weight={500} anchor="start" hidden />
       </Svg>
 
       <SceneTitle>One sealed copy per member</SceneTitle>
@@ -484,7 +486,7 @@ function DeliverView() {
     <>
       <Svg>
         <Flow id="to-server" d="M606 905C670 870 740 870 808 905" hidden />
-        <Flow id="to-bob" d="M930 775C900 700 880 640 872 508" hidden />
+        <Flow id="to-bob" d="M955 775C940 700 945 640 960 552" hidden />
         <Flow id="to-charlie" d="M1112 905C1180 870 1250 870 1322 905" hidden />
         <Flow id="to-outsider" d="M1100 800C1240 720 1380 640 1490 440" tint={color.muted} hidden />
 
@@ -583,15 +585,16 @@ const deliver: Scene = {
 // ---- 6. Conversations, and what one stolen key exposes (slides 66-73) -----------------------
 
 const PEOPLE: Record<Member, Point> = {
-  bob: { x: 230, y: 570 },
-  alice: { x: 780, y: 570 },
-  charlie: { x: 1370, y: 570 },
+  bob: { x: 215, y: 530 },
+  alice: { x: 765, y: 530 },
+  charlie: { x: 1340, y: 530 },
 };
-const PERSON = 1.4;
-const ownKey = (who: Member): Point => ({ x: PEOPLE[who].x + 250, y: PEOPLE[who].y + 190 });
+const PERSON = 1.55;
+const CHAT_KEY = 1.5;
+const ownKey = (who: Member): Point => ({ x: PEOPLE[who].x + 272, y: PEOPLE[who].y + 220 });
 const loot: Record<'bob' | 'alice', Point> = {
-  bob: { x: 1612, y: 35 },
-  alice: { x: 1727, y: 35 },
+  bob: { x: 1610, y: 31 },
+  alice: { x: 1726, y: 31 },
 };
 
 /** A conversation: an outline around its members that can light up when its messages are exposed. */
@@ -621,7 +624,7 @@ function ChatsView() {
         {MEMBERS.map((who) => (
           <g key={who}>
             <Character who={who} {...PEOPLE[who]} scale={PERSON} />
-            <Label x={PEOPLE[who].x + 140} y={PEOPLE[who].y - 14} text={cast[who].name} tint={cast[who].color} />
+            <Label x={PEOPLE[who].x + 155} y={PEOPLE[who].y - 14} text={cast[who].name} tint={cast[who].color} />
           </g>
         ))}
 
@@ -641,10 +644,10 @@ function ChatsView() {
         </g>
 
         {MEMBERS.map((who) => (
-          <PrivateKey key={who} owner={who} {...ownKey(who)} scale={KEY} />
+          <PrivateKey key={who} owner={who} {...ownKey(who)} scale={CHAT_KEY} />
         ))}
-        <PrivateKey id="bob-stolen" owner="bob" {...ownKey('bob')} scale={KEY} hidden />
-        <PrivateKey id="alice-stolen" owner="alice" {...ownKey('alice')} scale={KEY} hidden />
+        <PrivateKey id="bob-stolen" owner="bob" {...ownKey('bob')} scale={CHAT_KEY} hidden />
+        <PrivateKey id="alice-stolen" owner="alice" {...ownKey('alice')} scale={CHAT_KEY} hidden />
       </Svg>
 
       <div id="title-chats"><SceneTitle>Three conversations</SceneTitle></div>

@@ -31,10 +31,10 @@ function TitleView() {
   return (
     <>
       <Svg>
-        <Character who="eve" x={1320} y={130} scale={1.3} />
-        <Character who="alice" x={1000} y={560} scale={1.3} />
-        <CipherChip text={CHIP} x={1295} y={742} />
-        <Character who="bob" x={1600} y={560} scale={1.3} />
+        <Character who="eve" x={1290} y={120} scale={1.3} />
+        <Character who="alice" x={960} y={520} scale={1.5} />
+        <CipherChip text={CHIP} x={1285} y={760} />
+        <Character who="bob" x={1580} y={520} scale={1.5} />
       </Svg>
       <div className="opening-title">
         <h1>Building<br />Rock-Solid<br /><em>Encrypted</em><br />Applications</h1>
@@ -69,7 +69,7 @@ function BioView() {
   return (
     <>
       <SceneTitle>Who is this clown?</SceneTitle>
-      <div className="opening-bio-head">age</div>
+      <div className="opening-bio-head" id="bio-head" style={{ opacity: 0 }}>age</div>
       <ol className="opening-bio">
         {BIO.map((row, index) => (
           <li key={row.age} id={`bio-${index}`} style={{ opacity: 0 }}>
@@ -95,7 +95,7 @@ const bio: Scene = {
   notes: 'Who am I? Who is this clown? Hi, my name is Ben.',
   View: BioView,
   steps: [
-    { notes: 'I have been coding since I was 12.', build: (tl) => { show(tl, '#bio-0'); } },
+    { notes: 'I have been coding since I was 12.', build: (tl) => { show(tl, '#bio-head, #bio-0'); } },
     { notes: 'Breaking software since I was 15.', build: (tl) => { show(tl, '#bio-1'); } },
     {
       notes: 'I have loved security and privacy, and the adjacent things like civil liberties, for quite a long time.',
@@ -278,13 +278,15 @@ interface DiagramProps {
   delivered?: boolean;
   /** Whether Eve is in this scene, and if so whether a step brings her on or she is there from the start. */
   eve?: 'absent' | 'waiting' | 'present';
+  /** The words under the server's key. */
+  keyLabel?: ReactNode;
   /** Extra actors for one scene, drawn above everything else. */
   children?: ReactNode;
   /** Code cards and other HTML. */
   html?: ReactNode;
 }
 
-function ChatDiagram({ title, encrypted = false, delivered = false, eve = 'absent', children, html }: DiagramProps) {
+function ChatDiagram({ title, encrypted = false, delivered = false, eve = 'absent', keyLabel, children, html }: DiagramProps) {
   const eveHidden = eve !== 'present';
   return (
     <>
@@ -296,7 +298,7 @@ function ChatDiagram({ title, encrypted = false, delivered = false, eve = 'absen
         {eve !== 'absent' && (
           <>
             <Flow id="to-eve" d="M1010 506C1010 440 1160 470 1250 404" tint={cast.eve.color} hidden />
-            <Flow id="eve-ask" d="M1440 404C1440 500 1280 500 1118 548" tint={cast.eve.color} hidden />
+            <Flow id="eve-ask" d="M1440 404C1440 500 1280 484 1116 534" tint={cast.eve.color} hidden />
           </>
         )}
 
@@ -332,7 +334,9 @@ function ChatDiagram({ title, encrypted = false, delivered = false, eve = 'absen
             <CipherChip id="chip-to-eve" text={CHIP} {...at.storedChip} hidden />
             <ServerKey id="server-key" {...at.keyHome} scale={SERVER_KEY_SCALE} hidden={!delivered} />
             <ServerKey id="stolen-key" {...at.keyHome} scale={SERVER_KEY_SCALE} hidden />
-            <Label id="key-label" x={960} y={1004} text="one key for every message" tint={color.muted} size={type.min} weight={500} hidden={!delivered} />
+            {keyLabel ?? (
+              <Label id="key-label" x={960} y={1004} text="one key for every message" tint={color.muted} size={type.min} weight={500} hidden={!delivered} />
+            )}
           </>
         )}
 
@@ -415,24 +419,21 @@ const plaintextEve: Scene = {
 
 // ---- Encrypted on the server (before Demo 2) ----
 
-const CODE_LEFT = 284;
-const CODE_TOP = 150;
+const CODE_TOP = 160;
 
 function EncryptedCode() {
   return (
     <>
-      <CodeCard id="encrypt-code" left={CODE_LEFT} top={CODE_TOP} hidden>
+      <CodeCard id="encrypt-code" left={280} top={CODE_TOP} hidden>
+        <span className="dim">{'// one key, and a fresh random IV for every message\n'}</span>
         {'const iv = crypto.getRandomValues(new Uint8Array(12));\n'}
         {'const ciphertext = await crypto.subtle.encrypt(\n'}
-        {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv },  '}<span className="dim">{'// a new IV for every message\n'}</span>
-        {'  '}<span className="hl">SERVER_KEY</span>{',               '}<span className="dim">{'// the one key\n'}</span>
-        {'  encode(plaintext));'}
+        {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv }, '}<span className="hl">SERVER_KEY</span>{', encode(plaintext));'}
       </CodeCard>
-      <CodeCard id="decrypt-code" left={CODE_LEFT} top={CODE_TOP} hidden>
+      <CodeCard id="decrypt-code" left={364} top={CODE_TOP} hidden>
+        <span className="dim">{'// the same key, and the IV stored with the message\n'}</span>
         {'const plaintext = await crypto.subtle.decrypt(\n'}
-        {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv },  '}<span className="dim">{'// the IV stored with it\n'}</span>
-        {'  '}<span className="hl">SERVER_KEY</span>{',               '}<span className="dim">{'// the same key\n'}</span>
-        {'  ciphertext);'}
+        {'  { name: '}<span className="hl">{'\'AES-GCM\''}</span>{', iv }, '}<span className="hl">SERVER_KEY</span>{', ciphertext);'}
       </CodeCard>
     </>
   );
@@ -516,8 +517,8 @@ function Attacks({ shown = false }: { shown?: boolean }) {
   return (
     <>
       <Label id="cap-db" x={80} y={236} text="Database: only ciphertext" tint={color.cipher} anchor="start" hidden={!shown} />
-      <Label id="cap-key" x={80} y={304} text="1  Find the one key" tint={cast.eve.color} anchor="start" hidden={!shown} />
-      <Label id="cap-api" x={80} y={372} text="2  Or just ask the API" tint={cast.eve.color} anchor="start" hidden={!shown} />
+      <Label id="cap-key" x={80} y={304} text="1. Find the one key" tint={cast.eve.color} anchor="start" hidden={!shown} />
+      <Label id="cap-api" x={80} y={372} text="2. Or just ask the API" tint={cast.eve.color} anchor="start" hidden={!shown} />
     </>
   );
 }
@@ -585,11 +586,10 @@ function Recap() {
   return (
     <>
       {/* The message caught on each hop: still plain text on the way in and on the way out. */}
-      <PlainChip text="Hi!" x={655} y={560} />
-      <PlainChip text="Hi!" x={1115} y={560} />
-      <Label x={480} y={890} text="plain text" tint={color.text} weight={500} />
-      <Label x={1440} y={890} text="plain text" tint={color.text} weight={500} />
-      <Label x={960} y={1004} text="encrypted only here" tint={color.cipher} />
+      <PlainChip text="Hi!" x={655} y={566} />
+      <PlainChip text="Hi!" x={1115} y={566} />
+      <Label x={480} y={890} text="plain text" weight={500} />
+      <Label x={1440} y={890} text="plain text" weight={500} />
       <Label id="cap-api" x={80} y={236} text="The API decrypts for whoever asks" tint={cast.eve.color} anchor="start" hidden />
     </>
   );
@@ -597,11 +597,17 @@ function Recap() {
 
 const recap: Scene = {
   id: 'open-recap',
-  title: 'Encrypted only in the middle',
+  title: 'Recap: encrypted only in the middle',
   notes:
     'At this point the data is unencrypted on the two devices, it goes unencrypted to the server, and it only gets encrypted on the server. In transit it is still plain text. Probably not ideal.',
   View: () => (
-    <ChatDiagram title="Encrypted only in the middle" encrypted delivered eve="present">
+    <ChatDiagram
+      title="Encrypted on the server"
+      encrypted
+      delivered
+      eve="waiting"
+      keyLabel={<Label x={960} y={1004} text="encrypted only here" tint={color.cipher} />}
+    >
       <Recap />
     </ChatDiagram>
   ),
@@ -610,7 +616,10 @@ const recap: Scene = {
       notes:
         'This is the slide I was talking about before. As demonstrated just now: if Eve makes a request through the API rather than getting into the server itself, the information still gets decrypted, because the endpoint\'s job is to decrypt and send out plain text.',
       build: (tl) => {
-        show(tl, '#cap-api');
+        pop(tl, '#eve');
+        show(tl, '#eve-name', '<0.1');
+        pop(tl, '#eve-laptop', '<0.1');
+        show(tl, '#cap-api', '<');
         serverDecryptsForEve(tl);
       },
     },

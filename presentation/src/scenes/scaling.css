@@ -1,0 +1,63 @@
+/* Styles for the scalability section (scenes/scaling.tsx). */
+
+/* A PGP message. The audience does not read it; its bulk is the point. */
+.scaling-pgp {
+  position: absolute;
+  margin: 0;
+  padding: 12px 28px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  font-family: var(--mono);
+  font-size: 28px;
+  line-height: 30px;
+  color: var(--cipher);
+  white-space: pre;
+}
+.scaling-pgp .gap { display: block; height: 12px; }
+
+/* One stored message from the demo: structure readable, sealed contents as texture. */
+.scaling-json {
+  position: absolute;
+  margin: 0;
+  padding: 18px 28px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-family: var(--mono);
+  font-size: 40px;
+  line-height: 54px;
+  color: var(--text);
+  white-space: pre;
+}
+.scaling-json .dim { color: var(--muted); }
+.scaling-json .rec {
+  margin: 4px 0 4px 26px;
+  padding-left: 22px;
+  border-left: 8px solid var(--line);
+}
+.scaling-json .name {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+}
+.scaling-json .sealed {
+  font-size: 28px;
+  line-height: 34px;
+  color: var(--cipher);
+}
+
+/* A line or two of explanation across the bottom of a diagram. */
+.scaling-banner {
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  font-size: 44px;
+  line-height: 54px;
+  font-weight: 500;
+  color: var(--text);
+}
+.scaling-banner b { font-weight: 700; }
+.scaling-banner .secret { color: var(--cipher); font-weight: 700; }
+.scaling-banner .warn { color: #ff6b5e; font-weight: 700; }
+.scaling-banner sup { font-size: 40px; line-height: 0; vertical-align: 0.5em; }
