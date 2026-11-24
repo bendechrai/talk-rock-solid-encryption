@@ -651,7 +651,7 @@ function ChatsView() {
       </Svg>
 
       <div id="title-chats"><SceneTitle>Three conversations</SceneTitle></div>
-      <div id="title-stolen" style={{ opacity: 0 }}><SceneTitle>One stolen private key</SceneTitle></div>
+      <div id="title-stolen" style={{ opacity: 0 }}><SceneTitle>A stolen private key</SceneTitle></div>
     </>
   );
 }

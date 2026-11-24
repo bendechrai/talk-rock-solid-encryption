@@ -162,8 +162,8 @@ type Chat = keyof typeof conversation;
 const PEOPLE: { who: Who; x0: number; chats: Chat[] }[] = [
   { who: 'alice', x0: 30, chats: ['blue', 'green'] },
   { who: 'bob', x0: 650, chats: ['blue', 'green'] },
-  // The blue conversation is the private chat between Alice and Bob, so Charlie has no key for it.
-  { who: 'charlie', x0: 1270, chats: ['green'] },
+  // Charlie joined the blue chat in the ephemeral-keys section, after the green one.
+  { who: 'charlie', x0: 1270, chats: ['green', 'blue'] },
 ];
 const IDENTITY = 1.3;
 const keysAt = {
@@ -269,10 +269,11 @@ function JoinView() {
         <ChatKeyPair id="phone-green" owner="alice" tint={conversation.green} {...join.phoneGreen} hidden />
 
         <Server x={1475} y={190} scale={1.2} />
-        <Frame x={1300} y={460} width={590} height={180} tint={conversation.blue} label="blue conversation" />
-        <Frame x={1300} y={680} width={590} height={180} tint={conversation.green} label="green conversation" />
+        <Frame x={1300} y={460} width={590} height={180} tint={conversation.blue} label="blue chat" />
+        <Frame x={1300} y={680} width={590} height={180} tint={conversation.green} label="green chat" />
         <PublicKey owner="alice" ephemeral {...join.slot('blue', 0)} scale={DIRECTORY_KEY} />
         <PublicKey owner="bob" ephemeral {...join.slot('blue', 1)} scale={DIRECTORY_KEY} />
+        <PublicKey owner="charlie" ephemeral {...join.slot('blue', 2)} scale={DIRECTORY_KEY} />
         <PublicKey owner="alice" ephemeral {...join.slot('green', 0)} scale={DIRECTORY_KEY} />
         <PublicKey owner="bob" ephemeral {...join.slot('green', 1)} scale={DIRECTORY_KEY} />
         <PublicKey owner="charlie" ephemeral {...join.slot('green', 2)} scale={DIRECTORY_KEY} />
@@ -311,7 +312,7 @@ const joinScene: Scene = {
       notes:
         'We can share those keys with the server: public keys only. So there is an additional key to encrypt things with (the sender seals one more copy, for the phone).',
       build: (tl) => {
-        fly(tl, '#phone-blue-public', join.phoneBluePublic, join.slot('blue', 2), { bend: -70, reveal: true });
+        fly(tl, '#phone-blue-public', join.phoneBluePublic, join.slot('blue', 3), { bend: -70, reveal: true });
         fly(tl, '#phone-green-public', join.phoneGreenPublic, join.slot('green', 3), { bend: 70, reveal: true, at: '<0.2' });
         show(tl, '#say-copies', '>-0.2');
       },
