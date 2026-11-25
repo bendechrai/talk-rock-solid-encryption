@@ -1,0 +1,32 @@
+# The talk, built, as one service on one port.
+#
+#   docker compose up -d --build     start (http://localhost:5173)
+#   docker compose logs -f           watch
+#   docker compose down              stop; add -v to also delete the demo database
+#
+# The demo backend has no login, on purpose, so the port is published on this machine only.
+# Set TALK_BIND=0.0.0.0 to offer it to the local network, or share it through a tunnel instead.
+
+name: rock-solid-encryption
+
+services:
+  web:
+    build:
+      context: .
+      target: talk
+    image: rock-solid-encryption:talk
+    ports:
+      - "${TALK_BIND:-127.0.0.1}:${TALK_PORT:-5173}:5173"
+    volumes:
+      - whisper-data:/data
+    init: true
+    restart: unless-stopped
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173/api/users').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+
+volumes:
+  whisper-data:

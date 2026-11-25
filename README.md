@@ -6,32 +6,88 @@ same stage.
 
 ## Running it
 
+### With Docker (recommended)
+
+All you need is Docker. On a new machine:
+
+```bash
+git clone https://github.com/bendechrai/talk-rock-solid-encryption.git
+```
+
+```bash
+cd talk-rock-solid-encryption && docker compose up -d --build
+```
+
+Then open http://localhost:5173. That is the whole talk: one container, one port, serving the
+built presentation and the chat backend together. It needs no internet once the image is built.
+
+```bash
+docker compose logs -f
+```
+
+```bash
+docker compose down
+```
+
+The demo database lives in a Docker volume and survives restarts. `docker compose down -v`
+deletes it; so does "Reset" in a demo.
+
+The port is published on this machine only, because the demo backend has no login (that is part
+of the demonstration). `TALK_PORT=8080 docker compose up -d` moves it to another port, and
+`TALK_BIND=0.0.0.0` offers it to the local network.
+
+### Working on the talk
+
+The same container with hot reload: edit anything under `presentation/src`, `server/src` or
+`shared/src` and the browser updates.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Run it again with `--build` after changing a `package.json`.
+
+### Sharing it
+
+The service is called `web` and listens on 5173, so with
+[devtun](https://www.npmjs.com/package/devtun) set up, from this folder:
+
+```bash
+devtun add rock-solid web 5173
+```
+
+devtun writes `docker-compose.override.yml`, which Docker Compose picks up by itself; that file
+is specific to your machine and is not committed. Share the built talk, not the hot-reload
+version: Vite's dev server refuses host names it does not know (set `VITE_ALLOWED_HOSTS` to the
+tunnel's host name if you do need it).
+
+Everyone with the address shares one database and can send messages, change chat members and
+press Reset. That is fine for letting people play with the demos, and a reason to keep the
+tunnel closed while presenting.
+
+### Without Docker
+
 You need Node.js 22 or newer.
 
 ```bash
 npm install
 ```
 
-Start the backend (the chat server, on port 4000):
+Either build the talk and serve it from the backend alone (set `PORT` to choose the port, which
+defaults to 4000):
 
 ```bash
-npm run server
+npm run build && npm start
 ```
 
-Start the presentation (on port 5173), then open http://localhost:5173:
-
-```bash
-npm run present
-```
-
-Or start both in one terminal:
+Or run the two development servers, backend on 4000 and presentation on 5173, then open
+http://localhost:5173:
 
 ```bash
 npm run dev
 ```
 
-Everything runs locally and nothing is fetched from the internet while presenting. The diagram
-scenes work without the backend; the demos need it.
+The diagram scenes work without the backend; the demos need it.
 
 ## Presenting
 
@@ -57,6 +113,7 @@ reloading the page returns to exactly where you were.
 shared/        Types and the encryption code used by both sides (AES-GCM, X25519 sealed boxes)
 server/        The Whisper backend: an HTTP API over one JSON file
 presentation/  The stage: scenes, artwork, animation engine and the demo chat app
+Dockerfile, docker-compose*.yml   The talk as one container; see "Running it"
 docs/          Reference material, including a transcript of the talk
 ```
 
@@ -71,7 +128,8 @@ The message endpoints come in three versions, one per stage of the talk:
 
 None of the endpoints check who is asking. That is part of the demonstration.
 
-The database is `server/data/db.json`. It is created on first run and is not committed. "Reset" in
+Outside Docker the database is `server/data/db.json` (`WHISPER_DB` moves it). It is created on
+first run and is not committed. "Reset" in
 a demo's header empties it and clears the keys held in the browser.
 
 ### The presentation
@@ -151,8 +209,10 @@ npm test
 npm run typecheck
 ```
 
-Four audits drive a real browser against the running presentation (`npm run dev` first). They
-need Playwright: `npm install --no-save playwright && npx playwright install chromium`.
+Four audits drive a real browser against the running talk, however it was started. They run on
+the host and need Node.js and Playwright:
+`npm install && npm install --no-save playwright && npx playwright install chromium`. Set
+`PRESENTATION_URL` if the talk is not on http://localhost:5173.
 
 Flag any text too small to read from the back of a room, at every step of every scene:
 

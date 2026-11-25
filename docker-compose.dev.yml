@@ -1,0 +1,25 @@
+# For working on the talk: the same service, with hot reload. Edits to the mounted folders
+# show up in the browser at once.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# After changing a package.json, run it again with --build.
+
+services:
+  web:
+    build:
+      target: dev
+    image: rock-solid-encryption:dev
+    restart: "no"
+    mem_limit: 1g
+    environment:
+      # Host names Vite should answer to besides localhost, comma-separated (or "all").
+      VITE_ALLOWED_HOSTS: "${VITE_ALLOWED_HOSTS:-}"
+    volumes:
+      - ./shared/src:/app/shared/src:ro
+      - ./server/src:/app/server/src:ro
+      - ./presentation/src:/app/presentation/src:ro
+      - ./presentation/public:/app/presentation/public:ro
+      - ./presentation/index.html:/app/presentation/index.html:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]

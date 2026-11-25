@@ -3,6 +3,10 @@
 Ben Dechrai's conference talk and its live demos, as one browser-based asset. See `README.md` for
 how to run it and how the code is laid out.
 
+It runs in Docker: `docker compose up -d --build` for the built talk, or add
+`-f docker-compose.yml -f docker-compose.dev.yml` for hot reload. Docker is the intended way to
+run it; the audits drive a browser from the host against whichever is running.
+
 ## Definition of done
 
 Set by Ben on 2026-11-24. Work on this repo is not finished until all five hold.

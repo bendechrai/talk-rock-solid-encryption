@@ -2,11 +2,17 @@
   "name": "talk-rock-solid-encryption",
   "private": true,
   "type": "module",
-  "workspaces": ["shared", "server", "presentation"],
+  "workspaces": [
+    "shared",
+    "server",
+    "presentation"
+  ],
   "scripts": {
     "server": "npm run dev -w server",
     "present": "npm run dev -w presentation",
     "dev": "concurrently -n server,present -c green,magenta \"npm run server\" \"npm run present\"",
+    "build": "npm run build -w presentation",
+    "start": "npm run start -w server",
     "typecheck": "npm run typecheck -ws --if-present",
     "test": "npm run test -ws --if-present"
   },
