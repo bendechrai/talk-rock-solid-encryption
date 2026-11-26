@@ -13,6 +13,7 @@
 import { Hono } from 'hono';
 import { decryptSymmetric, encryptSymmetric, isSymmetricBox, type StoredMessage } from '@whisper/shared';
 import type { Database } from './db.ts';
+import { createRemote } from './remote.ts';
 
 /** In a real system this would at least live in an environment variable. It would still be one key for everything. */
 export const SERVER_KEY = 'super-secret-encryption-key';
@@ -175,6 +176,10 @@ export function createApp(db: Database): Hono {
     const conversation = db.setMembers(c.req.param('id'), memberUserIds);
     return conversation ? c.json({ conversation }) : c.json({ error: 'Conversation not found' }, 404);
   });
+
+  // ---- Presenter remote: relays slide position and next/back between the stage and a phone ----
+
+  app.route('/api/remote', createRemote());
 
   return app;
 }

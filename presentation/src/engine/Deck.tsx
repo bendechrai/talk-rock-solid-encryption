@@ -8,6 +8,9 @@
 import gsap from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { RemoteCommand } from '../remote/link.ts';
+import { Pairing } from '../remote/Pairing.tsx';
+import { useStageRemote } from '../remote/useStageRemote.ts';
 import { Stage } from './Stage.tsx';
 import type { Position, Scene } from './types.ts';
 
@@ -30,6 +33,11 @@ function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 }
 
+/** A tap on something that does a job of its own (a demo's buttons and fields) must not also turn the page. */
+function isInteractive(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('button, a, input, textarea, select, summary, label, [role="button"]') !== null;
+}
+
 /** Space and Enter on a focused button should press the button, not advance. */
 function isControl(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && ['BUTTON', 'A', 'SUMMARY'].includes(target.tagName);
@@ -39,6 +47,7 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
   const [position, setPosition] = useState<Position>(() => fromHash(scenes));
   const [blank, setBlank] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [pairing, setPairing] = useState(false);
 
   const stage = useRef<HTMLDivElement>(null);
   const current = useRef(position);
@@ -78,6 +87,24 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
     if (step > 0) moveTo({ scene: s, step: step - 1 });
     else if (s > 0) moveTo({ scene: s - 1, step: scenes[s - 1].steps.length });
   }, [scenes, moveTo]);
+
+  // A phone opened from the pairing code reads the notes and sends next and back.
+  const onCommand = useCallback((command: RemoteCommand) => {
+    if (command.action === 'next') next();
+    else if (command.action === 'previous') previous();
+    else {
+      const index = scenes.findIndex((s) => s.id === command.scene);
+      if (index !== -1) moveTo({ scene: index, step: command.step });
+    }
+  }, [scenes, next, previous, moveTo]);
+  const remote = useStageRemote({ scene: scene.id, step: position.step }, onCommand);
+  const { pair } = remote;
+
+  // The code is on screen only until a phone has it.
+  const paired = remote.remotes > 0;
+  useEffect(() => {
+    if (paired) setPairing(false);
+  }, [paired]);
 
   // Compile the scene's steps into one timeline whenever the scene changes.
   useLayoutEffect(() => {
@@ -155,6 +182,7 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
         // Many clickers have a "blank screen" button that sends B or a full stop.
         case 'b': case 'B': case '.': if (typing) return; setBlank((value) => !value); break;
         case 'n': case 'N': if (typing) return; setShowNotes((value) => !value); break;
+        case 'r': case 'R': if (typing) return; pair(); setPairing((value) => !value); break;
         case 'f': case 'F':
           if (typing) return;
           if (document.fullscreenElement) void document.exitFullscreen();
@@ -166,7 +194,34 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [scenes, next, previous, moveTo]);
+  }, [scenes, next, previous, moveTo, pair]);
+
+  // On a touch screen with no keyboard, a tap on the right two thirds advances and a tap on the
+  // left third goes back. Mice are left alone: the demos are full of things to click.
+  useEffect(() => {
+    const element = stage.current;
+    if (!element) return;
+    let down: { x: number; y: number; time: number } | null = null;
+    const onPointerDown = (event: PointerEvent) => {
+      down = event.pointerType === 'touch' && event.isPrimary ? { x: event.clientX, y: event.clientY, time: event.timeStamp } : null;
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      const start = down;
+      down = null;
+      if (!start || isInteractive(event.target)) return;
+      // A drag or a long press is not a tap.
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12 || event.timeStamp - start.time > 600) return;
+      const { left, width } = element.getBoundingClientRect();
+      if (event.clientX - left < width / 3) previous();
+      else next();
+    };
+    element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointerup', onPointerUp);
+    return () => {
+      element.removeEventListener('pointerdown', onPointerDown);
+      element.removeEventListener('pointerup', onPointerUp);
+    };
+  }, [next, previous]);
 
   const notes = position.step === 0 ? scene.notes : scene.steps[position.step - 1]?.notes;
 
@@ -185,6 +240,9 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
           <strong>{scene.title}</strong>
           <p>{notes ?? 'No notes for this step.'}</p>
         </aside>
+      )}
+      {pairing && remote.token && (
+        <Pairing token={remote.token} remotes={remote.remotes} onRenew={remote.renew} onClose={() => setPairing(false)} />
       )}
       {blank && <div className="blank" />}
     </>

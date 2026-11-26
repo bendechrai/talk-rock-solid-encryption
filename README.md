@@ -99,13 +99,41 @@ The diagram scenes work without the backend; the demos need it.
 | B or . | Blank the screen |
 | N | Show speaker notes for the current step |
 | F | Full screen |
+| R | Show the code that pairs a phone as the presenter remote |
 
 A clicker sends Page Down and Page Up, which always work. While you are typing in a demo phone,
 Space, Enter and the arrow keys belong to the text field and do not move the talk.
 
+On a touch screen with no keyboard, tap the right two thirds of the stage for next and the left
+third for back. Taps on a demo's buttons and fields do their own job and do not turn the page.
+
 Pressing next while a step is still animating finishes that step immediately and plays the one
 after. Going back never animates. The address bar always holds the current scene and step, so
 reloading the page returns to exactly where you were.
+
+### The presenter remote
+
+Your phone can show the note for what is on stage, the note for the next click, a timer, and
+large Next and Back buttons.
+
+1. Open the talk on the presenting computer by an address your phone can also reach (see
+   below), and press R. A QR code appears.
+2. Scan it with the phone. The code closes by itself once the phone has joined.
+3. Present. The timer starts on your first Next; tap it to reset it.
+
+Anyone who scans the code can drive the slides, so pair before the audience can see the screen.
+The code holds a random token and nothing works without it. "New code" in the pairing panel
+makes a new token and cuts off any phone holding the old one. Reloading the stage keeps the
+pairing. The keyboard and a clicker carry on working exactly as before, and the phone follows
+them.
+
+The demos stay on the laptop: the remote can step past a demo, but cannot type into it.
+
+The phone has to reach whatever serves the talk, which is the fragile part at a venue.
+Conference Wi-Fi often blocks one device from talking to another, and a tunnel needs internet at
+both ends. The dependable arrangement is the laptop joined to the phone's hotspot, the talk
+started with `TALK_BIND=0.0.0.0`, opened on the laptop by its address on that network, and a
+clicker in your pocket in case.
 
 ## Layout
 
@@ -128,6 +156,10 @@ The message endpoints come in three versions, one per stage of the talk:
 
 None of the endpoints check who is asking. That is part of the demonstration.
 
+`/api/remote` is separate from the chat app: it relays the slide position and next/back between
+the stage and a paired phone (`server/src/remote.ts`), over Server-Sent Events, and does need
+the pairing token.
+
 Outside Docker the database is `server/data/db.json` (`WHISPER_DB` moves it). It is created on
 first run and is not committed. "Reset" in
 a demo's header empties it and clears the keys held in the browser.
@@ -139,6 +171,8 @@ a demo's header empties it and clears the keys held in the browser.
 - `src/engine/` is the stage. `Deck.tsx` handles navigation; `motion.ts` is the vocabulary scenes
   use to move things (`show`, `pop`, `fly` along a Bézier curve, `along` a route, and so on).
 - `src/scenes/` holds the talk. `index.tsx` lists the scenes in order.
+- `src/remote/` is the presenter remote: the pairing panel on the stage and the phone page, which
+  is this same app opened with `?remote=<token>`.
 - `src/demo/` is the chat app. `protocols.ts` defines what a phone does to a message at each
   stage; the phone and the server inspector are shared by every demo.
 
