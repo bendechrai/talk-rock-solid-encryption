@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 548 540" fill="none">
+  <!-- A line that runs flat, then leaves the top of its chart. The scene draws it from left to right. -->
+  <path id="why-chart-line" pathLength="1" d="M28 508H300C420 508 452 470 470 400S498 170 508 70" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path id="why-chart-head" d="M512 14L474 80L546 86Z" fill="currentColor" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/>
+</svg>

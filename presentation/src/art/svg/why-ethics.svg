@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- The beam and the two pans are separate groups so the scene can swing them. -->
+  <g stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M100 24v152M60 178h80"/>
+    <g id="scales-beam"><path d="M36 52h128"/></g>
+  </g>
+  <g stroke="#93A1BA" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <g id="scales-left"><path d="M36 52l-24 62M36 52l24 62M10 114a26 26 0 0 0 52 0z"/></g>
+    <g id="scales-right"><path d="M164 52l-24 62M164 52l24 62M138 114a26 26 0 0 0 52 0z"/></g>
+  </g>
+</svg>

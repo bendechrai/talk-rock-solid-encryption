@@ -13,7 +13,7 @@ import {
   Actor, Art, Character, CipherChip, Flow, Label, Laptop, PlainChip, ScreenCipher, ScreenMessage, Server,
   type ActorProps,
 } from '../art/index.tsx';
-import { CodeCard, SceneTitle } from '../art/html.tsx';
+import { CodeCard, Icon, SceneTitle } from '../art/html.tsx';
 import { Svg } from '../engine/Stage.tsx';
 import { fly, hide, moveTo, pop, pulse, show, swap } from '../engine/motion.ts';
 import type { Scene, Timeline } from '../engine/types.ts';
@@ -58,11 +58,11 @@ const title: Scene = {
 // ---------------------------------------------------------------------------------------------
 
 const BIO = [
-  { age: '12', did: 'Coding' },
-  { age: '15', did: 'Breaking software' },
-  { age: '18', did: 'Advocating for security and privacy' },
-  { age: '25', did: 'Running tech events' },
-  { age: '40', did: 'Set my hair on fire at a tech festival' },
+  { age: '12', art: 'bio-coding', did: 'Coding' },
+  { age: '15', art: 'bio-breaking', did: 'Breaking software' },
+  { age: '18', art: 'bio-advocating', did: 'Advocating for security and privacy' },
+  { age: '25', art: 'bio-events', did: 'Running tech events' },
+  { age: '40', art: 'bio-fire', did: 'Set my hair on fire at a tech festival' },
 ];
 
 function BioView() {
@@ -73,6 +73,7 @@ function BioView() {
       <ol className="opening-bio">
         {BIO.map((row, index) => (
           <li key={row.age} id={`bio-${index}`} style={{ opacity: 0 }}>
+            <Icon name={row.art} size={96} tint={color.text} />
             <span className="opening-bio-age">{row.age}</span>
             {row.did}
           </li>
@@ -120,30 +121,22 @@ const bio: Scene = {
 // Three things that are certain in life
 // ---------------------------------------------------------------------------------------------
 
-const CERTAIN = [
-  { id: 'phishing', art: 'opening-phishing', text: 'Phishing' },
-  { id: 'theft', art: 'opening-data-theft', text: 'Data theft' },
-  { id: 'authority', art: 'opening-authoritarianism', text: 'Authoritarianism' },
-];
-
 function CertainView() {
   return (
     <>
-      <Svg>
-        {CERTAIN.map((thing, index) => {
-          const x = 80 + index * 600;
-          return (
-            <g key={thing.id} id={`certain-${thing.id}`} opacity={0}>
-              <rect x={x} y={300} width={560} height={640} rx={36} fill={color.panel} stroke={color.line} strokeWidth={2} />
-              <g transform={`translate(${x + 115} 362) scale(1.65)`}>
-                <Art name={thing.art} tint={color.text} />
-              </g>
-              <text x={x + 280} y={848} textAnchor="middle" fontSize={58} fontWeight={700} fill={color.text}>{thing.text}</text>
-            </g>
-          );
-        })}
-      </Svg>
       <SceneTitle>There are three things<br />that are certain in life</SceneTitle>
+      <figure className="certain-item" id="certain-phishing" style={{ left: 80, opacity: 0 }}>
+        <Icon name="opening-phishing" size={400} tint={color.text} />
+        <figcaption>Phishing</figcaption>
+      </figure>
+      <figure className="certain-item" id="certain-theft" style={{ left: 680, opacity: 0 }}>
+        <Icon name="opening-data-theft" size={560} tint={color.text} />
+        <figcaption>Data theft</figcaption>
+      </figure>
+      <figure className="certain-item" id="certain-authority" style={{ left: 1280, opacity: 0 }}>
+        <Icon name="opening-authoritarianism" size={400} tint={color.text} />
+        <figcaption>Authoritarianism</figcaption>
+      </figure>
     </>
   );
 }
@@ -154,12 +147,29 @@ const certain: Scene = {
   notes: 'We will start at the beginning. There are three things that are certain in life. Does anybody know this quote? It is not the one you think.',
   View: CertainView,
   steps: [
-    { notes: 'Phishing.', build: (tl) => { pop(tl, '#certain-phishing'); } },
-    { notes: 'Data theft.', build: (tl) => { pop(tl, '#certain-theft'); } },
     {
       notes:
-        'And, because it is topical, authoritarianism. These are what we face day to day as software engineers while we try to keep our users, and their data, safe.',
-      build: (tl) => { pop(tl, '#certain-authority'); },
+        'Phishing. Data theft. And, because it is topical, authoritarianism. These are what we face day to day as software engineers while we try to keep our users, and their data, safe.',
+      build: (tl) => {
+        // All three start together.
+        // The bait is lowered in and swings on the line until it hangs still.
+        show(tl, '#certain-phishing');
+        tl.fromTo('#phish-rig', { rotation: 22, svgOrigin: '112 14' }, { rotation: -13, duration: 0.5, ease: 'sine.inOut', immediateRender: false }, '<');
+        [8, -5, 2, 0].forEach((degrees) => tl.to('#phish-rig', { rotation: degrees, duration: 0.45, ease: 'sine.inOut' }));
+
+        // The middle of the database is whipped out sideways, and what was on top drops into the gap.
+        pop(tl, '#certain-theft', 0);
+        tl.to('#theft-mid', { x: 158, stroke: cast.eve.color, duration: 0.3, ease: 'power3.in' }, '>0.25');
+        tl.to('#theft-top', { y: 46, duration: 0.5, ease: 'bounce.out' }, '>-0.05');
+
+        // The eye opens, looks both ways, then settles on the audience and blinks.
+        show(tl, '#certain-authority', 0, 0.2);
+        tl.fromTo('#eye', { scaleY: 0.04, svgOrigin: '100 100' }, { scaleY: 1, duration: 0.45, ease: 'power2.out', immediateRender: false }, '<');
+        tl.to('#eye-iris', { x: -34, duration: 0.3, ease: 'power2.inOut' }, '>0.15');
+        tl.to('#eye-iris', { x: 34, duration: 0.45, ease: 'power2.inOut' }, '>0.2');
+        tl.to('#eye-iris', { x: 0, duration: 0.3, ease: 'power2.inOut' }, '>0.2');
+        tl.to('#eye', { scaleY: 0.06, duration: 0.09, ease: 'power1.in', yoyo: true, repeat: 1 }, '>0.15');
+      },
     },
   ],
 };
@@ -172,32 +182,62 @@ function WhyView() {
   return (
     <>
       <SceneTitle>Why do we need encryption?</SceneTitle>
-      <div className="opening-why">
-        <div className="opening-why-row" id="why-regulation" style={{ opacity: 0 }}>
-          <div className="opening-why-reason">Regulatory requirements<small>GDPR, CCPA, etc.</small></div>
-          <div className="opening-why-facts">
-            <div className="opening-why-fact"><b>€20M</b><span>or 4% of global turnover:<br />the ceiling for a GDPR fine</span></div>
-          </div>
+
+      <section className="why-item why-regulation" id="why-regulation" style={{ opacity: 0 }}>
+        <div className="why-sheet why-notice" id="why-notice">
+          <div className="why-notice-head">Penalty notice</div>
+          <i className="why-lines" />
+          <p>up to</p>
+          <div className="why-stamp" id="why-stamp" style={{ opacity: 0 }}><span>GDPR</span>€20M</div>
+          <p className="why-notice-foot">or 4% of<br />global turnover</p>
         </div>
-        <div className="opening-why-row" id="why-reputation" style={{ opacity: 0 }}>
-          <div className="opening-why-reason">Company reputation<br />and PR risk</div>
-          <div className="opening-why-facts">
-            <div className="opening-why-fact"><b>$4.4M</b><span>ransom paid by<br />Colonial Pipeline, 2021</span></div>
-          </div>
+        <h2>Regulatory requirements<small>GDPR, CCPA, etc.</small></h2>
+      </section>
+
+      <section className="why-item why-reputation" id="why-reputation" style={{ opacity: 0 }}>
+        <div className="why-sheet why-paper" id="why-paper">
+          <div className="why-paper-masthead">Daily Breach</div>
+          <div className="why-paper-headline">$4.4M</div>
+          <div className="why-paper-kicker">RANSOM PAID</div>
+          <p className="why-paper-story">Colonial Pipeline, 2021</p>
+          <div className="why-paper-columns"><i /><i className="why-lines" /></div>
         </div>
-        <div className="opening-why-row" id="why-trust" style={{ opacity: 0 }}>
-          <div className="opening-why-reason">User trust<br />and expectations</div>
-          <div className="opening-why-facts">
-            <div className="opening-why-fact"><b>$100K</b><span>paid by Uber to hide a breach</span></div>
-            <div className="opening-why-fact"><b>+4,200%</b><span>Signal downloads in one week</span></div>
-          </div>
+        <h2>Company reputation<br />and PR risk</h2>
+      </section>
+
+      <section className="why-item why-trust" id="why-trust" style={{ opacity: 0 }}>
+        <div className="why-chart" id="why-chart" style={{ opacity: 0 }}>
+          <b className="why-figure" id="why-chart-figure">+4,200%</b>
+          Signal downloads<br />in one week
         </div>
-        <div className="opening-why-row" id="why-ethics" style={{ opacity: 0 }}>
-          <div className="opening-why-reason" style={{ width: 'auto' }}>Legal and ethical obligations</div>
+        <Icon name="why-chart" size={548} tint={color.text} />
+        <div className="why-envelope" id="why-envelope" style={{ opacity: 0 }}>
+          <Icon name="why-envelope" size={440} />
+          <div><b className="why-figure">$100K</b>paid by Uber to<br />hide a breach</div>
         </div>
-      </div>
+        <h2>User trust and expectations</h2>
+      </section>
+
+      <section className="why-item why-ethics" id="why-ethics" style={{ opacity: 0 }}>
+        <Icon name="why-ethics" size={300} tint={color.text} />
+        <h2>Legal and ethical obligations</h2>
+      </section>
     </>
   );
+}
+
+/** Tip the scales, then let them swing until they sit level. */
+function settleScales(tl: Timeline) {
+  /** Half the length of the beam, in the drawing's own units. */
+  const arm = 64;
+  const swing = (degrees: number, duration: number, at?: string) => {
+    const drop = arm * Math.sin((degrees * Math.PI) / 180);
+    tl.to('#scales-beam', { rotation: degrees, svgOrigin: '100 52', duration, ease: 'sine.inOut' }, at);
+    tl.to('#scales-left', { y: -drop, duration, ease: 'sine.inOut' }, '<');
+    tl.to('#scales-right', { y: drop, duration, ease: 'sine.inOut' }, '<');
+  };
+  swing(16, 0.01, '<');
+  [-11, 7, -4, 2, 0].forEach((degrees) => swing(degrees, 0.42));
 }
 
 const why: Scene = {
@@ -209,21 +249,42 @@ const why: Scene = {
     {
       notes:
         'We might be forced to: regulatory requirements. In Europe, GDPR; plenty of others. (They also clash: the right to be forgotten.) GDPR fines can reach 20 million euros or 4% of global revenue, whichever is higher.',
-      build: (tl) => { show(tl, '#why-regulation'); },
+      build: (tl) => {
+        // The notice lands on the desk, then gets stamped hard enough to make it jump.
+        show(tl, '#why-regulation');
+        tl.fromTo('#why-notice', { y: -90, rotation: -16 }, { y: 0, rotation: -3, duration: 0.55, ease: 'back.out(1.4)', immediateRender: false }, '<');
+        tl.fromTo('#why-stamp', { opacity: 0, scale: 3.4, rotation: -32 }, { opacity: 1, scale: 1, rotation: -10, duration: 0.2, ease: 'power3.in', immediateRender: false }, '+=0.2');
+        tl.to('#why-notice', { scale: 0.95, duration: 0.07, ease: 'power1.out', yoyo: true, repeat: 1 });
+      },
     },
     {
       notes:
         'Company reputation and PR risk. In 2021 Colonial Pipeline paid 4.4 million dollars in ransom after their data was encrypted and held to ransom. That obviously affected them.',
-      build: (tl) => { show(tl, '#why-reputation'); },
+      build: (tl) => {
+        // The front page spins up to the camera, the way bad news does in old films.
+        show(tl, '#why-reputation', undefined, 0.2);
+        tl.fromTo('#why-paper', { rotation: -1077.5, scale: 0.04 }, { rotation: 2.5, scale: 1, duration: 1, ease: 'power2.out', immediateRender: false }, '<');
+      },
     },
     {
       notes:
         'User trust and expectations. Uber paid a 100,000 dollar ransom after a 2016 data breach and then tried to hide it: not great for trust. Signal downloads grew about 4,200% in a week after the WhatsApp privacy changes of January 2021.',
-      build: (tl) => { show(tl, '#why-trust'); },
+      build: (tl) => {
+        // The envelope is slid across the table; then the downloads leave the top of the chart.
+        show(tl, '#why-trust', undefined, 0.2);
+        tl.fromTo('#why-envelope', { opacity: 0, x: -280, rotation: -26 }, { opacity: 1, x: 0, rotation: -4, duration: 0.6, ease: 'power3.out', immediateRender: false }, '<');
+        show(tl, '#why-chart', '+=0.5');
+        tl.to('#why-chart-line', { strokeDashoffset: 0, duration: 0.9, ease: 'power2.in' }, '<0.1');
+        pop(tl, '#why-chart-head', '>-0.05');
+        pulse(tl, '#why-chart-figure', '<');
+      },
     },
     {
       notes: 'And legal and ethical obligations. (The Melbourne recording has no narration for this one: the screen flickered here.)',
-      build: (tl) => { show(tl, '#why-ethics'); },
+      build: (tl) => {
+        show(tl, '#why-ethics');
+        settleScales(tl);
+      },
     },
   ],
 };

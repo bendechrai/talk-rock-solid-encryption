@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-  <g stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M8 100Q100 14 192 100Q100 186 8 100z"/>
-    <circle cx="100" cy="100" r="36"/>
+  <!-- An eye. The iris sits behind a clip the shape of the eye, so the scene can make it look around. -->
+  <clipPath id="eye-clip"><path d="M8 100Q100 14 192 100Q100 186 8 100z"/></clipPath>
+  <g id="eye">
+    <g clip-path="url(#eye-clip)">
+      <g id="eye-iris">
+        <circle cx="100" cy="100" r="36" stroke="currentColor" stroke-width="10"/>
+        <circle cx="100" cy="100" r="15" fill="#FF6B5E"/>
+      </g>
+    </g>
+    <path d="M8 100Q100 14 192 100Q100 186 8 100z" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <circle cx="100" cy="100" r="15" fill="#FF6B5E"/>
 </svg>

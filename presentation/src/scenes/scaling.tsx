@@ -30,10 +30,14 @@ function pairId(a: Who, b: Who): string {
   return `scale-pair-${a}-${b}`;
 }
 
-/** A two-colour paint for things a pair of people share. Put it in the scene's <defs>. */
+/**
+ * A two-colour paint for things a pair of people share. Put it in the scene's <defs>. The split
+ * is a slash through the middle, so on a two-digit number it cuts across both digits and cannot be
+ * read as one colour per digit.
+ */
 function PairPaint({ a, b }: { a: Who; b: Who }) {
   return (
-    <linearGradient id={pairId(a, b)} x1="0" x2="1" y1="0" y2="0">
+    <linearGradient id={pairId(a, b)} x1="0.25" y1="0" x2="0.75" y2="1">
       <stop offset="0" stopColor={cast[a].color} />
       <stop offset="0.5" stopColor={cast[a].color} />
       <stop offset="0.5" stopColor={cast[b].color} />

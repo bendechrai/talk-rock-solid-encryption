@@ -62,7 +62,7 @@
 .scaling-banner .secret {
   font-weight: 700;
   color: transparent;
-  background: linear-gradient(90deg, #ffb627 50%, #a78bfa 50%);
+  background: linear-gradient(155deg, #ffb627 50%, #a78bfa 50%);
   -webkit-background-clip: text;
   background-clip: text;
 }

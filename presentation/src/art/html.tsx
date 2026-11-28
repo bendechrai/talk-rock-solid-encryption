@@ -1,5 +1,17 @@
 /** Things on stage that are HTML rather than SVG: titles and code. Animate them by id like any actor. */
 import type { CSSProperties, ReactNode } from 'react';
+import { asset } from './assets.ts';
+import { Art } from './index.tsx';
+
+/** One of the drawings from ./svg, sized for use beside HTML text. `tint` sets its main colour. */
+export function Icon({ name, size, tint }: { name: string; size: number; tint?: string }) {
+  const { width, height } = asset(name);
+  return (
+    <svg className="icon" width={size} height={(size * height) / width} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+      <Art name={name} tint={tint} />
+    </svg>
+  );
+}
 
 export function SceneTitle({ children }: { children: ReactNode }) {
   return <h1 className="scene-title">{children}</h1>;
