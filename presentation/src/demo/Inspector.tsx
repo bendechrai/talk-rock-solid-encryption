@@ -13,6 +13,7 @@ import { api } from './api.ts';
 import { keystore, useEphemeral, useIdentity } from './keystore.ts';
 import { Badge, KeyGlyph, LockGlyph } from './Phone.tsx';
 import type { Protocol } from './protocols.ts';
+import { useShared, useSharedScroll } from './shared.ts';
 import { usePolling } from './usePolling.ts';
 
 type Tab = 'messages' | 'chats' | 'keys' | 'api' | 'devices' | 'decrypt';
@@ -95,7 +96,7 @@ function describe(content: string): { label: string; kind: 'plain' | 'cipher' } 
 }
 
 function MessageCard({ message, conversations }: { message: StoredMessage; conversations: Conversation[] }) {
-  const [raw, setRaw] = useState(false);
+  const [raw, setRaw] = useShared(`raw:${message.id}`, false);
   const { label, kind } = describe(message.content);
   const chat = conversations.find((c) => c.id === message.conversationId);
   return (
@@ -222,8 +223,8 @@ function KeysTab({ data, protocol }: { data: DatabaseSnapshot; protocol: Protoco
 // ---- API ----------------------------------------------------------------------------------
 
 function ApiTab({ protocol }: { protocol: Protocol }) {
-  const [path, setPath] = useState(`/api/${protocol.version}/conversations/1/messages`);
-  const [result, setResult] = useState('');
+  const [path, setPath] = useShared('api-path', `/api/${protocol.version}/conversations/1/messages`);
+  const [result, setResult] = useShared('api-result', '');
   const run = async () => setResult(await api.raw(path).catch((e) => String(e)));
   return (
     <form className="tool" onSubmit={(e) => { e.preventDefault(); void run(); }}>
@@ -251,7 +252,7 @@ function DeviceCard({ who, protocol, conversations }: { who: Who; protocol: Prot
   const member = cast[who];
   const identity = useIdentity(member.id);
   const ephemeralKeys = useEphemeral(member.id);
-  const [reveal, setReveal] = useState(false);
+  const [reveal, setReveal] = useShared(`reveal:${who}`, false);
   const now = useNow();
   return (
     <li className="card">
@@ -297,9 +298,9 @@ function DeviceCard({ who, protocol, conversations }: { who: Who; protocol: Prot
 
 function DecryptTab({ protocol }: { protocol: Protocol }) {
   const serverSide = protocol.version === 'v2';
-  const [key, setKey] = useState(serverSide ? 'super-secret-encryption-key' : '');
-  const [content, setContent] = useState('');
-  const [result, setResult] = useState<{ ok: boolean; text: string }>();
+  const [key, setKey] = useShared('decrypt-key', serverSide ? 'super-secret-encryption-key' : '');
+  const [content, setContent] = useShared('decrypt-content', '');
+  const [result, setResult] = useShared<{ ok: boolean; text: string } | undefined>('decrypt-result', undefined);
 
   const attempt = async () => {
     try {
@@ -343,7 +344,8 @@ function DecryptTab({ protocol }: { protocol: Protocol }) {
 // ---- The inspector itself ----------------------------------------------------------------------
 
 export function Inspector({ protocol }: { protocol: Protocol }) {
-  const [tab, setTab] = useState<Tab>('messages');
+  const [tab, setTab] = useShared<Tab>('tab', 'messages');
+  const body = useSharedScroll<HTMLDivElement>(`scroll:${tab}`);
   const { data, refresh } = usePolling(api.database, 1000);
 
   const tabs: [Tab, string][] = [
@@ -364,7 +366,7 @@ export function Inspector({ protocol }: { protocol: Protocol }) {
           </button>
         ))}
       </div>
-      <div className="inspector-body">
+      <div className="inspector-body" ref={body}>
         {!data ? <p className="muted">Waiting for the server…</p> : (
           <>
             {tab === 'messages' && <MessagesTab data={data} />}
@@ -386,7 +388,7 @@ export function Inspector({ protocol }: { protocol: Protocol }) {
 
 /** Empty the database and every device's keys. Asks twice, because it cannot be undone mid-talk. */
 export function ResetButton() {
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, setConfirming] = useShared('confirming', false);
   const reset = async () => {
     if (!confirming) {
       setConfirming(true);

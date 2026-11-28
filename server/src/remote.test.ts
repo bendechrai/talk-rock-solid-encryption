@@ -50,14 +50,14 @@ test('remote: the stage and a phone hear each other through the token', async ()
   const { post, listen } = setup();
   const stage = await listen(TOKEN, 'stage');
   assert.equal(stage.status, 200);
-  assert.deepEqual(await stage.next('presence'), { stages: 1, remotes: 0 });
+  assert.deepEqual(await stage.next('presence'), { stages: 1, remotes: 0, audience: 0 });
 
   assert.equal(await post(`/api/remote/${TOKEN}/position`, { scene: 'e2e', step: 3 }), 200);
 
   // A phone that joins later is told where the stage already is.
   const phone = await listen(TOKEN, 'remote');
-  assert.deepEqual(await phone.next('position'), { scene: 'e2e', step: 3 });
-  assert.deepEqual(await stage.next('presence'), { stages: 1, remotes: 1 });
+  assert.deepEqual(await phone.next('position'), { scene: 'e2e', step: 3, audienceCode: false });
+  assert.deepEqual(await stage.next('presence'), { stages: 1, remotes: 1, audience: 0 });
 
   assert.equal(await post(`/api/remote/${TOKEN}/command`, { action: 'next' }), 200);
   assert.deepEqual(await stage.next('command'), { action: 'next' });
@@ -66,10 +66,40 @@ test('remote: the stage and a phone hear each other through the token', async ()
   assert.deepEqual(await stage.next('command'), { action: 'goto', scene: 'demo-1', step: 0 });
 
   assert.equal(await post(`/api/remote/${TOKEN}/position`, { scene: 'e2e', step: 4 }), 200);
-  assert.deepEqual(await phone.next('position'), { scene: 'e2e', step: 4 });
+  assert.deepEqual(await phone.next('position'), { scene: 'e2e', step: 4, audienceCode: false });
 
   stage.close();
   phone.close();
+});
+
+test('remote: the audience can follow with its own token, and can do nothing else', async () => {
+  const { post, listen } = setup();
+  const stage = await listen(TOKEN, 'stage');
+  const { token: follow } = (await stage.next('follow')) as { token: string };
+  assert.notEqual(follow, TOKEN);
+  await stage.next('presence');
+  assert.equal(await post(`/api/remote/${TOKEN}/position`, { scene: 'e2e', step: 1, audienceCode: true }), 200);
+
+  const follower = await listen(follow, 'audience');
+  assert.equal(follower.status, 200);
+  assert.deepEqual(await follower.next('position'), { scene: 'e2e', step: 1, audienceCode: true });
+  assert.deepEqual(await stage.next('presence'), { stages: 1, remotes: 0, audience: 1 });
+
+  // The follow token does not drive the talk, report a position, or open the presenter's stream.
+  assert.equal(await post(`/api/remote/${follow}/command`, { action: 'next' }), 404);
+  assert.equal(await post(`/api/remote/${follow}/position`, { scene: 'e2e', step: 9 }), 404);
+  assert.equal((await listen(follow, 'remote')).status, 404);
+  // Nor does the presenter's token work as a follow token.
+  assert.equal((await listen(TOKEN, 'audience')).status, 404);
+
+  assert.equal(await post(`/api/remote/${TOKEN}/command`, { action: 'audience-code' }), 200);
+  assert.deepEqual(await stage.next('command'), { action: 'audience-code' });
+
+  assert.equal(await post(`/api/remote/${TOKEN}/position`, { scene: 'e2e', step: 2 }), 200);
+  assert.deepEqual(await follower.next('position'), { scene: 'e2e', step: 2, audienceCode: false });
+
+  stage.close();
+  follower.close();
 });
 
 test('remote: nothing works without a token a stage has opened', async () => {
@@ -78,7 +108,8 @@ test('remote: nothing works without a token a stage has opened', async () => {
   assert.equal(await post(`/api/remote/${TOKEN}/position`, { scene: 'e2e', step: 1 }), 404);
   assert.equal((await listen(TOKEN, 'remote')).status, 404);
   assert.equal((await listen('short', 'stage')).status, 400);
-  assert.equal((await listen(TOKEN, 'audience')).status, 400);
+  assert.equal((await listen(TOKEN, 'audience')).status, 404);
+  assert.equal((await listen(TOKEN, 'nobody')).status, 400);
 });
 
 test('remote: rejects malformed positions and commands', async () => {

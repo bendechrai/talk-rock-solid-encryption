@@ -1,24 +1,36 @@
 /**
  * The line between the stage and a presenter's phone. Both sides open an event stream on the
- * server named after a random token; see `server/src/remote.ts` for the relay.
+ * server named after a random token; see `server/src/remote.ts` for the relay. The audience can
+ * follow on a second token that only listens.
  */
 
 export interface RemotePosition {
   /** A scene id, as in the address bar. */
   scene: string;
   step: number;
+  /** True while the stage is showing the room the code for following along. */
+  audienceCode?: boolean;
 }
 
-export type RemoteCommand = { action: 'next' } | { action: 'previous' } | { action: 'goto'; scene: string; step: number };
+export type RemoteCommand =
+  | { action: 'next' }
+  | { action: 'previous' }
+  | { action: 'goto'; scene: string; step: number }
+  /** Show or hide the code the audience scans to follow along. */
+  | { action: 'audience-code' };
 
 export interface Presence {
   stages: number;
+  /** Phones and notes windows. */
   remotes: number;
+  /** People following along. */
+  audience: number;
 }
 
-export type Role = 'stage' | 'remote';
+export type Role = 'stage' | 'remote' | 'audience';
 
 const PARAM = 'remote';
+const FOLLOW = 'follow';
 
 /** 192 random bits, written so they survive a URL. */
 export function newToken(): string {
@@ -35,6 +47,20 @@ export function tokenFromUrl(): string | null {
   return new URLSearchParams(window.location.search).get(PARAM);
 }
 
+/** The address the audience opens to follow the talk on their own screen. */
+export function followUrl(follow: string): string {
+  return `${window.location.origin}${window.location.pathname}?${FOLLOW}=${follow}`;
+}
+
+export function followFromUrl(): string | null {
+  return new URLSearchParams(window.location.search).get(FOLLOW);
+}
+
+/** True when this page was opened by an address no other device can use. */
+export function onlyLocal(): boolean {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+}
+
 function parse<T>(event: Event): T | null {
   try {
     return JSON.parse((event as MessageEvent<string>).data) as T;
@@ -48,6 +74,8 @@ export interface Handlers {
   onPosition?: (position: RemotePosition) => void;
   onCommand?: (command: RemoteCommand) => void;
   onPresence?: (presence: Presence) => void;
+  /** The stage is told the token its audience can follow on. */
+  onFollow?: (follow: string) => void;
 }
 
 /**
@@ -73,6 +101,10 @@ export function listen(token: string, role: Role, handlers: Handlers): () => voi
     source.addEventListener('presence', (event) => {
       const presence = parse<Presence>(event);
       if (presence) handlers.onPresence?.(presence);
+    });
+    source.addEventListener('follow', (event) => {
+      const follow = parse<{ token: string }>(event);
+      if (follow) handlers.onFollow?.(follow.token);
     });
     source.addEventListener('error', () => {
       handlers.onConnected?.(false);

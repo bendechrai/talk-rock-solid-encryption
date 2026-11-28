@@ -8,8 +8,8 @@
 import gsap from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { RemoteCommand } from '../remote/link.ts';
-import { Pairing } from '../remote/Pairing.tsx';
+import { AudienceCode } from '../remote/AudienceCode.tsx';
+import { listen, remoteUrl, type RemoteCommand, type RemotePosition } from '../remote/link.ts';
 import { useStageRemote } from '../remote/useStageRemote.ts';
 import { Stage } from './Stage.tsx';
 import type { Position, Scene } from './types.ts';
@@ -43,11 +43,25 @@ function isControl(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && ['BUTTON', 'A', 'SUMMARY'].includes(target.tagName);
 }
 
-export function Deck({ scenes }: { scenes: Scene[] }) {
-  const [position, setPosition] = useState<Position>(() => fromHash(scenes));
+/**
+ * The talk. With `follow`, it is a copy on an audience member's own screen: it goes wherever the
+ * stage goes, and has none of the presenter's tools. With `mirror`, it is the copy inside the
+ * presenter's notes window: it shows the place it is given and never moves by itself, so every key
+ * and click belongs to whatever is on the slide.
+ */
+export function Deck({ scenes, follow, mirror, still = false }: {
+  scenes: Scene[]; follow?: string; mirror?: RemotePosition | null;
+  /** With `mirror`: jump to each place instead of playing the step that leads to it. */
+  still?: boolean;
+}) {
+  const copy = follow !== undefined || mirror !== undefined;
+  const fixed = mirror !== undefined;
+  // A copy inside the notes window leaves the address bar alone: there are two of them in it.
+  const [position, setPosition] = useState<Position>(() => (mirror !== undefined ? { scene: 0, step: 0 } : fromHash(scenes)));
   const [blank, setBlank] = useState(false);
-  const [showNotes, setShowNotes] = useState(false);
-  const [pairing, setPairing] = useState(false);
+  /** Set when the browser refused to open the notes window, to offer it as a link instead. */
+  const [notesBlocked, setNotesBlocked] = useState(false);
+  const [audienceCode, setAudienceCode] = useState(false);
 
   const stage = useRef<HTMLDivElement>(null);
   const current = useRef(position);
@@ -74,6 +88,8 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
     animateNext.current = animate;
     current.current = target;
     setPosition(target);
+    // The code for following along is for a pause, such as the title slide; moving on puts it away.
+    setAudienceCode(false);
   }, [scenes]);
 
   const next = useCallback(() => {
@@ -92,19 +108,46 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
   const onCommand = useCallback((command: RemoteCommand) => {
     if (command.action === 'next') next();
     else if (command.action === 'previous') previous();
+    else if (command.action === 'audience-code') setAudienceCode((value) => !value);
     else {
       const index = scenes.findIndex((s) => s.id === command.scene);
       if (index !== -1) moveTo({ scene: index, step: command.step });
     }
   }, [scenes, next, previous, moveTo]);
-  const remote = useStageRemote({ scene: scene.id, step: position.step }, onCommand);
+  const remote = useStageRemote({ scene: scene.id, step: position.step, audienceCode }, onCommand, !copy);
   const { pair } = remote;
 
-  // The code is on screen only until a phone has it.
-  const paired = remote.remotes > 0;
+  // An audience member's copy goes where the stage goes. They can still page around by themselves;
+  // the stage's next move brings them back.
   useEffect(() => {
-    if (paired) setPairing(false);
-  }, [paired]);
+    if (!follow) return;
+    return listen(follow, 'audience', {
+      onPosition: (place) => {
+        const index = scenes.findIndex((s) => s.id === place.scene);
+        if (index === -1) return;
+        const { scene: s, step } = current.current;
+        moveTo({ scene: index, step: place.step }, index === s && place.step === step + 1);
+      },
+    });
+  }, [follow, scenes, moveTo]);
+
+  // The copy in the notes window is put wherever that window says.
+  const mirrorScene = mirror?.scene;
+  const mirrorStep = mirror?.step;
+  useEffect(() => {
+    if (mirrorScene === undefined || mirrorStep === undefined) return;
+    const index = scenes.findIndex((s) => s.id === mirrorScene);
+    if (index === -1) return;
+    const { scene: s, step } = current.current;
+    moveTo({ scene: index, step: mirrorStep }, !still && index === s && mirrorStep === step + 1);
+  }, [mirrorScene, mirrorStep, scenes, moveTo, still]);
+
+  // The notes window is the remote's own page, opened on this computer. A phone is paired from
+  // inside it, so the code that controls the talk is never put on the stage.
+  const openNotes = useCallback(() => {
+    const opened = window.open(remoteUrl(pair()), 'talk-notes', 'popup,width=1440,height=900');
+    setNotesBlocked(!opened);
+  }, [pair]);
 
   // Compile the scene's steps into one timeline whenever the scene changes.
   useLayoutEffect(() => {
@@ -152,19 +195,21 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
 
   // Keep the URL in step with the stage, and follow the URL if it is edited.
   useEffect(() => {
+    if (fixed) return;
     const hash = `#/${scene.id}/${position.step}`;
     if (window.location.hash !== hash) window.history.replaceState(null, '', hash);
-  }, [scene, position.step]);
+  }, [scene, position.step, fixed]);
 
   useEffect(() => {
+    if (fixed) return;
     const onHashChange = () => moveTo(fromHash(scenes));
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
-  }, [scenes, moveTo]);
+  }, [scenes, moveTo, fixed]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (fixed || event.metaKey || event.ctrlKey || event.altKey) return;
       const typing = isTyping(event.target);
       const onControl = isControl(event.target);
       let handled = true;
@@ -181,8 +226,8 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
         case 'End': if (typing) return; moveTo({ scene: scenes.length - 1, step: Infinity }); break;
         // Many clickers have a "blank screen" button that sends B or a full stop.
         case 'b': case 'B': case '.': if (typing) return; setBlank((value) => !value); break;
-        case 'n': case 'N': if (typing) return; setShowNotes((value) => !value); break;
-        case 'r': case 'R': if (typing) return; pair(); setPairing((value) => !value); break;
+        case 's': case 'S': if (typing || copy) return; openNotes(); break;
+        case 'a': case 'A': if (typing || copy) return; pair(); setAudienceCode((value) => !value); break;
         case 'f': case 'F':
           if (typing) return;
           if (document.fullscreenElement) void document.exitFullscreen();
@@ -194,13 +239,13 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [scenes, next, previous, moveTo, pair]);
+  }, [scenes, next, previous, moveTo, pair, openNotes, copy, fixed]);
 
   // On a touch screen with no keyboard, a tap on the right two thirds advances and a tap on the
   // left third goes back. Mice are left alone: the demos are full of things to click.
   useEffect(() => {
     const element = stage.current;
-    if (!element) return;
+    if (!element || fixed) return;
     let down: { x: number; y: number; time: number } | null = null;
     const onPointerDown = (event: PointerEvent) => {
       down = event.pointerType === 'touch' && event.isPrimary ? { x: event.clientX, y: event.clientY, time: event.timeStamp } : null;
@@ -221,9 +266,8 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
       element.removeEventListener('pointerdown', onPointerDown);
       element.removeEventListener('pointerup', onPointerUp);
     };
-  }, [next, previous]);
+  }, [next, previous, fixed]);
 
-  const notes = position.step === 0 ? scene.notes : scene.steps[position.step - 1]?.notes;
 
   return (
     <>
@@ -235,15 +279,14 @@ export function Deck({ scenes }: { scenes: Scene[] }) {
           {position.scene + 1}/{scenes.length} · {position.step}/{scene.steps.length}
         </div>
       </Stage>
-      {showNotes && (
-        <aside className="notes">
-          <strong>{scene.title}</strong>
-          <p>{notes ?? 'No notes for this step.'}</p>
+      {notesBlocked && remote.token && (
+        <aside className="notes-blocked" data-presenter>
+          The browser blocked the notes window.
+          <a href={remoteUrl(remote.token)} target="talk-notes" rel="opener" onClick={() => setNotesBlocked(false)}>Open the notes</a>
+          <button type="button" onClick={() => setNotesBlocked(false)}>Dismiss</button>
         </aside>
       )}
-      {pairing && remote.token && (
-        <Pairing token={remote.token} remotes={remote.remotes} onRenew={remote.renew} onClose={() => setPairing(false)} />
-      )}
+      {audienceCode && remote.follow && <AudienceCode follow={remote.follow} />}
       {blank && <div className="blank" />}
     </>
   );

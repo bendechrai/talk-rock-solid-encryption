@@ -4,11 +4,27 @@
  *
  *   npm install --no-save playwright && npx playwright install chromium
  */
+const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 
 const BASE = process.env.PRESENTATION_URL ?? 'http://localhost:5173';
 const MIN = 40; // stage pixels; keep in step with `type.min` in src/theme.ts
 const TEXTURE_MIN = 28; // `type.texture`
+
+/**
+ * Once someone has opened the stage, the demos answer only the presenter's browsers. The audits
+ * use a fresh browser, so they present the stage key: TALK_STAGE_KEY if set, otherwise read out
+ * of the running container. With neither, they go in as a stranger and the demo checks will fail.
+ */
+function stageKey() {
+  if (process.env.TALK_STAGE_KEY) return process.env.TALK_STAGE_KEY;
+  try {
+    const saved = execFileSync('docker', ['compose', 'exec', '-T', 'web', 'cat', '/data/stage.json'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    return JSON.parse(saved).key ?? '';
+  } catch {
+    return '';
+  }
+}
 
 async function openDeck(options = {}) {
   const browser = await chromium.launch();
@@ -23,7 +39,8 @@ async function openDeck(options = {}) {
   page.on('console', (message) => {
     if (message.type() === 'error') problems.push(`console error: ${message.text()}`);
   });
-  await page.goto(BASE);
+  const key = stageKey();
+  await page.goto(key ? `${BASE}/?stage-key=${encodeURIComponent(key)}` : BASE);
   await page.waitForFunction(() => Array.isArray(window.__deck));
   const scenes = await page.evaluate(() => window.__deck);
   return { browser, page, scenes, problems };

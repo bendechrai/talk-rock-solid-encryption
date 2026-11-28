@@ -8,11 +8,16 @@
  *   /api/v3  stores and returns whatever the client sent. With end-to-end encryption that is
  *            ciphertext the server cannot read.
  *
- * None of the endpoints check who is asking. That is part of the demonstration, not an oversight.
+ * None of these endpoints check who is asking. That is part of the demonstration, not an oversight.
+ *
+ * What does get checked, in front of all of them, is whether the browser may use the demo at all:
+ * once a stage has been opened, only the presenter's devices and those the presenter lets in.
+ * See `devices.ts`.
  */
 import { Hono } from 'hono';
 import { decryptSymmetric, encryptSymmetric, isSymmetricBox, type StoredMessage } from '@whisper/shared';
 import type { Database } from './db.ts';
+import { Devices } from './devices.ts';
 import { createRemote } from './remote.ts';
 
 /** In a real system this would at least live in an environment variable. It would still be one key for everything. */
@@ -31,12 +36,24 @@ async function decryptAtRest(message: StoredMessage): Promise<StoredMessage> {
   }
 }
 
-export function createApp(db: Database): Hono {
+/** Parts of the API that are not the demo, and so are open to every copy of the talk. */
+const NOT_THE_DEMO = ['/api/device', '/api/remote', '/api/health'];
+
+export function createApp(db: Database, devices: Devices = new Devices()): Hono {
   const app = new Hono();
 
   app.onError((error, c) => {
     console.error(error);
     return c.json({ error: 'Internal server error' }, 500);
+  });
+
+  app.get('/api/health', (c) => c.json({ ok: true }));
+  app.route('/api/device', devices.routes());
+
+  app.use('/api/*', async (c, next) => {
+    const open = NOT_THE_DEMO.some((prefix) => c.req.path === prefix || c.req.path.startsWith(`${prefix}/`));
+    if (open || devices.allows(c)) return next();
+    return c.json({ error: 'The demos are being driven from the stage' }, 403);
   });
 
   // ---- Directory -------------------------------------------------------------------------
@@ -179,7 +196,7 @@ export function createApp(db: Database): Hono {
 
   // ---- Presenter remote: relays slide position and next/back between the stage and a phone ----
 
-  app.route('/api/remote', createRemote());
+  app.route('/api/remote', createRemote((c, role) => devices.connect(c, role)));
 
   return app;
 }

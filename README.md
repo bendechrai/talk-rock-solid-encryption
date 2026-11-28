@@ -97,9 +97,9 @@ The diagram scenes work without the backend; the demos need it.
 | Left arrow, Backspace, Page Up | Previous step |
 | Home / End | First / last step of the talk |
 | B or . | Blank the screen |
-| N | Show speaker notes for the current step |
 | F | Full screen |
-| R | Show the code that pairs a phone as the presenter remote |
+| S | Open the presenter's notes window |
+| A | Show the room the code for following along on their own screens |
 
 A clicker sends Page Down and Page Up, which always work. While you are typing in a demo phone,
 Space, Enter and the arrow keys belong to the text field and do not move the talk.
@@ -111,29 +111,78 @@ Pressing next while a step is still animating finishes that step immediately and
 after. Going back never animates. The address bar always holds the current scene and step, so
 reloading the page returns to exactly where you were.
 
-### The presenter remote
+### The notes window and the presenter remote
 
-Your phone can show the note for what is on stage, the note for the next click, a timer, and
-large Next and Back buttons.
+Press S and a second window opens for you alone: the slide that is on stage, its note, the next
+slide and its note, a timer, and Next and Back. Put the stage on the projector and keep this
+window on the laptop's own screen. Speaker notes are never shown on the stage.
 
-1. Open the talk on the presenting computer by an address your phone can also reach (see
-   below), and press R. A QR code appears.
-2. Scan it with the phone. The code closes by itself once the phone has joined.
-3. Present. The timer starts on your first Next; tap it to reset it.
+The arrow keys, Space, Enter and a clicker work in the notes window as they do on the stage, so
+it does not matter which window has the keyboard. If the browser blocks the new window, the
+stage offers a link to open it; allowing pop-ups for the talk avoids that.
 
-Anyone who scans the code can drive the slides, so pair before the audience can see the screen.
-The code holds a random token and nothing works without it. "New code" in the pairing panel
-makes a new token and cuts off any phone holding the old one. Reloading the stage keeps the
-pairing. The keyboard and a clicker carry on working exactly as before, and the phone follows
-them.
+"Maximise slide" fills the window with the slide that is on stage (and the laptop's screen,
+where the browser allows a window to resize itself). It is there for the demos: you work the
+phones and the server view on the laptop's own screen, facing the room, and the stage on the
+projector shows the same thing. Which user each phone is, the chat that is open, what you are
+typing, the server view's tab and how far it is scrolled all carry across; the mouse pointer
+does not. While the slide is maximised, the arrow keys, Space, Enter and clicks do not turn the
+page, so nothing you do in a demo can move the talk. A clicker's Page Down and Page Up still
+do. Escape, or the faint "Notes" button in the corner, brings the notes back. This sharing is
+between windows of one browser on one computer.
 
-The demos stay on the laptop: the remote can step past a demo, but cannot type into it.
+Your phone can be the same thing in your hand. "Pair a phone" in the notes window shows a QR
+code; scan it and the phone shows the same view and buttons. The code is only ever shown in the
+notes window, never on the stage, because anyone who scans it can drive the slides. Once the
+phone is paired you can close the notes window and present from the phone alone. Up to six
+windows and phones can share one pairing, and all of them follow the stage. On a phone the
+demos are replaced by a placeholder: a phone can step past a demo but cannot drive it.
+
+The pairing lasts as long as the stage's browser tab, reloads included. Opening the talk in a
+new tab makes a new pairing and cuts off anything on the old one. The timer starts on your
+first Next; click it to reset it.
 
 The phone has to reach whatever serves the talk, which is the fragile part at a venue.
 Conference Wi-Fi often blocks one device from talking to another, and a tunnel needs internet at
 both ends. The dependable arrangement is the laptop joined to the phone's hotspot, the talk
 started with `TALK_BIND=0.0.0.0`, opened on the laptop by its address on that network, and a
 clicker in your pocket in case.
+
+### Letting the audience follow along
+
+Press A on the stage, or "Show audience code" in the notes window or on the phone, and the stage shows a
+large QR code. Whoever scans it gets the talk on their own screen, moving in step with the
+stage. The code goes away at your next click, so the natural place for it is the title slide
+while people settle, or the last slide.
+
+This code is safe to show. It holds a second token, worked out from the pairing token by a
+one-way hash, that can only listen: it cannot move the slides, and the pairing token cannot be
+worked back from it. People following can page around by themselves; your next click brings
+them back. They see a "Live demo" placeholder in place of each demo, because every copy of a
+demo talks to the same server and would write into the chat on stage. The notes window shows
+how many people are following.
+
+### Who can use the demos
+
+Every browser that opens the talk is given a device id, in a cookie, on its first page load.
+The first browser to open the stage itself becomes yours, and from then on the demo server
+answers only your browsers and the screens you let in. Everyone else gets the "Live demo"
+placeholder, and the server refuses their demo requests even if they open the talk's bare
+address. By the time a code is on screen for anyone to scan, your laptop has already loaded the
+stage, so it is always first.
+
+"Screens" in the notes window lists every connected screen (your stage and notes windows,
+paired phones, people following) with a switch for each: off is the placeholder, on is the live
+demos. "Everyone" at the top opens the demos to all of them at once, which suits the end of a
+talk. A paired phone that is switched on gets its own copy of a demo; only a notes window on the
+presenting computer is mirrored to the stage.
+
+Until a stage has been opened nothing is locked, so a fresh checkout works as before. The
+record of which browser is yours is kept beside the database (`stage.json` in the data volume)
+and survives a restart; `docker compose down -v` forgets it along with the demo data. The same
+file holds a stage key. Opening the talk as `/?stage-key=<key>` makes that browser yours as
+well, which is how to move to another laptop, and how the audit scripts get in: they read the
+key from the running container, or from `TALK_STAGE_KEY`.
 
 ## Layout
 
@@ -171,8 +220,8 @@ a demo's header empties it and clears the keys held in the browser.
 - `src/engine/` is the stage. `Deck.tsx` handles navigation; `motion.ts` is the vocabulary scenes
   use to move things (`show`, `pop`, `fly` along a Bézier curve, `along` a route, and so on).
 - `src/scenes/` holds the talk. `index.tsx` lists the scenes in order.
-- `src/remote/` is the presenter remote: the pairing panel on the stage and the phone page, which
-  is this same app opened with `?remote=<token>`.
+- `src/remote/` is the presenter's side: the notes window and phone page, which is this same app
+  opened with `?remote=<token>`, and the code the room scans to follow along (`?follow=<token>`).
 - `src/demo/` is the chat app. `protocols.ts` defines what a phone does to a message at each
   stage; the phone and the server inspector are shared by every demo.
 
@@ -204,7 +253,7 @@ one click's worth of change:
 | `scaling.tsx` | `scale-*` | How copies multiply, symmetric encryption, Diffie-Hellman |
 | `metadata.tsx` | `meta-*` | What metadata gives away, ways to hide it, summary |
 
-Every step carries a presenter note (press N) with the narration it serves, taken from the
+Every step carries a presenter note (shown in the notes window) with the narration it serves, taken from the
 Melbourne recording (`docs/transcript-ndc-melbourne-2025.md`). Where that narration was
 technically inaccurate, the slide shows the accurate version and
 `docs/accuracy-review.md` lists what to say instead.

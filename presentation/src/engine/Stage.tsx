@@ -1,22 +1,26 @@
-import { forwardRef, useEffect, useState, type ReactNode } from 'react';
+import { forwardRef, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { STAGE } from '../theme.ts';
 
-function fit(): number {
-  return Math.min(window.innerWidth / STAGE.width, window.innerHeight / STAGE.height);
-}
-
-/** A fixed 1920x1080 canvas, scaled to fit the window and letterboxed. */
+/**
+ * A fixed 1920x1080 canvas, scaled to fit and letterboxed. It fills the window unless the page
+ * gives it a smaller box to sit in, as the notes window does for its two slides.
+ */
 export const Stage = forwardRef<HTMLDivElement, { children: ReactNode }>(function Stage({ children }, ref) {
-  const [scale, setScale] = useState(fit);
+  const viewport = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(() => Math.min(window.innerWidth / STAGE.width, window.innerHeight / STAGE.height));
 
-  useEffect(() => {
-    const onResize = () => setScale(fit());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+  useLayoutEffect(() => {
+    const element = viewport.current;
+    if (!element) return;
+    const fit = () => setScale(Math.min(element.clientWidth / STAGE.width, element.clientHeight / STAGE.height));
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(element);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="viewport">
+    <div className="viewport" ref={viewport}>
       <div
         ref={ref}
         className="stage"

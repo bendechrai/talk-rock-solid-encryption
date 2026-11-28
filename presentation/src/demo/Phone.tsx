@@ -5,6 +5,7 @@ import { cast, castById, type Shape, type Who } from '../theme.ts';
 import { api } from './api.ts';
 import { keystore, useEphemeral, useIdentity } from './keystore.ts';
 import type { DisplayMessage, Protocol } from './protocols.ts';
+import { useShared } from './shared.ts';
 import { usePolling } from './usePolling.ts';
 
 const SHAPES: Record<Shape, string> = {
@@ -47,7 +48,7 @@ export function KeyGlyph({ ephemeral = false, size = 34 }: { ephemeral?: boolean
 }
 
 function UserSwitcher({ userId, onChange }: { userId: string; onChange: (userId: string) => void }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useShared('switcher', false);
   return (
     <div className="switcher">
       <button type="button" className="switcher-button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -139,8 +140,8 @@ function Bubble({ message, me }: { message: DisplayMessage; me: string }) {
 function Chat({ userId, conversationId, protocol, keyVersion }: {
   userId: string; conversationId: string; protocol: Protocol; keyVersion: string;
 }) {
-  const [draft, setDraft] = useState('');
-  const [notice, setNotice] = useState<string>();
+  const [draft, setDraft] = useShared(`draft:${userId}:${conversationId}`, '');
+  const [notice, setNotice] = useShared<string | undefined>(`notice:${userId}:${conversationId}`, undefined);
   const end = useRef<HTMLLIElement>(null);
 
   const load = useCallback(async () => {
@@ -197,7 +198,7 @@ function Chat({ userId, conversationId, protocol, keyVersion }: {
 export function Phone({ protocol, userId, onUserChange, hidden = false }: {
   protocol: Protocol; userId: string; onUserChange: (userId: string) => void; hidden?: boolean;
 }) {
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useShared<string | null>('conversation', null);
   const member = castById[userId];
   const identity = useIdentity(userId);
   const ephemeralKeys = useEphemeral(userId);
@@ -206,11 +207,17 @@ export function Phone({ protocol, userId, onUserChange, hidden = false }: {
   const { data: conversations = [] } = usePolling(loadConversations, 1000);
   const conversation = conversations.find((c) => c.id === conversationId);
 
-  // Switching user, or being removed from a conversation, returns to the list.
-  useEffect(() => setConversationId(null), [userId]);
+  // Switching user, or being removed from a conversation, returns to the list. A window that has
+  // only just opened this demo has not switched anything, and must not close the chat for the others.
+  const shownUser = useRef(userId);
+  useEffect(() => {
+    if (shownUser.current === userId) return;
+    shownUser.current = userId;
+    setConversationId(null);
+  }, [userId, setConversationId]);
   useEffect(() => {
     if (conversationId && conversations.length > 0 && !conversation) setConversationId(null);
-  }, [conversationId, conversations, conversation]);
+  }, [conversationId, conversations, conversation, setConversationId]);
 
   const needsIdentity = protocol.needsIdentity && !identity;
   // A conversation key is asked for once. After that the phone rotates it by itself when it sends.
